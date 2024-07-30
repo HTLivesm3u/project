@@ -1,0 +1,16 @@
+#EXTM3U
+#EXT-X-VERSION:3
+#EXT-X-STREAM-INF:BANDWIDTH=2800296,AVERAGE-BANDWIDTH=2800296,CODECS="avc1.640028,mp4a.40.2",PROGRAM-ID=1,RESOLUTION=1080x1980
+https://sony247channels.akamaized.net:443/hls/live/2020591-b/TEN3HD/hdntl=exp=1722428905~acl=%2f*~id=620b0975-8b71-445d-a53b-c6bf220bbeff~data=hdntl~hmac=aae13dcba67bd8559801ffb6796f4d4b610eddc09baf16608fa7ee945fedea0d/master_3500.m3u8
+
+#EXT-X-STREAM-INF:BANDWIDTH=2800296,AVERAGE-BANDWIDTH=2800296,CODECS="avc1.640028,mp4a.40.2",PROGRAM-ID=2,RESOLUTION=720x1280
+https://sony247channels.akamaized.net:443/hls/live/2020591-b/TEN3HD/hdntl=exp=1722428905~acl=%2f*~id=620b0975-8b71-445d-a53b-c6bf220bbeff~data=hdntl~hmac=aae13dcba67bd8559801ffb6796f4d4b610eddc09baf16608fa7ee945fedea0d/master_2000.m3u8
+
+#EXT-X-STREAM-INF:BANDWIDTH=2800296,AVERAGE-BANDWIDTH=2800296,CODECS="avc1.640028,mp4a.40.2",PROGRAM-ID=3,RESOLUTION=480x640
+https://sony247channels.akamaized.net:443/hls/live/2020591-b/TEN3HD/hdntl=exp=1722428905~acl=%2f*~id=620b0975-8b71-445d-a53b-c6bf220bbeff~data=hdntl~hmac=aae13dcba67bd8559801ffb6796f4d4b610eddc09baf16608fa7ee945fedea0d/master_900.m3u8
+
+#EXT-X-STREAM-INF:BANDWIDTH=2800296,AVERAGE-BANDWIDTH=2800296,CODECS="avc1.640028,mp4a.40.2",PROGRAM-ID=4,RESOLUTION=360x640
+https://sony247channels.akamaized.net:443/hls/live/2020591-b/TEN3HD/hdntl=exp=1722428905~acl=%2f*~id=620b0975-8b71-445d-a53b-c6bf220bbeff~data=hdntl~hmac=aae13dcba67bd8559801ffb6796f4d4b610eddc09baf16608fa7ee945fedea0d/master_664.m3u8
+
+#EXT-X-STREAM-INF:BANDWIDTH=2800296,AVERAGE-BANDWIDTH=2800296,CODECS="avc1.640028,mp4a.40.2",PROGRAM-ID=4,RESOLUTION=240x320
+https://sony247channels.akamaized.net:443/hls/live/2020591-b/TEN3HD/hdntl=exp=1722428905~acl=%2f*~id=620b0975-8b71-445d-a53b-c6bf220bbeff~data=hdntl~hmac=aae13dcba67bd8559801ffb6796f4d4b610eddc09baf16608fa7ee945fedea0d/master_412.m3u8
