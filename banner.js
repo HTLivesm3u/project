@@ -94,7 +94,7 @@ function updateSongList() {
     // Add the "Now Playing" indicator
     if (index === currentSongIndex) {
       const nowPlayingIcon = document.createElement("img");
-      nowPlayingIcon.src = "/music/nowplaying.png"; // Replace with your image path
+      nowPlayingIcon.src = "/nowplaying.png"; // Replace with your image path
       nowPlayingIcon.alt = "Now Playing";
       nowPlayingIcon.classList.add("now-playing-icon");
       li.appendChild(nowPlayingIcon);
