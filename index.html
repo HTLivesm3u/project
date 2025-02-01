@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Music45</title>
+  <link rel="icon" type="image/webp" href="music/music45.webp">
+  <link rel="stylesheet" href="styles89.css">
+</head>
+<body>
+  <!-- Menu Button -->
+  <button id="menu-btn" class="menu-btn">☰</button>
+
+  <!-- Playlist Buttons inside the menu -->
+  <div id="playlist-menu" class="playlist-menu">
+    <button id="hindi-btn" class="control-button">Hindi</button>
+    <button id="english-btn" class="control-button">English</button>
+    <button id="marathi-btn" class="control-button">Marathi</button>
+    <button id="telugu-btn" class="control-button">Telugu</button>
+  </div>
+
+  <div class="search-container">
+    <input type="text" id="search-bar" placeholder="Search for a song or artist..." />
+    <button id="search-btn">🔍</button>
+    <ul id="suggestions-list"></ul>
+  </div>
+
+  <!-- Song List Section -->
+  <div class="song-list-container">
+    <h2>Song List</h2>
+    <ul id="song-list">
+      <!-- Songs will be dynamically added here -->
+    </ul>
+  </div>
+
+ <!-- Main Content (Footer) -->
+ <div id="footer-controls" class="footer-controls">
+  <div id="footer-song-info" class="footer-song-info">
+    <img id="footer-cover-image" class="footer-cover" src="cover1.jpg" alt="Cover" />
+    <p id="footer-song-title">Song Title 1</p>
+    <p id="footer-artist-name">Artist Name 1</p>
+  </div>
+  <div class="footer-controls-buttons">
+    <button id="footer-play-pause" class="footer-play-pause-btn">▶️</button>
+    <button id="footer-toggle-btn" class="footer-toggle-btn">🎶</button>
+  </div>
+</div>
+
+  <!-- Music Banner (initially hidden) -->
+  <div id="music-banner" class="music-banner" style="display:none;">
+    <div class="cover">
+      <img id="banner-cover-image" class="banner-cover" src="cover1.jpg" alt="Album Cover">
+    </div>
+    <div class="song-details">
+      <h2 id="banner-song-title">Song Title 1</h2>
+      <p id="banner-artist-name">Artist Name 1</p>
+    </div>
+
+    <div class="progress-container">
+      <span id="current-time">0:00</span>
+      <div id="progress-bar">
+        <div id="progress"></div>
+      </div>
+      <span id="duration">0:00</span>
+    </div>
+
+    <div class="controls">
+      <button id="prev" class="control-btn">⏮️</button>
+      <button id="banner-play-pause" class="control-btn play">▶️</button>
+      <button id="next" class="control-btn">⏭️</button>
+    </div>
+
+    <div class="secondary-controls">
+      <button id="shuffle-btn">🔀</button>
+      <button id="repeat-btn">🔁</button>
+      <button id="download-btn">⬇️</button>
+    </div>
+  </div>
+
+
+
+  <audio id="audio"></audio>
+  <script type="module" src="banner.js"></script>
+</body>
+</html>
