@@ -35,7 +35,7 @@ const nextBtn = document.getElementById("next");
 const prevBtn = document.getElementById("prev");
 const durationElem = document.getElementById("duration");
 const downloadBtn = document.getElementById("download-btn");
-
+const closeBannerBtn = document.getElementById("close-banner-btn");
 
 
 function loadSong(song) {
@@ -94,7 +94,7 @@ function updateSongList() {
     // Add the "Now Playing" indicator
     if (index === currentSongIndex) {
       const nowPlayingIcon = document.createElement("img");
-      nowPlayingIcon.src = "/nowplaying.png"; // Replace with your image path
+      nowPlayingIcon.src = "/music/nowplaying.png"; // Replace with your image path
       nowPlayingIcon.alt = "Now Playing";
       nowPlayingIcon.classList.add("now-playing-icon");
       li.appendChild(nowPlayingIcon);
@@ -226,10 +226,67 @@ document.getElementById("repeat-btn").addEventListener("click", () => {
   document.getElementById("repeat-btn").classList.toggle("active", isRepeat);
 });
 
-// Toggle Music Banner
+
+// Toggle Music Banner visibility with the footer button (updated for full-screen)
+// Toggle Music Banner visibility with the footer button
 footerToggleBtn.addEventListener("click", () => {
-  musicBanner.style.display = musicBanner.style.display === "none" ? "block" : "none";
+  if (musicBanner.style.display === "block") {
+    // If the music banner is visible, hide it
+    musicBanner.style.display = "none";
+
+    // Show the entire UI (footer controls, song list, search bar, etc.)
+    document.getElementById("search-bar").style.display = "block";
+    document.getElementById("footer").style.display = "block";  // Show footer controls
+    document.getElementById("menu-btn").style.display = "block";
+    document.getElementById("playlist-menu").style.display = "block";
+    document.getElementById("suggestions-list").style.display = "block";
+    document.getElementById("song-list").style.display = "block"; // Show song list
+  } else {
+    // If the music banner is not visible, show it in full screen and center it
+    musicBanner.style.display = "block";
+    musicBanner.style.position = "fixed";  // Fix position to the screen
+    musicBanner.style.top = "50%"; // Center vertically
+    musicBanner.style.left = "50%"; // Center horizontally
+    musicBanner.style.transform = "translate(-50%, -50%)"; // Use transform to center exactly
+    musicBanner.style.width = "100vw";  // Full screen width
+    musicBanner.style.height = "100vh"; // Full screen height
+    musicBanner.style.zIndex = "9999";  // Make sure it's on top of other elements
+    musicBanner.style.backgroundColor = "rgba(0, 0, 0, 0.8)";  // Optional: add dark overlay
+
+    // Use flexbox to center content inside the banner
+    musicBanner.style.display = "flex";
+    musicBanner.style.flexDirection = "column";
+    musicBanner.style.alignItems = "center";
+    musicBanner.style.justifyContent = "center";
+
+    // Hide the entire UI (footer controls, song list, search bar, etc.)
+    document.getElementById("search-bar").style.display = "none";
+    document.getElementById("footer").style.display = "none";  // Hide footer controls
+    document.getElementById("menu-btn").style.display = "none";
+    document.getElementById("playlist-menu").style.display = "none";
+    document.getElementById("suggestions-list").style.display = "none";
+    document.getElementById("song-list").style.display = "none"; // Hide song list
+  }
 });
+
+// Close the Music Banner when the close button is clicked
+closeBannerBtn.addEventListener("click", () => {
+  // Hide the music banner
+  musicBanner.style.display = "none";
+  
+  // Show the entire UI (footer controls, song list, search bar, etc.)
+  document.getElementById("search-bar").style.display = "block";
+  document.getElementById("footer").style.display = "block";  // Show footer controls
+  document.getElementById("menu-btn").style.display = "block";
+  document.getElementById("playlist-menu").style.display = "block";
+  document.getElementById("suggestions-list").style.display = "block";
+  document.getElementById("song-list").style.display = "block"; // Show song list
+});
+
+
+
+
+
 
 // Download functionality
 downloadBtn.addEventListener("click", () => {
