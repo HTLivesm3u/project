@@ -5,6 +5,7 @@ let isPlaying = false;
 let isShuffle = false;
 let isRepeat = false;
 
+updatePlaylistName('Hindi Songs');
 
 //header content
 const suggestionsList = document.getElementById("suggestions-list");
@@ -167,7 +168,22 @@ searchBar.addEventListener("input", () => {
 
     matches.forEach((song) => {
       const suggestionItem = document.createElement("li");
-      suggestionItem.textContent = `${song.title} - ${song.artist}`;
+
+      // Create cover image
+      const coverImg = document.createElement("img");
+      coverImg.src = song.cover;
+      coverImg.alt = `${song.title} Cover`;
+      coverImg.classList.add("suggestion-cover");
+
+      // Create song details text
+      const songDetails = document.createElement("span");
+      songDetails.textContent = `${song.title} - ${song.artist}`;
+
+      // Append elements
+      suggestionItem.appendChild(coverImg);
+      suggestionItem.appendChild(songDetails);
+
+      // Click event to load the selected song
       suggestionItem.addEventListener("click", () => {
         const index = currentSongs.findIndex(
           (s) => s.title === song.title && s.artist === song.artist
@@ -178,12 +194,14 @@ searchBar.addEventListener("input", () => {
           audio.play();
         }
         searchBar.value = "";
-        suggestionsList.innerHTML = "";
+        suggestionsList.innerHTML = ""; // Clear suggestions
       });
+
       suggestionsList.appendChild(suggestionItem);
     });
   }
 });
+
 
 // Hide suggestions list when clicking outside
 document.addEventListener("click", (event) => {
@@ -227,20 +245,15 @@ document.getElementById("repeat-btn").addEventListener("click", () => {
 });
 
 
-// Toggle Music Banner visibility with the footer button (updated for full-screen)
-// Toggle Music Banner visibility with the footer button
+
+
+// Music Banner toggle and close functionality (integrate with your music banner code)
 footerToggleBtn.addEventListener("click", () => {
   if (musicBanner.style.display === "block") {
     // If the music banner is visible, hide it
     musicBanner.style.display = "none";
 
-    // Show the entire UI (footer controls, song list, search bar, etc.)
-    document.getElementById("search-bar").style.display = "block";
-    document.getElementById("footer").style.display = "block";  // Show footer controls
-    document.getElementById("menu-btn").style.display = "block";
-    document.getElementById("playlist-menu").style.display = "block";
-    document.getElementById("suggestions-list").style.display = "block";
-    document.getElementById("song-list").style.display = "block"; // Show song list
+
   } else {
     // If the music banner is not visible, show it in full screen and center it
     musicBanner.style.display = "block";
@@ -259,13 +272,6 @@ footerToggleBtn.addEventListener("click", () => {
     musicBanner.style.alignItems = "center";
     musicBanner.style.justifyContent = "center";
 
-    // Hide the entire UI (footer controls, song list, search bar, etc.)
-    document.getElementById("search-bar").style.display = "none";
-    document.getElementById("footer").style.display = "none";  // Hide footer controls
-    document.getElementById("menu-btn").style.display = "none";
-    document.getElementById("playlist-menu").style.display = "none";
-    document.getElementById("suggestions-list").style.display = "none";
-    document.getElementById("song-list").style.display = "none"; // Hide song list
   }
 });
 
@@ -273,21 +279,7 @@ footerToggleBtn.addEventListener("click", () => {
 closeBannerBtn.addEventListener("click", () => {
   // Hide the music banner
   musicBanner.style.display = "none";
-  
-  // Show the entire UI (footer controls, song list, search bar, etc.)
-  document.getElementById("search-bar").style.display = "block";
-  document.getElementById("footer").style.display = "block";  // Show footer controls
-  document.getElementById("menu-btn").style.display = "block";
-  document.getElementById("playlist-menu").style.display = "block";
-  document.getElementById("suggestions-list").style.display = "block";
-  document.getElementById("song-list").style.display = "block"; // Show song list
 });
-
-
-
-
-
-
 // Download functionality
 downloadBtn.addEventListener("click", () => {
   const currentSong = currentSongs[currentSongIndex];
@@ -358,11 +350,18 @@ function playPrevSong() {
 menuBtn.addEventListener("click", () => {
   playlistMenu.classList.toggle("active");
 });
+// Initialize song list with the playlist name
+function updatePlaylistName(playlistName) {
+  const playlistNameElem = document.getElementById("playlist-name");
+  playlistNameElem.textContent = `Current Playlist: ${playlistName}`;
+}
 
+// Change the playlist when a button is clicked
 document.getElementById("hindi-btn").addEventListener("click", () => {
   currentSongs = hindiSongs;
   currentSongIndex = 0;
   loadSong(hindiSongs[0]);
+  updatePlaylistName('Hindi Songs');
   playlistMenu.classList.remove("active");  // Close the menu
 });
 
@@ -370,6 +369,7 @@ document.getElementById("english-btn").addEventListener("click", () => {
   currentSongs = englishSongs;
   currentSongIndex = 0;
   loadSong(englishSongs[0]);
+  updatePlaylistName('English Songs');
   playlistMenu.classList.remove("active");  // Close the menu
 });
 
@@ -377,6 +377,7 @@ document.getElementById("marathi-btn").addEventListener("click", () => {
   currentSongs = marathiSongs;
   currentSongIndex = 0;
   loadSong(marathiSongs[0]);
+  updatePlaylistName('Marathi Songs');
   playlistMenu.classList.remove("active");  // Close the menu
 });
 
@@ -384,6 +385,7 @@ document.getElementById("telugu-btn").addEventListener("click", () => {
   currentSongs = teluguSongs;
   currentSongIndex = 0;
   loadSong(teluguSongs[0]);
+  updatePlaylistName('Telugu Songs');
   playlistMenu.classList.remove("active");  // Close the menu
 });
 
