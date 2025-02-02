@@ -20,12 +20,12 @@
   .menu-btn {
   font-size: 30px;
   background: none;
-  color: white;
+  color: #fcfcfc;
   border: none;
   cursor: pointer;
   position: fixed;
-  top: 10px;
-  left: 10px;
+  top: 20px;
+  left: 1px;
   z-index: 1000;
   padding: 15px;
   }
@@ -146,24 +146,49 @@
   #suggestions-list {
     list-style: none;
     padding: 0;
-    margin: 30px 0 0;
+    margin: 35px 0 0; /* Smaller margin */
     background-color: #1c1c1c;
     border: 1px solid #444;
-    border-radius: 5px;
-    max-width: 400px;
+    border-radius: 6px; /* Slightly rounded corners */
+    max-width: 300px; /* Smaller width */
+    max-height: 250px; /* Smaller height */
+    overflow-y: auto; /* Scroll when needed */
     color: white;
     position: absolute;
     z-index: 10;
-  }
-  
-  #suggestions-list li {
-    padding: 10px;
+    box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.3); /* Lighter shadow */
+}
+
+/* More compact suggestion items */
+#suggestions-list li {
+    display: flex;
+    align-items: center;
+    padding: 8px; /* Less padding */
     cursor: pointer;
-  }
-  
-  #suggestions-list li:hover {
-    background-color: #333;
-  }
+    border-bottom: 1px solid #333;
+    transition: background 0.2s ease;
+    font-size: 14px; /* Smaller text */
+}
+
+/* Remove border for last item */
+#suggestions-list li:last-child {
+    border-bottom: none;
+}
+
+/* Hover effect */
+#suggestions-list li:hover {
+    background-color: #292929;
+}
+
+/* Smaller song cover */
+.suggestion-cover {
+    width: 30px; /* Smaller size */
+    height: 30px;
+    border-radius: 4px;
+    margin-right: 8px;
+    object-fit: cover;
+}
+
   
   /* Song List */
   #song-list li {
@@ -201,15 +226,22 @@
   #song-list li span {
     flex: 1;
   }
-  
-  .song-list-container h2 {
+  #playlist-name {
+    text-align: center;
+    font-size: 1rem;
+    color: #00ffcc; /* Light neon color */
+    text-shadow: 0 0 10px #00ffcc, 0 0 20px #00ffcc, 0 0 30px #00ffcc;
+    margin-top: 20px;
+  }
+  .song-list-container playlist-name{
     margin-bottom: 20px;
     font-size: 24px;
+   color: #444;
   }
   #song-list {
     max-height: 70vh; /* You can adjust this height to fit your design */
     overflow-y: auto; /* This allows scrolling */
-    padding-right: 10px; /* Prevents the scrollbar from overlapping content */
+    padding-right: 5px; /* Prevents the scrollbar from overlapping content */
 
   }
   
@@ -262,14 +294,6 @@
     margin-top: 10px;
   }
   
-  .hide-banner-elements #search-bar,
-.hide-banner-elements #footer,
-.hide-banner-elements #menu-btn,
-.hide-banner-elements #playlist-menu,
-.hide-banner-elements #suggestions-list {
-  display: none !important;  /* This will hide the search bar, footer, and menu */
-}
-
   /* Music Banner */
   #music-banner {
     display: none; /* Hidden by default */
