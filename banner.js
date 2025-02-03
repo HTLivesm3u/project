@@ -443,19 +443,3 @@ function updateMediaSession(song) {
     });
   }
 }
-navigator.mediaSession.setActionHandler('play', () => {
-  console.log("Play action triggered");
-  audio.play();
-  isPlaying = true;
-  playPauseBtn.textContent = '⏸️';
-  bannerPlayPauseBtn.textContent = '⏸️';
-});
-
-navigator.mediaSession.setActionHandler('pause', () => {
-  console.log("Pause action triggered");
-  audio.pause();
-  isPlaying = false;
-  playPauseBtn.textContent = '▶️';
-  bannerPlayPauseBtn.textContent = '▶️';
-});
-
