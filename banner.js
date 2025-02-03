@@ -38,7 +38,7 @@ const durationElem = document.getElementById("duration");
 const downloadBtn = document.getElementById("download-btn");
 const closeBannerBtn = document.getElementById("close-banner-btn");
 
-
+// function load the song
 function loadSong(song) {
   audio.src = song.src;
   footerSongTitle.textContent = song.title;
@@ -64,6 +64,7 @@ function loadSong(song) {
   // Update the song list and highlight the now-playing song
   updateSongList();
 }
+
 
 
 
@@ -402,6 +403,9 @@ document.addEventListener("click", (event) => {
 // Update lock screen media information and handle mobile controls
 function updateMediaSession(song) {
   if ('mediaSession' in navigator) {
+    // Debugging log
+    console.log("Updating media session with song:", song);
+
     navigator.mediaSession.metadata = new MediaMetadata({
       title: song.title,
       artist: song.artist,
@@ -415,19 +419,22 @@ function updateMediaSession(song) {
       ],
     });
 
-    // Handle media actions
+    // Additional media session actions (play, pause, etc.)
     navigator.mediaSession.setActionHandler('play', () => {
-      togglePlayPause();
+      if (!isPlaying) {
+        togglePlayPause();
+      }
     });
 
     navigator.mediaSession.setActionHandler('pause', () => {
-      togglePlayPause();
+      if (isPlaying) {
+        togglePlayPause();
+      }
     });
 
     navigator.mediaSession.setActionHandler('nexttrack', playNextSong);
     navigator.mediaSession.setActionHandler('previoustrack', playPrevSong);
 
-    // Seek forward/backward actions
     navigator.mediaSession.setActionHandler('seekforward', () => {
       audio.currentTime = Math.min(audio.currentTime + 10, audio.duration);
     });
@@ -436,3 +443,4 @@ function updateMediaSession(song) {
     });
   }
 }
+
