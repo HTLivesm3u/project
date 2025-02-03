@@ -48,13 +48,13 @@ function loadSong(song) {
   bannerArtistName.textContent = song.artist;
   bannerCoverImage.src = song.cover;
 
+  // Update lock screen media session with song information
+  updateMediaSession(song);
+
   // Update duration in the banner
   audio.onloadedmetadata = () => {
     durationElem.textContent = formatTime(audio.duration);
   };
-
-  // Update lock screen media session
-  updateMediaSession(song);
 
   // If it's already playing, play the song
   if (isPlaying) {
@@ -64,6 +64,7 @@ function loadSong(song) {
   // Update the song list and highlight the now-playing song
   updateSongList();
 }
+
 
 
 
@@ -123,11 +124,13 @@ function togglePlayPause() {
     isPlaying = false;
     playPauseBtn.textContent = "▶️";
     bannerPlayPauseBtn.textContent = "▶️";
+    updateMediaSession({ title: audio.title, artist: audio.artist, cover: audio.cover }); // Update lock screen
   } else {
     audio.play();
     isPlaying = true;
     playPauseBtn.textContent = "⏸️";
     bannerPlayPauseBtn.textContent = "⏸️";
+    updateMediaSession({ title: audio.title, artist: audio.artist, cover: audio.cover }); // Update lock screen
   }
 }
 
@@ -412,30 +415,22 @@ function updateMediaSession(song) {
       ],
     });
 
-    // Handle mobile lock screen controls
+    // Handle media actions
     navigator.mediaSession.setActionHandler('play', () => {
-      audio.play();
-      isPlaying = true;
-      playPauseBtn.textContent = '⏸️';
-      bannerPlayPauseBtn.textContent = '⏸️';
+      togglePlayPause();
     });
 
     navigator.mediaSession.setActionHandler('pause', () => {
-      audio.pause();
-      isPlaying = false;
-      playPauseBtn.textContent = '▶️';
-      bannerPlayPauseBtn.textContent = '▶️';
+      togglePlayPause();
     });
 
     navigator.mediaSession.setActionHandler('nexttrack', playNextSong);
     navigator.mediaSession.setActionHandler('previoustrack', playPrevSong);
 
-    // Seek forward
+    // Seek forward/backward actions
     navigator.mediaSession.setActionHandler('seekforward', () => {
       audio.currentTime = Math.min(audio.currentTime + 10, audio.duration);
     });
-
-    // Seek backward
     navigator.mediaSession.setActionHandler('seekbackward', () => {
       audio.currentTime = Math.max(audio.currentTime - 10, 0);
     });
