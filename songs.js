@@ -272,7 +272,7 @@ export const marathiSongs = [
     title: "Deva Tujhya Gaabhaaryaalaa",
     artist: "Adarsh Shinde, Kirti Killedar, Anandi Joshi",
     src: "/music/marathi/Deva Tujhya Gaabhaaryaalaa - Adarsh Shinde, Kirti Killedar, Anandi Joshi.m4a",
-    cover: "https://www.shazam.com/mkimage/image/thumb/Music114/v4/3a/73/71/3a737124-8ef6-f2da-bc4f-d4c134367f23/cover.jpg/255x255bb-60.webp",
+    cover: "https://www.shazam.com/mkimage/image/thumb/Music114/v4/3a/73/71/3a737124-8ef6-f2da-bc4f-d4c134367f23/cover.jpg/255x255bb-60.",
   },
   {
     title: "Dewak Kalji Re",
@@ -440,7 +440,7 @@ export const marathiSongs = [
     title: "Sar Sukhachi Shravani",
     artist: "Abhijeet Sawant, Bela Shende",
     src: "/music/marathi/Sar Sukhachi Shravani - Abhijeet Sawant, Bela Shende.m4a",
-    cover: "https://a10.gaanacdn.com/gn_img/albums/Rz4W8vKxD5/z4W85D90bx/size_m.webp",
+    cover: "https://a10.gaanacdn.com/gn_img/albums/Rz4W8vKxD5/z4W85D90bx/size_m.",
   },
   {
     title:"Shivba Raja",
@@ -464,7 +464,7 @@ export const marathiSongs = [
     title: "Tik Tik Vajate Dokyaat - Duet Version",
     artist: "Sonu Nigam, Sayali Pankaj",
     src: "/music/marathi/Tik Tik Vajate Dokyaat - Duet Version - Sonu Nigam, Sayali Pankaj.m4a",
-    cover: "https://a10.gaanacdn.com/gn_img/albums/kGxbnw0Ky4/GxbnzlYaby/size_m.webp",
+    cover: "https://a10.gaanacdn.com/gn_img/albums/kGxbnw0Ky4/GxbnzlYaby/size_m.",
   },
   {
     title: "Tola Tola",
@@ -488,7 +488,7 @@ export const marathiSongs = [
     title: "Zindagi Zindagi",
     artist: "Sachin Pilgaonkar, Sumeet Raghvan",
     src: "/music/marathi/Zindagi Zindagi - Sachin Pilgaonkar, Sumeet Raghvan.m4a",
-    cover: "https://a10.gaanacdn.com/gn_img/albums/kGxbnw0Ky4/GxbnzlYaby/size_m.webp",
+    cover: "https://a10.gaanacdn.com/gn_img/albums/kGxbnw0Ky4/GxbnzlYaby/size_m.",
   },
   
 ];
