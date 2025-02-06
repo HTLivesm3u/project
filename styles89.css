@@ -16,6 +16,35 @@
   padding: 10px;
   }
   
+  .close-btn {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    background: rgba(255, 255, 255, 0.7);
+    border: none;
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  
+  .close-btn i {
+    color: #4B5563;
+    font-size: 16px;
+  }
+  
+  .close-btn:hover {
+    background: rgba(255, 255, 255, 0.9);
+  }
+  
+  .close-btn:hover i {
+    color: #111827;
+  }
+  
   
   /* Menu Button */
   .menu-btn {
