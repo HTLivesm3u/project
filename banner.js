@@ -124,14 +124,12 @@ function togglePlayPause() {
     audio.pause();
     isPlaying = false;
     playPauseBtn.textContent = "▶️";
-    bannerPlayPauseBtn.textContent = "▶️";
-    updateMediaSession({ title: audio.title, artist: audio.artist, cover: audio.cover }); // Update lock screen
+    bannerPlayPauseBtn.innerHTML = '<i class="fas fa-play"></i>';
   } else {
     audio.play();
     isPlaying = true;
     playPauseBtn.textContent = "⏸️";
-    bannerPlayPauseBtn.textContent = "⏸️";
-    updateMediaSession({ title: audio.title, artist: audio.artist, cover: audio.cover }); // Update lock screen
+    bannerPlayPauseBtn.innerHTML = '<i class="fas fa-pause"></i>';
   }
 }
 
