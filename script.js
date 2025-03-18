@@ -102,8 +102,25 @@ function playYouTube(videoId) {
         return;
     }
 
-    console.log("▶️ Playing YouTube Video:", videoId);
+    console.log("▶️ Trying to Play YouTube Video:", videoId);
+    
     const player = document.getElementById('music-player');
-    player.src = `https://www.youtube.com/embed/${videoId}?autoplay=1`;
-    player.style.display = 'block';
+    
+    // 🔥 Check if video allows embedding
+    fetch(`https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=${videoId}&format=json`)
+        .then(response => {
+            if (response.ok) {
+                // ✅ If embeddable, show iframe
+                player.src = `https://www.youtube.com/embed/${videoId}?autoplay=1`;
+                player.style.display = 'block';
+            } else {
+                // ❌ If not embeddable, open in new tab
+                alert("⚠️ This video cannot be embedded. Opening in YouTube.");
+                window.open(`https://www.youtube.com/watch?v=${videoId}`, '_blank');
+            }
+        })
+        .catch(error => {
+            console.error("❌ Error checking YouTube embed status:", error);
+            window.open(`https://www.youtube.com/watch?v=${videoId}`, '_blank');
+        });
 }
