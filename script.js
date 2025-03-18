@@ -23,22 +23,24 @@ async function searchSongs() {
     const query = document.getElementById('search-query').value.trim();
     if (!query) return alert("Please enter a song name!");
 
-    await getSpotifyToken();
+    await getSpotifyToken(); // Ensure Spotify Token is fresh
 
     const spotifyUrl = `https://api.spotify.com/v1/search?q=${encodeURIComponent(query)}&type=track&limit=5`;
-    const spotifyResponse = await fetch(spotifyUrl, { 
-        headers: { 'Authorization': `Bearer ${spotifyToken}` } 
+    
+    const response = await fetch(spotifyUrl, {
+        headers: { 'Authorization': `Bearer ${spotifyToken}` }
     });
     
-    const spotifyData = await spotifyResponse.json();
-    console.log("Spotify Response:", spotifyData);
+    const data = await response.json();
+    console.log("Spotify Response:", data); // Debugging
 
-    if (spotifyData.tracks && spotifyData.tracks.items.length > 0) {
-        displaySongs(spotifyData.tracks.items);
+    if (data.tracks && data.tracks.items.length > 0) {
+        displaySongs(data.tracks.items);
     } else {
-        alert("No results found on Spotify!");
+        alert("No songs found on Spotify.");
     }
 }
+
 
 // 🔹 3. Display Songs in List
 async function displaySongs(songs) {
