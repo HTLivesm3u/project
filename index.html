@@ -104,8 +104,15 @@
         function playSong(previewUrl, videoId) {
             const player = document.getElementById('music-player');
             
+            // Stop previous audio
+            if (window.currentAudio) {
+                window.currentAudio.pause();
+                window.currentAudio = null;
+            }
+
             if (previewUrl) {
                 let audio = new Audio(previewUrl);
+                window.currentAudio = audio;
                 audio.play();
             } else if (videoId) {
                 player.src = `https://www.youtube.com/embed/${videoId}?autoplay=1&enablejsapi=1`;
