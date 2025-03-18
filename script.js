@@ -1,6 +1,6 @@
 const SPOTIFY_CLIENT_ID = '7afe6b39346f4bcc8654c141fe2a6136';
 const SPOTIFY_CLIENT_SECRET = '119278484c2f4c28ac893ea3324bfe84';
-const YOUTUBE_API_KEY = 'AIzaSyB4ekEujAe5s0HAyrhXSTafTS9kQqoSJwc';
+const YOUTUBE_API_KEY = 'AIzaSyAwKYDbklOiCO1o3Dr7uM-xISbjksPkgDk';
 
 let spotifyToken = '';
 
@@ -103,7 +103,21 @@ function playYouTube(videoId) {
     }
 
     console.log("▶️ Playing YouTube Video:", videoId);
+    
     const player = document.getElementById('music-player');
+
+    // Try to play inside iframe
     player.src = `https://www.youtube.com/embed/${videoId}?autoplay=1`;
     player.style.display = 'block';
+
+    // Check if the iframe is blocked
+    setTimeout(() => {
+        if (player.contentWindow) {
+            console.log("✅ Video playing successfully in iframe.");
+        } else {
+            console.warn("❌ YouTube video blocked. Opening in new tab...");
+            window.open(`https://www.youtube.com/watch?v=${videoId}`, '_blank');
+        }
+    }, 2000);
 }
+
