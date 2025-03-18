@@ -43,28 +43,23 @@ async function searchSongs() {
 
 // 🔹 3. Display Songs & Fetch YouTube Video
 async function displaySongs(songs) {
+    console.log("Songs Received:", songs); // Debugging check
     const songList = document.getElementById('song-list');
     songList.innerHTML = '';
 
-    for (let song of songs) {
+    songs.forEach(song => {
         const title = song.name;
         const artist = song.artists[0].name;
-        const albumCover = song.album.images[1]?.url || '';
-        const previewUrl = song.preview_url;
-
-        // 🔥 Find YouTube Video
-        const videoId = await getYouTubeVideo(`${title} ${artist}`);
+        const albumCover = song.album.images[1]?.url || ''; // Check if image exists
 
         const songItem = document.createElement('div');
         songItem.classList.add('song-item');
-
         songItem.innerHTML = `
             <img src="${albumCover}" alt="${title}">
-            <p onclick="playYouTube('${videoId}')">${title} - ${artist}</p>
+            <p onclick="playSpotifyPreview('${song.preview_url}')">${title} - ${artist}</p>
         `;
-
         songList.appendChild(songItem);
-    }
+    });
 }
 
 // 🔹 4. Search YouTube Video
