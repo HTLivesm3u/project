@@ -96,28 +96,18 @@ async function getYouTubeVideo(query) {
 }
 
 // ✅ **5. Play YouTube Video in iFrame**
-function playYouTube(videoId) {
-    if (!videoId) {
-        alert("⚠️ No video found for this song.");
-        return;
-    }
+function playYouTubeSong(songName) {
+    // Replace spaces with "+" for a valid search query
+    let searchQuery = songName.split(" ").join("+");
 
-    console.log("▶️ Playing YouTube Video:", videoId);
-    
-    const player = document.getElementById('music-player');
+    // Open YouTube search results in a new tab
+    let searchUrl = `https://www.youtube.com/results?search_query=${searchQuery}`;
+    window.open(searchUrl, "_blank");
 
-    // Try to play inside iframe
-    player.src = `https://www.youtube.com/embed/${videoId}?autoplay=1`;
-    player.style.display = 'block';
-
-    // Check if the iframe is blocked
-    setTimeout(() => {
-        if (player.contentWindow) {
-            console.log("✅ Video playing successfully in iframe.");
-        } else {
-            console.warn("❌ YouTube video blocked. Opening in new tab...");
-            window.open(`https://www.youtube.com/watch?v=${videoId}`, '_blank');
-        }
-    }, 2000);
+    // OR (Alternative): Embed the search result inside an iframe
+    let iframe = document.getElementById("music-player");
+    iframe.src = `https://www.youtube.com/embed?listType=search&list=${searchQuery}&autoplay=1`;
+    iframe.style.display = "block"; // Make iframe visible
 }
+
 
