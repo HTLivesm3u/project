@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Music45 - Spotify & YouTube</title>
-    <script src="https://kit.fontawesome.com/YOUR-FONTAWESOME-KEY.js" crossorigin="anonymous"></script>
     <style>
         body { font-family: Arial, sans-serif; text-align: center; background: #1c1c1c; color: white; padding: 20px; }
         .search-container { margin-bottom: 20px; }
@@ -19,16 +18,16 @@
 </head>
 <body>
 
-    <h1>🎵 Search for Songs</h1>
+    <h1>Search for Songs</h1>
     
     <div class="search-container">
         <input type="text" id="search-query" placeholder="Enter song name..." />
-        <button onclick="searchSongs()">🔍 Search</button>
+        <button onclick="searchSongs()">Search</button>
     </div>
 
     <div id="song-list"></div>
 
-    <iframe id="music-player" width="560" height="315" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+    <iframe id="music-player" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
 
     <script src="script.js"></script>
 </body>
