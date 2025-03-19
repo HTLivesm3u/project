@@ -1,113 +1,65 @@
-const SPOTIFY_CLIENT_ID = '7afe6b39346f4bcc8654c141fe2a6136';
-const SPOTIFY_CLIENT_SECRET = '119278484c2f4c28ac893ea3324bfe84';
-const YOUTUBE_API_KEY = 'AIzaSyBWVcQzYoR9XAzYpISYS9OmOWFAc4-kjZY';
+        const SPOTIFY_CLIENT_ID = '7afe6b39346f4bcc8654c141fe2a6136';
+        const SPOTIFY_CLIENT_SECRET = '119278484c2f4c28ac893ea3324bfe84';
 
-let spotifyToken = '';
+        let spotifyToken = '';
 
-// ✅ **1. Get Spotify API Token**
-async function getSpotifyToken() {
-    try {
-        console.log("Fetching Spotify Token...");
-        const response = await fetch('https://accounts.spotify.com/api/token', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-            body: `grant_type=client_credentials&client_id=${SPOTIFY_CLIENT_ID}&client_secret=${SPOTIFY_CLIENT_SECRET}`
-        });
-
-        const data = await response.json();
-        spotifyToken = data.access_token;
-        console.log("✅ Spotify Token:", spotifyToken);
-    } catch (error) {
-        console.error("❌ Error getting Spotify Token:", error);
-    }
-}
-
-// ✅ **2. Search Songs from Spotify**
-async function searchSongs() {
-    const query = document.getElementById('search-query').value.trim();
-    if (!query) return alert("⚠️ Please enter a song name!");
-
-    await getSpotifyToken();
-
-    console.log(`🔍 Searching Spotify for: ${query}`);
-    const spotifyUrl = `https://api.spotify.com/v1/search?q=${encodeURIComponent(query)}&type=track&limit=5`;
-
-    try {
-        const response = await fetch(spotifyUrl, {
-            headers: { 'Authorization': `Bearer ${spotifyToken}` }
-        });
-
-        const data = await response.json();
-        console.log("🎵 Spotify Data:", data);
-
-        if (data.tracks && data.tracks.items.length > 0) {
-            displaySongs(data.tracks.items);
-        } else {
-            alert("❌ No songs found on Spotify.");
+        // Fetch Spotify Token (Needed for API Calls)
+        async function getSpotifyToken() {
+            const response = await fetch('https://accounts.spotify.com/api/token', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: `grant_type=client_credentials&client_id=${SPOTIFY_CLIENT_ID}&client_secret=${SPOTIFY_CLIENT_SECRET}`
+            });
+            const data = await response.json();
+            spotifyToken = data.access_token;
         }
-    } catch (error) {
-        console.error("❌ Error fetching Spotify Songs:", error);
-    }
-}
 
-// ✅ **3. Display Songs & Get YouTube Video**
-async function displaySongs(songs) {
-    const songList = document.getElementById('song-list');
-    songList.innerHTML = '';
+        async function searchSongs() {
+            const query = document.getElementById('search-query').value.trim();
+            if (!query) return alert("Please enter a song name!");
 
-    for (let song of songs) {
-        const title = song.name;
-        const artist = song.artists[0].name;
-        const albumCover = song.album.images[1]?.url || '';
-        const previewUrl = song.preview_url;
+            await getSpotifyToken(); // Ensure we have a valid Spotify token
 
-        console.log(`🎵 Song: ${title} - ${artist}`);
+            const spotifyUrl = `https://api.spotify.com/v1/search?q=${encodeURIComponent(query)}&type=track&limit=5`;
+            const spotifyResponse = await fetch(spotifyUrl, {
+                headers: { 'Authorization': `Bearer ${spotifyToken}` }
+            });
+            const spotifyData = await spotifyResponse.json();
 
-        // 🔥 Get YouTube Video ID
-        const videoId = await getYouTubeVideo(`${title} ${artist}`);
+            if (spotifyData.tracks.items.length > 0) {
+                displaySongs(spotifyData.tracks.items);
+            } else {
+                alert("No results found on Spotify!");
+            }
+        }
 
-        const songItem = document.createElement('div');
-        songItem.classList.add('song-item');
+        function displaySongs(songs) {
+            const songList = document.getElementById('song-list');
+            songList.innerHTML = '';
 
-        // ✅ Clicking Song Name Plays Video
-        songItem.innerHTML = `
-            <img src="${albumCover}" alt="${title}">
-            <p onclick="playYouTube('${videoId}')">${title} - ${artist}</p>
-        `;
+            songs.forEach(song => {
+                const title = song.name;
+                const artist = song.artists[0].name;
+                const albumCover = song.album.images[1].url;
 
-        songList.appendChild(songItem);
-    }
-}
+                const songItem = document.createElement('div');
+                songItem.classList.add('song-item');
+                songItem.onclick = () => playYouTubeSong(`${title} ${artist}`);
 
-// ✅ **4. Search for YouTube Video**
-async function getYouTubeVideo(query) {
-    const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(query)}&type=video&maxResults=1&key=${YOUTUBE_API_KEY}`;
+                songItem.innerHTML = `
+                    <img src="${albumCover}" alt="${title}">
+                    <p>${title} - ${artist}</p>
+                `;
 
-    try {
-        const response = await fetch(url);
-        const data = await response.json();
+                songList.appendChild(songItem);
+            });
+        }
 
-        console.log("📺 YouTube Data:", data);
-        return data.items.length > 0 ? data.items[0].id.videoId : null;
-    } catch (error) {
-        console.error("❌ Error fetching YouTube Video:", error);
-        return null;
-    }
-}
-
-// ✅ **5. Play YouTube Video in iFrame**
-function playYouTubeSong(songName) {
-    // Replace spaces with "+" for a valid search query
-    let searchQuery = songName.split(" ").join("+");
-
-    // Open YouTube search results in a new tab
-    let searchUrl = `https://www.youtube.com/results?search_query=${searchQuery}`;
-    window.open(searchUrl, "_blank");
-
-    // OR (Alternative): Embed the search result inside an iframe
-    let iframe = document.getElementById("music-player");
-    iframe.src = `https://www.youtube.com/embed?listType=search&list=${searchQuery}&autoplay=1`;
-    iframe.style.display = "block"; // Make iframe visible
-}
-
-
+        function playYouTubeSong(songName) {
+            let searchQuery = songName.split(" ").join("+");
+            let iframe = document.getElementById("music-player");
+            iframe.src = `https://www.youtube.com/embed?listType=search&list=${searchQuery}&autoplay=1`;
+            iframe.style.display = "block"; // Make iframe visible
+        }
