@@ -1,6 +1,6 @@
         const SPOTIFY_CLIENT_ID = '7afe6b39346f4bcc8654c141fe2a6136';
         const SPOTIFY_CLIENT_SECRET = '119278484c2f4c28ac893ea3324bfe84';
-
+        
         let spotifyToken = '';
 
         // Fetch Spotify Token (Needed for API Calls)
@@ -43,10 +43,11 @@
                 const title = song.name;
                 const artist = song.artists[0].name;
                 const albumCover = song.album.images[1].url;
+                const searchQuery = `${title} ${artist}`;
 
                 const songItem = document.createElement('div');
                 songItem.classList.add('song-item');
-                songItem.onclick = () => playYouTubeSong(`${title} ${artist}`);
+                songItem.onclick = () => playYouTube(searchQuery);
 
                 songItem.innerHTML = `
                     <img src="${albumCover}" alt="${title}">
@@ -57,9 +58,8 @@
             });
         }
 
-        function playYouTubeSong(songName) {
-            let searchQuery = songName.split(" ").join("+");
-            let iframe = document.getElementById("music-player");
-            iframe.src = `https://www.youtube.com/embed?listType=search&list=${searchQuery}&autoplay=1`;
-            iframe.style.display = "block"; // Make iframe visible
+        function playYouTube(searchQuery) {
+            const iframe = document.getElementById("music-player");
+            iframe.src = `https://www.youtube.com/results?search_query=${encodeURIComponent(searchQuery)}`;
+            iframe.style.display = "block"; // Show the player
         }
