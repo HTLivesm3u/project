@@ -6,6 +6,8 @@ let currentSongs = [];
 
 updatePlaylistName("Spotify Playlist");
 
+console.log("Spotify Client ID:", CONFIG.SPOTIFY_CLIENT_ID);
+console.log("YouTube API Key:", CONFIG.YOUTUBE_API_KEY);
 // UI Elements
 const suggestionsList = document.getElementById("suggestions-list");
 const searchBar = document.getElementById("search-bar");
