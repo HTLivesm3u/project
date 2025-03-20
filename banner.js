@@ -110,6 +110,15 @@ function updateMediaSession(song) {
     });
   }
 }
+//update playlist name 
+function updatePlaylistName(name) {
+  const playlistTitle = document.getElementById("playlist-title");
+  if (playlistTitle) {
+    playlistTitle.textContent = name;
+  } else {
+    console.error("Playlist title element not found.");
+  }
+}
 
 // Event Listeners
 playPauseBtn.addEventListener("click", togglePlayPause);
