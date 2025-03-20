@@ -1,6 +1,6 @@
         const SPOTIFY_CLIENT_ID = '7afe6b39346f4bcc8654c141fe2a6136';
         const SPOTIFY_CLIENT_SECRET = '119278484c2f4c28ac893ea3324bfe84';
-        const YOUTUBE_API_KEY = 'AIzaSyB4ekEujAe5s0HAyrhXSTafTS9kQqoSJwc';
+        const YOUTUBE_API_KEY = 'AIzaSyBWVcQzYoR9XAzYpISYS9OmOWFAc4-kjZY';
 
         let spotifyToken = '';
 
