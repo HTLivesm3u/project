@@ -161,7 +161,7 @@
         }
 
         // Play Only Audio from YouTube
-         let currentVideoId = null;
+  let currentVideoId = null;
   let isPlaying = false;
 
   function playYouTubeAudio(videoId, title, artist, cover) {
@@ -174,7 +174,7 @@
     currentVideoId = videoId;
     isPlaying = true;
 
-    player.src = `https://www.youtube.com/embed/${videoId}?autoplay=1&controls=0&showinfo=0&modestbranding=1&rel=0&playsinline=1&loop=1`;
+    player.src = `https://www.youtube.com/embed/${videoId}?autoplay=1&controls=0&showinfo=0&modestbranding=1&rel=0&playsinline=1&loop=1&enablejsapi=1`;
     player.style.display = "none"; // Hide video player
 
     // Update footer UI
@@ -187,48 +187,20 @@
   // Play/Pause Button Click
   document.getElementById("footer-play-pause").addEventListener("click", function () {
     const player = document.getElementById("music-player");
+
     if (!currentVideoId) return; // Do nothing if no song has been played yet
 
     if (isPlaying) {
-      player.src = ""; // Stop the YouTube player
+      // Pause video using YouTube API
+      player.contentWindow.postMessage('{"event":"command","func":"pauseVideo","args":""}', "*");
       this.innerText = "▶️"; // Change to play icon
     } else {
-      player.src = `https://www.youtube.com/embed/${currentVideoId}?autoplay=1&controls=0&showinfo=0&modestbranding=1&rel=0&playsinline=1&loop=1`;
+      // Resume video using YouTube API
+      player.contentWindow.postMessage('{"event":"command","func":"playVideo","args":""}', "*");
       this.innerText = "⏸"; // Change to pause icon
     }
     isPlaying = !isPlaying;
   });
-
-  // Modify displaySongs to pass song info to play function
-  async function displaySongs(songs) {
-    const songList = document.getElementById("song-list");
-    songList.innerHTML = "";
-
-    for (let song of songs) {
-      const title = song.name;
-      const artist = song.artists[0].name;
-      const albumCover = song.album.images[1].url;
-      const videoId = await getYouTubeVideo(`${title} ${artist}`);
-
-      const songItem = document.createElement("div");
-      songItem.classList.add("song-item");
-
-      songItem.innerHTML = `
-        <img src="${albumCover}" alt="${title}">
-        <p>${title} - ${artist}</p>
-      `;
-
-      songItem.onclick = () => {
-        if (videoId) {
-          playYouTubeAudio(videoId, title, artist, albumCover);
-        } else {
-          alert("No playable source found!");
-        }
-      };
-
-      songList.appendChild(songItem);
-    }
-  }
   }
     </script>
 
