@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Music45 - Spotify & YouTube Audio</title>
+    <script src="https://kit.fontawesome.com/YOUR-FONTAWESOME-KEY.js" crossorigin="anonymous"></script>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; background: #1c1c1c; color: white; padding: 20px; }
+        .search-container { margin-bottom: 20px; }
+        input { padding: 10px; width: 60%; font-size: 16px; border-radius: 5px; border: 1px solid #444; }
+        button { padding: 10px 15px; font-size: 16px; border: none; background: #ff4757; color: white; cursor: pointer; border-radius: 5px; }
+        button:hover { background: #e84118; }
+        .song-item { display: flex; align-items: center; margin: 10px auto; padding: 10px; background: #333; border-radius: 10px; width: 80%; cursor: pointer; }
+        .song-item img { width: 80px; height: 80px; border-radius: 5px; margin-right: 10px; }
+        .song-item p { flex-grow: 1; text-align: left; }
+        iframe { width: 0px; height: 0px; border: none; display: none; }
+       .footer-controls {
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    background: #222;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 20px;
+    color: white;
+  }
+  .footer-song-info {
+    display: flex;
+    align-items: center;
+  }
+  .footer-cover {
+    width: 50px;
+    height: 50px;
+    border-radius: 5px;
+    margin-right: 10px;
+  }
+  .footer-controls-buttons button {
+    background: none;
+    border: none;
+    font-size: 20px;
+    color: white;
+    cursor: pointer;
+  }
+    </style>
+</head>
+<body>
+
+    <h1>Search for Songs</h1>
+    <!-- Footer Controls -->
+<div id="footer-controls" class="footer-controls">
+  <div id="footer-song-info" class="footer-song-info">
+    <img id="footer-cover-image" class="footer-cover" src="" alt="Cover" />
+    <div>
+      <p id="footer-song-title">Select a Song</p>
+      <p id="footer-artist-name"></p>
+    </div>
+  </div>
+  <div class="footer-controls-buttons">
+    <button id="footer-play-pause" class="footer-play-pause-btn">▶️</button>
+  </div>
+</div>
+    <div class="search-container">
+        <input type="text" id="search-query" placeholder="Enter song name..." />
+        <button onclick="searchSongs()">Search</button>
+    </div>
+
+    <div id="song-list"></div>
+
+    <!-- Hidden YouTube iframe for audio playback -->
+    <iframe id="music-player" frameborder="0" allow="autoplay; encrypted-media"></iframe>
+
+    <script>
+        const SPOTIFY_CLIENT_ID = '7afe6b39346f4bcc8654c141fe2a6136';
+        const SPOTIFY_CLIENT_SECRET = '119278484c2f4c28ac893ea3324bfe84';
+        const YOUTUBE_API_KEY = 'AIzaSyB4ekEujAe5s0HAyrhXSTafTS9kQqoSJwc';
+
+        let spotifyToken = '';
+
+        // Fetch Spotify API Token
+        async function getSpotifyToken() {
+            const response = await fetch('https://accounts.spotify.com/api/token', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: `grant_type=client_credentials&client_id=${SPOTIFY_CLIENT_ID}&client_secret=${SPOTIFY_CLIENT_SECRET}`
+            });
+
+            const data = await response.json();
+            spotifyToken = data.access_token;
+        }
+
+        // Search for songs on Spotify
+        async function searchSongs() {
+            const query = document.getElementById('search-query').value.trim();
+            if (!query) return alert("Please enter a song name!");
+
+            await getSpotifyToken(); // Ensure we have a valid Spotify token
+
+            const spotifyUrl = `https://api.spotify.com/v1/search?q=${encodeURIComponent(query)}&type=track&limit=5`;
+            const spotifyResponse = await fetch(spotifyUrl, {
+                headers: { 'Authorization': `Bearer ${spotifyToken}` }
+            });
+
+            const spotifyData = await spotifyResponse.json();
+
+            if (spotifyData.tracks.items.length > 0) {
+                displaySongs(spotifyData.tracks.items);
+            } else {
+                alert("No results found on Spotify!");
+            }
+        }
+
+        // Display song results
+        async function displaySongs(songs) {
+            const songList = document.getElementById('song-list');
+            songList.innerHTML = '';
+
+            for (let song of songs) {
+                const title = song.name;
+                const artist = song.artists[0].name;
+                const albumCover = song.album.images[1].url;
+
+                // Get YouTube Video ID
+                const videoId = await getYouTubeVideo(`${title} ${artist}`);
+
+                const songItem = document.createElement('div');
+                songItem.classList.add('song-item');
+
+                songItem.innerHTML = `
+                    <img src="${albumCover}" alt="${title}">
+                    <p>${title} - ${artist}</p>
+                `;
+
+                // Play song on click
+                songItem.onclick = () => {
+                    if (videoId) {
+                        playYouTubeAudio(videoId);
+                    } else {
+                        alert("No playable source found!");
+                    }
+                };
+
+                songList.appendChild(songItem);
+            }
+        }
+
+        // Fetch YouTube Video ID
+        async function getYouTubeVideo(query) {
+            try {
+                const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(query)}&type=video&maxResults=1&key=${YOUTUBE_API_KEY}`;
+                const response = await fetch(url);
+                const data = await response.json();
+                return data.items.length > 0 ? data.items[0].id.videoId : null;
+            } catch (error) {
+                console.error("YouTube API Error:", error);
+                return null;
+            }
+        }
+
+        // Play Only Audio from YouTube
+       let currentVideoId = null;
+  let isPlaying = false;
+
+  function playYouTubeAudio(videoId, title, artist, cover) {
+    const player = document.getElementById("music-player");
+    const footerCover = document.getElementById("footer-cover-image");
+    const footerTitle = document.getElementById("footer-song-title");
+    const footerArtist = document.getElementById("footer-artist-name");
+
+    currentVideoId = videoId;
+    isPlaying = true;
+    player.src = `https://www.youtube.com/embed/${videoId}?autoplay=1&controls=0&showinfo=0&modestbranding=1&rel=0&playsinline=1`;
+
+    // Update footer info
+    footerCover.src = cover;
+    footerTitle.innerText = title;
+    footerArtist.innerText = artist;
+
+    document.getElementById("footer-play-pause").innerText = "⏸"; // Change to pause
+  }
+
+  // Play/Pause functionality
+  document.getElementById("footer-play-pause").addEventListener("click", function () {
+    const player = document.getElementById("music-player");
+    if (isPlaying) {
+      player.src = ""; // Pause audio
+      this.innerText = "▶️";
+    } else if (currentVideoId) {
+      player.src = `https://www.youtube.com/embed/${currentVideoId}?autoplay=1&controls=0&showinfo=0&modestbranding=1&rel=0&playsinline=1`;
+      this.innerText = "⏸";
+    }
+    isPlaying = !isPlaying;
+  });
+
+  // Modify displaySongs to pass song info
+  async function displaySongs(songs) {
+    const songList = document.getElementById("song-list");
+    songList.innerHTML = "";
+
+    for (let song of songs) {
+      const title = song.name;
+      const artist = song.artists[0].name;
+      const albumCover = song.album.images[1].url;
+      const videoId = await getYouTubeVideo(`${title} ${artist}`);
+
+      const songItem = document.createElement("div");
+      songItem.classList.add("song-item");
+
+      songItem.innerHTML = `
+        <img src="${albumCover}" alt="${title}">
+        <p>${title} - ${artist}</p>
+      `;
+
+      songItem.onclick = () => {
+        if (videoId) {
+          playYouTubeAudio(videoId, title, artist, albumCover);
+        } else {
+          alert("No playable source found!");
+        }
+      };
+
+      songList.appendChild(songItem);
+    }
+  }
+    </script>
+
+</body>
+</html>
