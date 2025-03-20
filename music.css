@@ -10,7 +10,7 @@
         .footer-controls {
     position: fixed;
     bottom: 0;
-    width: 50%;
+    width: auto;
     background: #222;
     display: flex;
     align-items: center;
@@ -28,14 +28,14 @@
     border-radius: 5px;
     margin-right: 10px;
   }
-  .footer-controls-buttons button {
-    background: none;
-    border: none;
-    font-size: 24px;
-    color: white;
-    cursor: pointer;
-    display: inline-block; /* Ensures visibility */
-    visibility: visible; /* Ensures it's not hidden */
-    position: relative; /* Prevents overlapping issues */
-    z-index: 10; /* Makes sure it's above other elements */
+.footer-controls-buttons {
+    width: auto; /* Prevents it from taking too much space */
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
+.footer-controls-buttons button {
+    font-size: 20px; /* Adjust button size */
+    padding: 5px 10px; /* Reduce padding */
+}
+
