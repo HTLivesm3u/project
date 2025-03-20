@@ -67,20 +67,22 @@ async function searchSongs() {
     const query = document.getElementById("search-query").value.trim();
     if (!query) return alert("Please enter a song name!");
 
+    console.log("🔎 Searching for:", query);
+
     try {
         const response = await fetch(`${JIOSAAVN_API_BASE}/search?query=${encodeURIComponent(query)}`);
         const data = await response.json();
 
-        console.log("API Response:", data); // Debugging
+        console.log("✅ API Response:", data); // Debugging
 
         if (data.status === "SUCCESS" && data.data.length > 0) {
             displaySongs(data.data);
         } else {
-            alert("No results found on JioSaavn!");
+            alert("❌ No results found on JioSaavn!");
         }
     } catch (error) {
-        console.error("Error fetching songs:", error);
-        alert("Error fetching songs. Please try again.");
+        console.error("⚠️ Error fetching songs:", error);
+        alert("⚠️ API request failed. Check console for errors.");
     }
 }
 
@@ -91,7 +93,9 @@ function displaySongs(songs) {
 
     songs.forEach(song => {
         const { id, name, primaryArtists, image } = song;
-        const albumCover = image[1].url;
+        const albumCover = image[1]?.url || image[0]?.url; // Fallback if second image is missing
+
+        console.log("🎶 Found Song:", name, "by", primaryArtists);
 
         const songItem = document.createElement("div");
         songItem.classList.add("song-item");
@@ -109,21 +113,27 @@ function displaySongs(songs) {
 
 // 🎶 Fetch & Play Audio
 async function playJioSaavnAudio(songId, title, artist, cover) {
+    console.log("▶️ Playing Song ID:", songId);
+
     try {
         const response = await fetch(`${JIOSAAVN_API_BASE}/songs?id=${songId}`);
         const data = await response.json();
 
-        console.log("Song Data:", data); // Debugging
+        console.log("🎧 Song Data:", data); // Debugging
 
         if (data.status === "SUCCESS" && data.data.length > 0) {
-            const songUrl = data.data[0].downloadUrl.find(d => d.quality === "320kbps").link;
-            playAudio(songUrl, title, artist, cover);
+            const songUrl = data.data[0].downloadUrl.find(d => d.quality === "320kbps")?.link;
+            if (songUrl) {
+                playAudio(songUrl, title, artist, cover);
+            } else {
+                alert("❌ No playable song found!");
+            }
         } else {
-            alert("No playable source found!");
+            alert("❌ No song details found!");
         }
     } catch (error) {
-        console.error("Error fetching song:", error);
-        alert("Error playing the song. Please try again.");
+        console.error("⚠️ Error fetching song:", error);
+        alert("⚠️ Failed to fetch song details.");
     }
 }
 
@@ -134,6 +144,8 @@ function playAudio(url, title, artist, cover) {
     const footerTitle = document.getElementById("footer-song-title");
     const footerArtist = document.getElementById("footer-artist-name");
     const playPauseBtn = document.getElementById("footer-play-pause");
+
+    console.log("🔊 Playing URL:", url);
 
     currentSongUrl = url;
     isPlaying = true;
