@@ -3,20 +3,65 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Music45 - JioSaavn Audio</title>
+    <title>Music45 - JioSaavn API</title>
+    <script src="https://kit.fontawesome.com/YOUR-FONTAWESOME-KEY.js" crossorigin="anonymous"></script>
     <style>
-        body { font-family: Arial, sans-serif; text-align: center; background: #1c1c1c; color: white; padding: 20px; }
-        .search-container { margin-bottom: 20px; }
-        input { padding: 10px; width: 60%; font-size: 16px; border-radius: 5px; border: 1px solid #444; }
-        button { padding: 10px 15px; font-size: 16px; border: none; background: #ff4757; color: white; cursor: pointer; border-radius: 5px; }
-        button:hover { background: #e84118; }
-        .song-item { display: flex; align-items: center; margin: 10px auto; padding: 10px; background: #333; border-radius: 10px; width: 80%; cursor: pointer; }
-        .song-item img { width: 80px; height: 80px; border-radius: 5px; margin-right: 10px; }
-        .song-item p { flex-grow: 1; text-align: left; }
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background: #1c1c1c;
+            color: white;
+            padding: 20px;
+        }
+        .search-container {
+            margin-bottom: 20px;
+        }
+        input {
+            padding: 10px;
+            width: 60%;
+            font-size: 16px;
+            border-radius: 5px;
+            border: 1px solid #444;
+        }
+        button {
+            padding: 10px 15px;
+            font-size: 16px;
+            border: none;
+            background: #ff4757;
+            color: white;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        button:hover {
+            background: #e84118;
+        }
+        .song-item {
+            display: flex;
+            align-items: center;
+            margin: 10px auto;
+            padding: 10px;
+            background: #333;
+            border-radius: 10px;
+            width: 80%;
+            cursor: pointer;
+            justify-content: space-between;
+        }
+        .song-item img {
+            width: 80px;
+            height: 80px;
+            border-radius: 5px;
+            margin-right: 10px;
+        }
+        iframe {
+            width: 0px;
+            height: 0px;
+            border: none;
+            display: none;
+        }
         .footer-controls {
             position: fixed;
             bottom: 0;
-            width: 70%;
+            width: 100%;
             background: #222;
             display: flex;
             align-items: center;
@@ -24,8 +69,16 @@
             padding: 10px 20px;
             color: white;
         }
-        .footer-song-info { display: flex; align-items: center; }
-        .footer-cover { width: 50px; height: 50px; border-radius: 5px; margin-right: 10px; }
+        .footer-song-info {
+            display: flex;
+            align-items: center;
+        }
+        .footer-cover {
+            width: 50px;
+            height: 50px;
+            border-radius: 5px;
+            margin-right: 10px;
+        }
         .footer-controls-buttons button {
             background: none;
             border: none;
@@ -36,125 +89,128 @@
     </style>
 </head>
 <body>
-   <input type="text" id="search-query" placeholder="Enter song name...">
-<button>Search</button>
-<div id="song-list"></div>
 
-<audio id="music-player" controls></audio>
+    <h1>Search for Songs</h1>
 
-<div id="footer-controls" class="footer-controls">
-  <div id="footer-song-info" class="footer-song-info">
-    <img id="footer-cover-image" class="footer-cover" src="" alt="Cover">
-    <div>
-      <p id="footer-song-title">Select a Song</p>
-      <p id="footer-artist-name"></p>
+    <div class="search-container">
+        <input type="text" id="search-query" placeholder="Enter song name..." />
+        <button onclick="searchSongs()">Search</button>
     </div>
-  </div>
-  <div class="footer-controls-buttons">
-    <button id="footer-play-pause" class="footer-play-pause-btn">▶️</button>
-  </div>
-</div>
 
-<audio id="music-player"></audio>
+    <div id="song-list"></div>
+
+    <!-- Audio Player -->
+    <audio id="music-player" controls style="display: none;"></audio>
+
+    <!-- Footer Controls -->
+    <div id="footer-controls" class="footer-controls">
+        <div id="footer-song-info" class="footer-song-info">
+            <img id="footer-cover-image" class="footer-cover" src="" alt="Cover" />
+            <div>
+                <p id="footer-song-title">Select a Song</p>
+                <p id="footer-artist-name"></p>
+            </div>
+        </div>
+        <div class="footer-controls-buttons">
+            <button id="footer-play-pause">▶️</button>
+        </div>
+    </div>
 
     <script>
-const JIOSAAVN_API_BASE = "https://saavn.dev/api";
-let currentSongUrl = null;
-let isPlaying = false;
+        async function searchSongs() {
+            const query = document.getElementById("search-query").value.trim();
+            if (!query) {
+                alert("❌ Please enter a song name!");
+                return;
+            }
 
-// 🎵 Search Songs
-async function searchSongs() {
-    const query = document.getElementById("search-query").value.trim();
-    if (!query) {
-        alert("❌ Please enter a song name!");
-        return;
-    }
+            console.log("🔎 Searching for:", query);
 
-    console.log("🔎 Searching for:", query); // Log search term
+            try {
+                const response = await fetch(`https://saavn.dev/api/search?query=${encodeURIComponent(query)}`);
+                const data = await response.json();
 
-    try {
-        const response = await fetch(`https://saavn.dev/api/search?query=${encodeURIComponent(query)}`);
-        const data = await response.json();
+                console.log("✅ API Raw Response:", data);
 
-        console.log("✅ API Raw Response:", data); // Log full response
-
-        if (data && data.status === "SUCCESS" && data.data && data.data.length > 0) {
-            console.log("✅ Songs found:", data.data);
-            displaySongs(data.data); // Call function to show results
-        } else {
-            console.log("❌ No results from API!");
-            alert("❌ No results found on JioSaavn!");
-        }
-    } catch (error) {
-        console.error("⚠️ API Request Failed:", error);
-        alert("⚠️ API request failed. Check console for errors.");
-    }
-}
-
-// Function to display songs
-function displaySongs(songs) {
-    const songList = document.getElementById("song-list");
-    songList.innerHTML = "";
-
-    songs.forEach(song => {
-        const { id, name, primaryArtists, image, downloadUrl } = song;
-
-        // Some songs may not have a direct download link
-        const songUrl = downloadUrl ? downloadUrl[4].url : null; 
-
-        if (!songUrl) {
-            console.warn("⚠️ Skipping song (No download URL):", name);
-            return;
+                if (data && data.status === "SUCCESS" && data.data && data.data.length > 0) {
+                    console.log("✅ Songs found:", data.data);
+                    displaySongs(data.data);
+                } else {
+                    console.log("❌ No results from API!");
+                    alert("❌ No results found on JioSaavn!");
+                }
+            } catch (error) {
+                console.error("⚠️ API Request Failed:", error);
+                alert("⚠️ API request failed. Check console for errors.");
+            }
         }
 
-        const songItem = document.createElement("div");
-        songItem.classList.add("song-item");
+        function displaySongs(songs) {
+            const songList = document.getElementById("song-list");
+            songList.innerHTML = "";
 
-        songItem.innerHTML = `
-            <img src="${image[2].url}" alt="${name}">
-            <p>${name} - ${primaryArtists}</p>
-            <button onclick="playAudio('${songUrl}', '${name}', '${primaryArtists}', '${image[2].url}')">▶ Play</button>
-        `;
+            songs.forEach(song => {
+                const { name, primaryArtists, image, downloadUrl } = song;
 
-        songList.appendChild(songItem);
-    });
-}
+                if (!downloadUrl || !downloadUrl[4]) {
+                    console.warn("⚠️ Skipping song (No playable URL):", name);
+                    return;
+                }
 
-// Function to play audio
-function playAudio(songUrl, title, artist, cover) {
-    const audioPlayer = document.getElementById("music-player");
-    const footerCover = document.getElementById("footer-cover-image");
-    const footerTitle = document.getElementById("footer-song-title");
-    const footerArtist = document.getElementById("footer-artist-name");
-    const playPauseBtn = document.getElementById("footer-play-pause");
+                const songUrl = downloadUrl[4].url;
 
-    if (!songUrl) {
-        alert("❌ No playable source found!");
-        return;
-    }
+                const songItem = document.createElement("div");
+                songItem.classList.add("song-item");
 
-    audioPlayer.src = songUrl;
-    audioPlayer.play();
+                songItem.innerHTML = `
+                    <div style="display: flex; align-items: center;">
+                        <img src="${image[2].url}" alt="${name}">
+                        <p>${name} - ${primaryArtists}</p>
+                    </div>
+                    <button onclick="playAudio('${songUrl}', '${name}', '${primaryArtists}', '${image[2].url}')">▶ Play</button>
+                `;
 
-    // Update footer UI
-    footerCover.src = cover;
-    footerTitle.innerText = title;
-    footerArtist.innerText = artist;
-    playPauseBtn.innerText = "⏸"; // Change to pause
-}
+                songList.appendChild(songItem);
+            });
 
-// Play/Pause Button Click
-document.getElementById("footer-play-pause").addEventListener("click", function () {
-    const audioPlayer = document.getElementById("music-player");
+            if (songList.innerHTML === "") {
+                songList.innerHTML = "<p>No playable songs found.</p>";
+            }
+        }
 
-    if (audioPlayer.paused) {
-        audioPlayer.play();
-        this.innerText = "⏸"; // Change to pause icon
-    } else {
-        audioPlayer.pause();
-        this.innerText = "▶"; // Change to play icon
-    }
-});
+        function playAudio(songUrl, title, artist, cover) {
+            const audioPlayer = document.getElementById("music-player");
+            const footerCover = document.getElementById("footer-cover-image");
+            const footerTitle = document.getElementById("footer-song-title");
+            const footerArtist = document.getElementById("footer-artist-name");
+            const playPauseBtn = document.getElementById("footer-play-pause");
+
+            if (!songUrl) {
+                alert("❌ No playable source found!");
+                return;
+            }
+
+            audioPlayer.src = songUrl;
+            audioPlayer.play();
+
+            footerCover.src = cover;
+            footerTitle.innerText = title;
+            footerArtist.innerText = artist;
+            playPauseBtn.innerText = "⏸";
+        }
+
+        document.getElementById("footer-play-pause").addEventListener("click", function () {
+            const audioPlayer = document.getElementById("music-player");
+
+            if (audioPlayer.paused) {
+                audioPlayer.play();
+                this.innerText = "⏸";
+            } else {
+                audioPlayer.pause();
+                this.innerText = "▶";
+            }
+        });
     </script>
+
 </body>
 </html>
