@@ -114,38 +114,35 @@
         }
 
         // Display song results
-        async function displaySongs(songs) {
-            const songList = document.getElementById('song-list');
-            songList.innerHTML = '';
+       async function displaySongs(songs) {
+    const songList = document.getElementById("song-list");
+    songList.innerHTML = "";
 
-            for (let song of songs) {
-                const title = song.name;
-                const artist = song.artists[0].name;
-                const albumCover = song.album.images[1].url;
+    for (let song of songs) {
+        const title = song.name;
+        const artist = song.artists[0].name;
+        const albumCover = song.album.images[1].url;
+        const videoId = await getYouTubeVideo(`${title} ${artist}`);
 
-                // Get YouTube Video ID
-                const videoId = await getYouTubeVideo(`${title} ${artist}`);
+        const songItem = document.createElement("div");
+        songItem.classList.add("song-item");
 
-                const songItem = document.createElement('div');
-                songItem.classList.add('song-item');
+        songItem.innerHTML = `
+            <img src="${albumCover}" alt="${title}">
+            <p>${title} - ${artist}</p>
+        `;
 
-                songItem.innerHTML = `
-                    <img src="${albumCover}" alt="${title}">
-                    <p>${title} - ${artist}</p>
-                `;
-
-                // Play song on click
-                songItem.onclick = () => {
-                    if (videoId) {
-                        playYouTubeAudio(videoId);
-                    } else {
-                        alert("No playable source found!");
-                    }
-                };
-
-                songList.appendChild(songItem);
+        songItem.onclick = () => {
+            if (videoId) {
+                playYouTubeAudio(videoId, title, artist, albumCover);  // ✅ Pass song details
+            } else {
+                alert("No playable source found!");
             }
-        }
+        };
+
+        songList.appendChild(songItem);
+    }
+}
 
         // Fetch YouTube Video ID
         async function getYouTubeVideo(query) {
