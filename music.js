@@ -108,19 +108,49 @@
     playPauseBtn.innerText = "⏸";  // Show pause button
 }
 
-          document.getElementById("footer-play-pause").addEventListener("click", function () {
+         document.getElementById("footer-play-pause").addEventListener("click", function () {
     const player = document.getElementById("music-player");
-
-    if (!currentVideoId) return; // Do nothing if no song has been played yet
+    
+    if (!currentVideoId) return; // No song has been played yet
 
     if (isPlaying) {
-      // Pause video using YouTube API
-      player.contentWindow.postMessage('{"event":"command","func":"pauseVideo","args":""}', "*");
-      this.innerText = "▶️"; // Change to play icon
+        player.src = "";  // Stop the YouTube player
+        this.innerText = "▶️";  // Change to play icon
     } else {
-      // Resume video using YouTube API
-      player.contentWindow.postMessage('{"event":"command","func":"playVideo","args":""}', "*");
-      this.innerText = "⏸"; // Change to pause icon
+        player.src = `https://www.youtube.com/embed/${currentVideoId}?autoplay=1&controls=0&showinfo=0&modestbranding=1&rel=0&playsinline=1&loop=1&enablejsapi=1`;
+        this.innerText = "⏸";  // Change to pause icon
     }
-    isPlaying = !isPlaying;
-  });
+    
+    isPlaying = !isPlaying;  // Toggle state
+});
+
+let player;  // YouTube Player API instance
+let isPlaying = false;
+
+function onYouTubeIframeAPIReady() {
+    player = new YT.Player('music-player', {
+        events: {
+            'onReady': onPlayerReady,
+            'onStateChange': onPlayerStateChange
+        }
+    });
+}
+
+function onPlayerReady(event) {
+    console.log("YouTube Player Ready");
+}
+
+function onPlayerStateChange(event) {
+    isPlaying = (event.data === YT.PlayerState.PLAYING);
+    document.getElementById("footer-play-pause").innerText = isPlaying ? "⏸" : "▶️";
+}
+
+document.getElementById("footer-play-pause").addEventListener("click", function () {
+    if (player && player.playVideo) {
+        if (isPlaying) {
+            player.pauseVideo();
+        } else {
+            player.playVideo();
+        }
+    }
+});
