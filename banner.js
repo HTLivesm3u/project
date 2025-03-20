@@ -1,143 +1,76 @@
-let currentSongIndex = 0;
-let isPlaying = false;
-let isShuffle = false;
-let isRepeat = false;
-let currentSongs = [];
+// script.js (Main Music45 App Logic)
+import CONFIG from "./config.js";
 
-updatePlaylistName("Spotify Playlist");
-fetch(apiUrl, options)
-  .then(response => response.json())
-  .then(data => {
-    console.log("API Response:", data); // Check API response in console
-  })
-  .catch(error => console.error("API Fetch Error:", error));
+const spotifyTokenUrl = "https://accounts.spotify.com/api/token";
+const youtubeApiUrl = "https://www.googleapis.com/youtube/v3/search";
 
-console.log("Spotify Client ID:", CONFIG.SPOTIFY_CLIENT_ID);
-console.log("YouTube API Key:", CONFIG.YOUTUBE_API_KEY);
-// UI Elements
-const suggestionsList = document.getElementById("suggestions-list");
-const searchBar = document.getElementById("search-bar");
-const playPauseBtn = document.getElementById("footer-play-pause");
-const audio = new Audio();
-
-// Load song into player
-function loadSong(song) {
-  audio.src = song.src;
-  updateMediaSession(song);
-  
-  if (isPlaying) audio.play();
-  updateSongList();
-}
-
-// Toggle Play/Pause
-function togglePlayPause() {
-  if (isPlaying) {
-    audio.pause();
-  } else {
-    audio.play();
-  }
-  isPlaying = !isPlaying;
-  updatePlayPauseButtons();
-}
-
-function updatePlayPauseButtons() {
-  playPauseBtn.textContent = isPlaying ? "⏸️" : "▶️";
-}
-
-// Play next song
-function playNextSong() {
-  currentSongIndex = (currentSongIndex + 1) % currentSongs.length;
-  loadSong(currentSongs[currentSongIndex]);
-}
-
-// Play previous song
-function playPrevSong() {
-  currentSongIndex = (currentSongIndex - 1 + currentSongs.length) % currentSongs.length;
-  loadSong(currentSongs[currentSongIndex]);
-}
-
-// Search functionality
-searchBar.addEventListener("input", async () => {
-  const query = searchBar.value.trim();
-  if (query) {
-    const matches = await searchSpotify(query);
-    displaySuggestions(matches);
-  }
-});
-
-// Fetch songs from Spotify API
-async function searchSpotify(query) {
-  const response = await fetch(`https://api.spotify.com/v1/search?q=${query}&type=track`, {
-    headers: { Authorization: `Bearer YOUR_SPOTIFY_ACCESS_TOKEN` }
-  });
-  const data = await response.json();
-  return data.tracks.items.map(track => ({
-    title: track.name,
-    artist: track.artists[0].name,
-    src: track.preview_url || "",
-    cover: track.album.images[0].url
-  }));
-}
-
-// Fetch songs from YouTube API
-async function searchYouTube(query) {
-  const response = await fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&q=${query}&type=video&key=YOUR_YOUTUBE_API_KEY`);
-  const data = await response.json();
-  return data.items.map(video => ({
-    title: video.snippet.title,
-    artist: video.snippet.channelTitle,
-    src: `https://www.youtube.com/watch?v=${video.id.videoId}`,
-    cover: video.snippet.thumbnails.default.url
-  }));
-}
-
-// Display search suggestions
-function displaySuggestions(songs) {
-  suggestionsList.innerHTML = "";
-  songs.forEach(song => {
-    const li = document.createElement("li");
-    li.textContent = `${song.title} - ${song.artist}`;
-    li.addEventListener("click", () => {
-      currentSongs = songs;
-      currentSongIndex = songs.indexOf(song);
-      loadSong(song);
+async function getSpotifyToken() {
+    const response = await fetch(spotifyTokenUrl, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/x-www-form-urlencoded",
+            "Authorization": "Basic " + btoa(CONFIG.SPOTIFY_CLIENT_ID + ":" + CONFIG.SPOTIFY_CLIENT_SECRET)
+        },
+        body: "grant_type=client_credentials"
     });
-    suggestionsList.appendChild(li);
-  });
+    const data = await response.json();
+    return data.access_token;
 }
 
-// Update media session
-function updateMediaSession(song) {
-  if ("mediaSession" in navigator) {
-    navigator.mediaSession.metadata = new MediaMetadata({
-      title: song.title,
-      artist: song.artist,
-      artwork: [{ src: song.cover, sizes: "128x128", type: "image/png" }]
+async function fetchSpotifySongs(playlistId) {
+    const token = await getSpotifyToken();
+    const response = await fetch(`https://api.spotify.com/v1/playlists/${playlistId}/tracks`, {
+        headers: { "Authorization": "Bearer " + token }
     });
-  }
-}
-//update playlist name 
-function updatePlaylistName(name) {
-  const playlistTitle = document.getElementById("playlist-title");
-  if (playlistTitle) {
-    playlistTitle.textContent = name;
-  } else {
-    console.error("Playlist title element not found.");
-  }
+    const data = await response.json();
+    return data.items.map(item => ({
+        title: item.track.name,
+        artist: item.track.artists[0].name,
+        album: item.track.album.name,
+        preview_url: item.track.preview_url
+    }));
 }
 
-// Event Listeners
-playPauseBtn.addEventListener("click", togglePlayPause);
-document.getElementById("next").addEventListener("click", playNextSong);
-document.getElementById("prev").addEventListener("click", playPrevSong);
+async function fetchYouTubeSongs(query) {
+    const response = await fetch(`${youtubeApiUrl}?part=snippet&q=${query}&key=${CONFIG.YOUTUBE_API_KEY}&type=video`);
+    const data = await response.json();
+    return data.items.map(item => ({
+        title: item.snippet.title,
+        videoId: item.id.videoId
+    }));
+}
 
-audio.addEventListener("ended", () => {
-  if (isRepeat) audio.play();
-  else playNextSong();
-});
+async function loadSongs(source, playlistId) {
+    let songs = [];
+    if (source === "spotify") {
+        songs = await fetchSpotifySongs(playlistId);
+    } else if (source === "youtube") {
+        songs = await fetchYouTubeSongs("Top trending songs");
+    }
+    displaySongs(songs);
+}
 
-// Initialize default songs from Spotify
-document.addEventListener("DOMContentLoaded", async () => {
-  currentSongs = await searchSpotify("Top Hindi Songs");
-  loadSong(currentSongs[0]);
-});
+function displaySongs(songs) {
+    const playlistContainer = document.getElementById("playlist");
+    playlistContainer.innerHTML = "";
+    songs.forEach(song => {
+        const songElement = document.createElement("div");
+        songElement.classList.add("song-item");
+        songElement.innerHTML = `<p>${song.title} - ${song.artist || "YouTube"}</p>`;
+        songElement.onclick = () => playSong(song);
+        playlistContainer.appendChild(songElement);
+    });
+}
+
+function playSong(song) {
+    const audioPlayer = document.getElementById("audio-player");
+    if (song.preview_url) {
+        audioPlayer.src = song.preview_url;
+        audioPlayer.play();
+    } else if (song.videoId) {
+        window.open(`https://www.youtube.com/watch?v=${song.videoId}`, "_blank");
+    }
+}
+
+document.getElementById("load-spotify").addEventListener("click", () => loadSongs("spotify", "your_spotify_playlist_id"));
+document.getElementById("load-youtube").addEventListener("click", () => loadSongs("youtube"));
