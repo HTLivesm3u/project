@@ -62,10 +62,10 @@ const JIOSAAVN_API_BASE = "https://saavn.dev/api";
 let currentSongUrl = null;
 let isPlaying = false;
 
-// 🎵 Search Songs from JioSaavn API
+// 🎵 Search Songs
 async function searchSongs() {
     const query = document.getElementById("search-query").value.trim();
-    if (!query) return alert("Please enter a song name!");
+    if (!query) return alert("❌ Please enter a song name!");
 
     console.log("🔎 Searching for:", query);
 
@@ -73,7 +73,7 @@ async function searchSongs() {
         const response = await fetch(`${JIOSAAVN_API_BASE}/search?query=${encodeURIComponent(query)}`);
         const data = await response.json();
 
-        console.log("✅ API Response:", data); // Debugging
+        console.log("✅ API Response:", data);
 
         if (data.status === "SUCCESS" && data.data.length > 0) {
             displaySongs(data.data);
@@ -93,7 +93,7 @@ function displaySongs(songs) {
 
     songs.forEach(song => {
         const { id, name, primaryArtists, image } = song;
-        const albumCover = image[1]?.url || image[0]?.url; // Fallback if second image is missing
+        const albumCover = image[1]?.url || image[0]?.url; 
 
         console.log("🎶 Found Song:", name, "by", primaryArtists);
 
@@ -105,24 +105,24 @@ function displaySongs(songs) {
             <p>${name} - ${primaryArtists}</p>
         `;
 
-        songItem.onclick = () => playJioSaavnAudio(id, name, primaryArtists, albumCover);
+        songItem.onclick = () => fetchSongDetails(id, name, primaryArtists, albumCover);
 
         songList.appendChild(songItem);
     });
 }
 
-// 🎶 Fetch & Play Audio
-async function playJioSaavnAudio(songId, title, artist, cover) {
-    console.log("▶️ Playing Song ID:", songId);
+// 🎶 Fetch Song Details & Play Audio
+async function fetchSongDetails(songId, title, artist, cover) {
+    console.log("▶️ Fetching song ID:", songId);
 
     try {
         const response = await fetch(`${JIOSAAVN_API_BASE}/songs?id=${songId}`);
         const data = await response.json();
 
-        console.log("🎧 Song Data:", data); // Debugging
+        console.log("🎧 Song Data:", data);
 
         if (data.status === "SUCCESS" && data.data.length > 0) {
-            const songUrl = data.data[0].downloadUrl.find(d => d.quality === "320kbps")?.link;
+            const songUrl = data.data[0]?.downloadUrl?.[2]?.link || data.data[0]?.downloadUrl?.[1]?.link;
             if (songUrl) {
                 playAudio(songUrl, title, artist, cover);
             } else {
@@ -139,7 +139,7 @@ async function playJioSaavnAudio(songId, title, artist, cover) {
 
 // ▶️ Play Audio & Update Footer
 function playAudio(url, title, artist, cover) {
-    const player = document.getElementById("music-player");
+    const audioPlayer = document.getElementById("music-player");
     const footerCover = document.getElementById("footer-cover-image");
     const footerTitle = document.getElementById("footer-song-title");
     const footerArtist = document.getElementById("footer-artist-name");
@@ -150,8 +150,8 @@ function playAudio(url, title, artist, cover) {
     currentSongUrl = url;
     isPlaying = true;
 
-    player.src = url;
-    player.play();
+    audioPlayer.src = url;
+    audioPlayer.play();
 
     // Update footer UI
     footerCover.src = cover;
@@ -162,10 +162,10 @@ function playAudio(url, title, artist, cover) {
     // Play/Pause Button Click Event
     playPauseBtn.onclick = () => {
         if (isPlaying) {
-            player.pause();
+            audioPlayer.pause();
             playPauseBtn.innerText = "▶️";
         } else {
-            player.play();
+            audioPlayer.play();
             playPauseBtn.innerText = "⏸";
         }
         isPlaying = !isPlaying;
