@@ -75,11 +75,11 @@ async function searchSongs() {
 
         console.log("✅ API Response:", data); // Check if API is giving data
 
-        if (data.status === "SUCCESS" && data.data.length > 0) {
-            displaySongs(data.data);
-        } else {
-            alert("❌ No results found on JioSaavn!");
-        }
+        if (data.status === "SUCCESS" && data.data && data.data.length > 0) { 
+    displaySongs(data.data);
+} else {
+    alert("❌ No results found on JioSaavn!");
+}
     } catch (error) {
         console.error("⚠️ Error fetching songs:", error);
         alert("⚠️ API request failed. Check console for errors.");
