@@ -4,73 +4,88 @@ import CONFIG from "./config.js";
 const spotifyTokenUrl = "https://accounts.spotify.com/api/token";
 const youtubeApiUrl = "https://www.googleapis.com/youtube/v3/search";
 
-async function getSpotifyToken() {
-    const response = await fetch(spotifyTokenUrl, {
-        method: "POST",
+document.addEventListener("DOMContentLoaded", () => {
+    // Buttons to load songs
+    document.getElementById("load-spotify").addEventListener("click", () => 
+        loadSongs("spotify")
+    );
+
+    document.getElementById("load-youtube").addEventListener("click", () => 
+        loadSongs("youtube")
+    );
+});
+
+// Load Songs from Spotify or YouTube
+async function loadSongs(source) {
+    const playlistElement = document.getElementById("playlist");
+    playlistElement.innerHTML = "<li>Loading songs...</li>";
+
+    try {
+        let songs;
+        if (source === "spotify") {
+            songs = await fetchSpotifySongs();
+        } else if (source === "youtube") {
+            songs = await fetchYouTubeSongs();
+        }
+
+        playlistElement.innerHTML = ""; // Clear loading message
+
+        songs.forEach(song => {
+            const listItem = document.createElement("li");
+            listItem.textContent = song.title;
+            listItem.addEventListener("click", () => playSong(song.url));
+            playlistElement.appendChild(listItem);
+        });
+
+    } catch (error) {
+        console.error("Error loading songs:", error);
+        playlistElement.innerHTML = "<li>Error loading songs. Try again.</li>";
+    }
+}
+
+// Fetch Spotify Songs
+async function fetchSpotifySongs() {
+    const url = `https://api.spotify.com/v1/playlists/your_spotify_playlist_id/tracks`;
+
+    const response = await fetch(url, {
         headers: {
-            "Content-Type": "application/x-www-form-urlencoded",
-            "Authorization": "Basic " + btoa(CONFIG.SPOTIFY_CLIENT_ID + ":" + CONFIG.SPOTIFY_CLIENT_SECRET)
-        },
-        body: "grant_type=client_credentials"
+            "Authorization": `Bearer ${CONFIG.SPOTIFY_API_KEY}`
+        }
     });
-    const data = await response.json();
-    return data.access_token;
-}
 
-async function fetchSpotifySongs(playlistId) {
-    const token = await getSpotifyToken();
-    const response = await fetch(`https://api.spotify.com/v1/playlists/${playlistId}/tracks`, {
-        headers: { "Authorization": "Bearer " + token }
-    });
+    if (!response.ok) throw new Error("Failed to fetch Spotify songs");
+
     const data = await response.json();
-    return data.items.map(item => ({
-        title: item.track.name,
-        artist: item.track.artists[0].name,
-        album: item.track.album.name,
-        preview_url: item.track.preview_url
+    return data.items.map(track => ({
+        title: track.track.name,
+        url: track.track.preview_url || "#"
     }));
 }
 
-async function fetchYouTubeSongs(query) {
-    const response = await fetch(`${youtubeApiUrl}?part=snippet&q=${query}&key=${CONFIG.YOUTUBE_API_KEY}&type=video`);
+// Fetch YouTube Songs
+async function fetchYouTubeSongs() {
+    const url = `https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&playlistId=your_youtube_playlist_id&key=${CONFIG.YOUTUBE_API_KEY}`;
+
+    const response = await fetch(url);
+
+    if (!response.ok) throw new Error("Failed to fetch YouTube songs");
+
     const data = await response.json();
-    return data.items.map(item => ({
-        title: item.snippet.title,
-        videoId: item.id.videoId
+    return data.items.map(video => ({
+        title: video.snippet.title,
+        url: `https://www.youtube.com/watch?v=${video.snippet.resourceId.videoId}`
     }));
 }
 
-async function loadSongs(source, playlistId) {
-    let songs = [];
-    if (source === "spotify") {
-        songs = await fetchSpotifySongs(playlistId);
-    } else if (source === "youtube") {
-        songs = await fetchYouTubeSongs("Top trending songs");
-    }
-    displaySongs(songs);
-}
-
-function displaySongs(songs) {
-    const playlistContainer = document.getElementById("playlist");
-    playlistContainer.innerHTML = "";
-    songs.forEach(song => {
-        const songElement = document.createElement("div");
-        songElement.classList.add("song-item");
-        songElement.innerHTML = `<p>${song.title} - ${song.artist || "YouTube"}</p>`;
-        songElement.onclick = () => playSong(song);
-        playlistContainer.appendChild(songElement);
-    });
-}
-
-function playSong(song) {
+// Play the selected song
+function playSong(url) {
     const audioPlayer = document.getElementById("audio-player");
-    if (song.preview_url) {
-        audioPlayer.src = song.preview_url;
-        audioPlayer.play();
-    } else if (song.videoId) {
-        window.open(`https://www.youtube.com/watch?v=${song.videoId}`, "_blank");
-    }
-}
 
-document.getElementById("load-spotify").addEventListener("click", () => loadSongs("spotify", "your_spotify_playlist_id"));
-document.getElementById("load-youtube").addEventListener("click", () => loadSongs("youtube"));
+    if (url === "#") {
+        alert("No preview available for this song.");
+        return;
+    }
+
+    audioPlayer.src = url;
+    audioPlayer.play();
+}
