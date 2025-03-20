@@ -3,5 +3,3 @@ const CONFIG = {
     SPOTIFY_CLIENT_SECRET: "119278484c2f4c28ac893ea3324bfe84",
     YOUTUBE_API_KEY: "AIzaSyAwKYDbklOiCO1o3Dr7uM-xISbjksPkgDk"
 };
-
-export default CONFIG;
