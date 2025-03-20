@@ -5,6 +5,12 @@ let isRepeat = false;
 let currentSongs = [];
 
 updatePlaylistName("Spotify Playlist");
+fetch(apiUrl, options)
+  .then(response => response.json())
+  .then(data => {
+    console.log("API Response:", data); // Check API response in console
+  })
+  .catch(error => console.error("API Fetch Error:", error));
 
 console.log("Spotify Client ID:", CONFIG.SPOTIFY_CLIENT_ID);
 console.log("YouTube API Key:", CONFIG.YOUTUBE_API_KEY);
