@@ -58,7 +58,7 @@
 
 
     <script>
-        const JIOSAAVN_API_BASE = "https://saavn.dev/api";
+const JIOSAAVN_API_BASE = "https://saavn.dev/api";
 let currentSongUrl = null;
 let isPlaying = false;
 
@@ -71,7 +71,9 @@ async function searchSongs() {
         const response = await fetch(`${JIOSAAVN_API_BASE}/search?query=${encodeURIComponent(query)}`);
         const data = await response.json();
 
-        if (data.data.length > 0) {
+        console.log("API Response:", data); // Debugging
+
+        if (data.status === "SUCCESS" && data.data.length > 0) {
             displaySongs(data.data);
         } else {
             alert("No results found on JioSaavn!");
@@ -111,7 +113,9 @@ async function playJioSaavnAudio(songId, title, artist, cover) {
         const response = await fetch(`${JIOSAAVN_API_BASE}/songs?id=${songId}`);
         const data = await response.json();
 
-        if (data.data.length > 0) {
+        console.log("Song Data:", data); // Debugging
+
+        if (data.status === "SUCCESS" && data.data.length > 0) {
             const songUrl = data.data[0].downloadUrl.find(d => d.quality === "320kbps").link;
             playAudio(songUrl, title, artist, cover);
         } else {
