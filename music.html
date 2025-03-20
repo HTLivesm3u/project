@@ -181,11 +181,11 @@
     footerCover.src = cover;
     footerTitle.innerText = title;
     footerArtist.innerText = artist;
-    playPauseBtn.innerText = "⏸"; // Change to pause
+    playPauseBtn.innerText = "⏸"; // Change to pause icon
   }
 
-  // Play/Pause Button Click
-  document.getElementById("footer-play-pause").addEventListener("click", function () {
+
+          document.getElementById("footer-play-pause").addEventListener("click", function () {
     const player = document.getElementById("music-player");
 
     if (!currentVideoId) return; // Do nothing if no song has been played yet
@@ -201,8 +201,10 @@
     }
     isPlaying = !isPlaying;
   });
-  }
+
+        
     </script>
+<script src="https://www.youtube.com/iframe_api"></script>
 
 </body>
 </html>
