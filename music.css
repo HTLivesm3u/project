@@ -34,4 +34,6 @@
     font-size: 20px;
     color: white;
     cursor: pointer;
-  }
+    display: inline-block; /* Ensures visibility */
+    visibility: visible; /* Ensures it's not hidden */
+}
