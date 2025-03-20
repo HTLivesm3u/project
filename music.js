@@ -84,9 +84,36 @@
         }
 
         // Play Only Audio from YouTube
-  let currentVideoId = null;
-  let isPlaying = false;
+  let player;  // YouTube Player API instance
+let isPlaying = false;
 
+function onYouTubeIframeAPIReady() {
+    player = new YT.Player('music-player', {
+        events: {
+            'onReady': onPlayerReady,
+            'onStateChange': onPlayerStateChange
+        }
+    });
+}
+
+function onPlayerReady(event) {
+    console.log("YouTube Player Ready");
+}
+
+function onPlayerStateChange(event) {
+    isPlaying = (event.data === YT.PlayerState.PLAYING);
+    document.getElementById("footer-play-pause").innerText = isPlaying ? "⏸" : "▶️";
+}
+
+document.getElementById("footer-play-pause").addEventListener("click", function () {
+    if (player && player.playVideo) {
+        if (isPlaying) {
+            player.pauseVideo();
+        } else {
+            player.playVideo();
+        }
+    }
+});
   function playYouTubeAudio(videoId, title, artist, cover) {
     const player = document.getElementById("music-player");
     const footerCover = document.getElementById("footer-cover-image");
@@ -124,33 +151,4 @@
     isPlaying = !isPlaying;  // Toggle state
 });
 
-let player;  // YouTube Player API instance
-let isPlaying = false;
 
-function onYouTubeIframeAPIReady() {
-    player = new YT.Player('music-player', {
-        events: {
-            'onReady': onPlayerReady,
-            'onStateChange': onPlayerStateChange
-        }
-    });
-}
-
-function onPlayerReady(event) {
-    console.log("YouTube Player Ready");
-}
-
-function onPlayerStateChange(event) {
-    isPlaying = (event.data === YT.PlayerState.PLAYING);
-    document.getElementById("footer-play-pause").innerText = isPlaying ? "⏸" : "▶️";
-}
-
-document.getElementById("footer-play-pause").addEventListener("click", function () {
-    if (player && player.playVideo) {
-        if (isPlaying) {
-            player.pauseVideo();
-        } else {
-            player.playVideo();
-        }
-    }
-});
