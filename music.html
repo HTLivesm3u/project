@@ -48,7 +48,7 @@
 <body>
 
     <h1>Search for Songs</h1>
-    <!-- Footer Controls -->
+  <!-- Footer Controls -->
 <div id="footer-controls" class="footer-controls">
   <div id="footer-song-info" class="footer-song-info">
     <img id="footer-cover-image" class="footer-cover" src="" alt="Cover" />
@@ -61,6 +61,7 @@
     <button id="footer-play-pause" class="footer-play-pause-btn">▶️</button>
   </div>
 </div>
+
     <div class="search-container">
         <input type="text" id="search-query" placeholder="Enter song name..." />
         <button onclick="searchSongs()">Search</button>
@@ -171,16 +172,16 @@
     currentVideoId = videoId;
     isPlaying = true;
 
+    // ✅ Set YouTube player URL with JavaScript API enabled
     player.src = `https://www.youtube.com/embed/${videoId}?autoplay=1&controls=0&showinfo=0&modestbranding=1&rel=0&playsinline=1&loop=1&enablejsapi=1`;
-    player.style.display = "none"; // Hide video player
+    player.style.display = "none";  // Hide video player
 
-    // Update footer UI
+    // ✅ Update footer details
     footerCover.src = cover;
     footerTitle.innerText = title;
     footerArtist.innerText = artist;
-    playPauseBtn.innerText = "⏸"; // Change to pause icon
-  }
-
+    playPauseBtn.innerText = "⏸";  // Show pause button
+}
 
           document.getElementById("footer-play-pause").addEventListener("click", function () {
     const player = document.getElementById("music-player");
