@@ -3,14 +3,6 @@
         const YOUTUBE_API_KEY = 'AIzaSyB4ekEujAe5s0HAyrhXSTafTS9kQqoSJwc';
 
         let spotifyToken = '';
-window.onload = function () {
-    const playPauseBtn = document.getElementById("footer-play-pause");
-    if (!playPauseBtn) {
-        console.error("⚠️ Play/Pause button not found in the DOM!");
-    } else {
-        console.log("✅ Play/Pause button found.");
-    }
-};
 
         // Fetch Spotify API Token
         async function getSpotifyToken() {
