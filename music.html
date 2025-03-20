@@ -15,7 +15,7 @@
         .song-item img { width: 80px; height: 80px; border-radius: 5px; margin-right: 10px; }
         .song-item p { flex-grow: 1; text-align: left; }
         iframe { width: 0px; height: 0px; border: none; display: none; }
-       .footer-controls {
+        .footer-controls {
     position: fixed;
     bottom: 0;
     width: 100%;
@@ -161,7 +161,7 @@
         }
 
         // Play Only Audio from YouTube
-       let currentVideoId = null;
+         let currentVideoId = null;
   let isPlaying = false;
 
   function playYouTubeAudio(videoId, title, artist, cover) {
@@ -169,33 +169,37 @@
     const footerCover = document.getElementById("footer-cover-image");
     const footerTitle = document.getElementById("footer-song-title");
     const footerArtist = document.getElementById("footer-artist-name");
+    const playPauseBtn = document.getElementById("footer-play-pause");
 
     currentVideoId = videoId;
     isPlaying = true;
-    player.src = `https://www.youtube.com/embed/${videoId}?autoplay=1&controls=0&showinfo=0&modestbranding=1&rel=0&playsinline=1`;
 
-    // Update footer info
+    player.src = `https://www.youtube.com/embed/${videoId}?autoplay=1&controls=0&showinfo=0&modestbranding=1&rel=0&playsinline=1&loop=1`;
+    player.style.display = "none"; // Hide video player
+
+    // Update footer UI
     footerCover.src = cover;
     footerTitle.innerText = title;
     footerArtist.innerText = artist;
-
-    document.getElementById("footer-play-pause").innerText = "⏸"; // Change to pause
+    playPauseBtn.innerText = "⏸"; // Change to pause
   }
 
-  // Play/Pause functionality
+  // Play/Pause Button Click
   document.getElementById("footer-play-pause").addEventListener("click", function () {
     const player = document.getElementById("music-player");
+    if (!currentVideoId) return; // Do nothing if no song has been played yet
+
     if (isPlaying) {
-      player.src = ""; // Pause audio
-      this.innerText = "▶️";
-    } else if (currentVideoId) {
-      player.src = `https://www.youtube.com/embed/${currentVideoId}?autoplay=1&controls=0&showinfo=0&modestbranding=1&rel=0&playsinline=1`;
-      this.innerText = "⏸";
+      player.src = ""; // Stop the YouTube player
+      this.innerText = "▶️"; // Change to play icon
+    } else {
+      player.src = `https://www.youtube.com/embed/${currentVideoId}?autoplay=1&controls=0&showinfo=0&modestbranding=1&rel=0&playsinline=1&loop=1`;
+      this.innerText = "⏸"; // Change to pause icon
     }
     isPlaying = !isPlaying;
   });
 
-  // Modify displaySongs to pass song info
+  // Modify displaySongs to pass song info to play function
   async function displaySongs(songs) {
     const songList = document.getElementById("song-list");
     songList.innerHTML = "";
@@ -224,6 +228,7 @@
 
       songList.appendChild(songItem);
     }
+  }
   }
     </script>
 
