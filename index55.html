@@ -1,91 +1,32 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Music45</title>
-  <link rel="icon" type="image/webp" href="music/music45.webp">
-  <link rel="manifest" href="/manifest.json">
-  <link rel="stylesheet" href="styles89.css">
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Music45 - Streaming Player</title>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <!-- Menu Button -->
-  <button id="menu-btn" class="menu-btn">☰</button>
+    <header>
+        <h1>Music45</h1>
+    </header>
 
-  <!-- Playlist Buttons inside the menu -->
-  <div id="playlist-menu" class="playlist-menu">
-    <button id="hindi-btn" class="control-button">Hindi</button>
-    <button id="english-btn" class="control-button">English</button>
-    <button id="marathi-btn" class="control-button">Marathi</button>
-    <button id="telugu-btn" class="control-button">Telugu</button>
-  </div>
+    <main>
+        <button id="load-spotify">Load Spotify Songs</button>
+        <button id="load-youtube">Load YouTube Songs</button>
 
-  <div class="search-container">
-    <input type="text" id="search-bar" placeholder="Search for a song or artist..." />
-    <button id="search-btn">🔍</button>
-    <ul id="suggestions-list"></ul>
-  </div>
+        <div id="music-list">
+            <h2>Playlist</h2>
+            <ul id="playlist"></ul>
+        </div>
 
-  <!-- Song List Section -->
-<h2 id="playlist-title">Default Playlist</h2>
+        <div id="player">
+            <audio id="audio-player" controls></audio>
+        </div>
+    </main>
 
-
- <!-- Main Content (Footer) -->
- <div id="footer-controls" class="footer-controls">
-  <div id="footer-song-info" class="footer-song-info">
-    <img id="footer-cover-image" class="footer-cover" src="cover1.jpg" alt="Cover" />
-    <p id="footer-song-title">Song Title 1</p>
-    <p id="footer-artist-name">Artist Name 1</p>
-  </div>
-  <div class="footer-controls-buttons">
-    <button id="footer-play-pause" class="footer-play-pause-btn">▶️</button>
-  </div>
-</div>
-
-  <!-- Music Banner (initially hidden) -->
-  <div id="music-banner" class="music-player" style="display:none;">
-    <div class="player-container">
-    <button id="close-banner-btn" class="close-btn" style="position: absolute; top: 10px; right: 10px;" ><i class="fas fa-times"></i></button>
-    <div class="album-cover">
-      <img id="banner-cover-image" class="banner-cover" src="cover1.jpg" alt="Album Cover">
-    </div>
-    <div class="song-info">
-      <h2 id="banner-song-title">Song Title 1</h2>
-      <p id="banner-artist-name">Artist Name 1</p>
-    </div>
-
-    <div class="progress-container">
-      <div class="progress-bar" id="progress-bar">
-          <div id="progress" class="progress"></div>
-      </div>
-      <div class="time-stamps">
-          <span id="current-time">00:00</span>
-          <span id="duration">00:00</span>
-      </div>
-    </div>
-
-    <div class="main-controls">
-      <button id="shuffle-btn" class="control-btn"><i class="fas fa-shuffle"></i></button>
-      <button id="prev" class="control-btn"><i class="fas fa-backward"></i></button>
-      <button id="banner-play-pause" class="play-btn"><i class="fas fa-play"></i></button>
-      <button id="next" class="control-btn"><i class="fas fa-forward"></i></button>
-      <button id="repeat-btn" class="control-btn"><i class="fas fa-repeat"></i></button>
-    </div>
-
-    <div class="secondary-controls">
-      <button class="control-btn"><i class="fas fa-music"></i></button>
-      <button id="download-btn" class="control-btn"><i class="fas fa-download"></i></button>
-      <button class="control-btn"><i class="fas fa-heart"></i></button>
-      <button class="control-btn"><i class="fas fa-clock-rotate-left"></i></button>
-    </div>
-    </div>
-  </div>
- 
-
-
-  <audio id="audio"></audio>
-  <script type="module" src="config.js"></script>
-<script type="module" src="banner.js"></script>
+    <!-- Import Config and Scripts -->
+    <script src="config.js"></script>
+    <script src="banner.js"></script>
 </body>
 </html>
