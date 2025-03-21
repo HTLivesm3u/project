@@ -1,74 +1,87 @@
+// ✅ Function to fetch songs from JioSaavn API
 async function searchJioSaavnSongs(query) {
     const apiUrl = `https://saavn.dev/api/search?query=${encodeURIComponent(query)}`;
 
     try {
         const response = await fetch(apiUrl);
         const data = await response.json();
-        console.log("API Response:", data); // Debug API Response
 
-        if (!data.success || !data.data) {
-            console.error("No results found:", data.message || "Unknown error");
+        console.log("✅ API Response:", data); // Debugging API response
+
+        if (!data.success || !data.data || !data.data.results) {
+            console.error("❌ No results found:", data.message || "Unknown error");
             return [];
         }
 
-        return data.data.results || []; // Ensure array is returned
+        return data.data.results; // Returns an array of songs
     } catch (error) {
-        console.error("Error fetching JioSaavn search results:", error);
+        console.error("❌ Error fetching JioSaavn search results:", error);
         return [];
     }
 }
 
-// Function to display search results
-async function searchAndDisplaySongs(query) {
-    const results = await searchJioSaavnSongs(query);
+// ✅ Function to display search results
+async function searchAndDisplaySongs() {
+    const query = document.getElementById("search-input").value.trim();
     const searchResultsContainer = document.getElementById("search-results");
-
-    searchResultsContainer.innerHTML = ""; // Clear previous results
-
-    console.log("Results array check:", Array.isArray(results), results.length);
-    if (!results || !Array.isArray(results) || results.length === 0) {
-        console.error("No valid results found!", results);
-        searchResultsContainer.innerHTML = "<p>No songs found.</p>";
+    
+    searchResultsContainer.innerHTML = "<p>🔍 Searching...</p>"; // Show loading message
+    
+    if (!query) {
+        searchResultsContainer.innerHTML = "<p>❌ Enter a song name.</p>";
         return;
     }
 
+    const results = await searchJioSaavnSongs(query);
+    searchResultsContainer.innerHTML = ""; // Clear loading text
+
+    console.log("🔎 Search Results:", results); // Debugging
+
+    if (!results || results.length === 0) {
+        searchResultsContainer.innerHTML = "<p>⚠️ No songs found.</p>";
+        return;
+    }
+
+    // ✅ Loop through results & display
     results.forEach(song => {
-        console.log("Processing song:", song.name, song); // Debugging
+        console.log("🎵 Processing song:", song.name, song); // Debugging each song
 
         const songTitle = song.name;
-        const songUrl = song.downloadUrl?.[4]?.link; // Check correct path
+        const songUrl = song.downloadUrl?.[4]?.link; // Ensure this exists
 
         if (songUrl) {
             const listItem = document.createElement("li");
             listItem.textContent = songTitle;
             listItem.style.cursor = "pointer";
-            listItem.style.padding = "5px";
-            listItem.style.borderBottom = "1px solid #ccc";
+            listItem.style.padding = "8px";
+            listItem.style.borderBottom = "1px solid #ddd";
 
             listItem.addEventListener("click", () => playSong(songUrl, songTitle));
             searchResultsContainer.appendChild(listItem);
         } else {
-            console.warn(`No valid URL for song: ${songTitle}`, song);
+            console.warn(`⚠️ No valid URL for song: ${songTitle}`, song);
         }
     });
 
-    console.log("Songs displayed on screen!"); // Debugging
+    console.log("✅ Songs displayed on screen!");
 }
 
-// Function to play a song
-function playSong(url, title) {
+// ✅ Function to play a song
+function playSong(songUrl, songTitle) {
+    console.log(`▶️ Playing: ${songTitle} - ${songUrl}`);
+
     const audioPlayer = document.getElementById("audio-player");
-    audioPlayer.src = url;
+    const nowPlaying = document.getElementById("now-playing");
+
+    if (!audioPlayer || !nowPlaying) {
+        console.error("❌ Audio elements not found!");
+        return;
+    }
+
+    audioPlayer.src = songUrl;
     audioPlayer.play();
-    console.log("Now playing:", title);
+    nowPlaying.textContent = `🎶 Now Playing: ${songTitle}`;
 }
 
-// Event Listener for search button
-document.getElementById("search-button").addEventListener("click", () => {
-    const query = document.getElementById("search-input").value.trim();
-    if (query) {
-        searchAndDisplaySongs(query);
-    } else {
-        console.warn("Search query is empty!");
-    }
-});
+// ✅ Event Listener for search button
+document.getElementById("search-btn").addEventListener("click", searchAndDisplaySongs);
