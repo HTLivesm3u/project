@@ -31,18 +31,26 @@ async function searchAndDisplaySongs(query) {
     }
 
     results.forEach(song => {
+        console.log("Processing song:", song.name); // Debugging
+
         const songTitle = song.name;
         const songUrl = song.downloadUrl ? song.downloadUrl[4]?.link : null;
 
         if (songUrl) {
             const listItem = document.createElement("li");
             listItem.textContent = songTitle;
+            listItem.style.cursor = "pointer";
+            listItem.style.padding = "5px";
+            listItem.style.borderBottom = "1px solid #ccc";
+
             listItem.addEventListener("click", () => playSong(songUrl, songTitle));
             searchResultsContainer.appendChild(listItem);
         } else {
             console.warn(`No valid URL for song: ${songTitle}`);
         }
     });
+
+    console.log("Songs displayed on screen!"); // Debugging
 }
 
 // Function to play a song
