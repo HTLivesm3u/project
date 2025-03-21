@@ -3,33 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Music45 - Spotify & JioSaavn</title>
-    <link rel="stylesheet" href="style.css">
+    <title>JioSaavn Music Player</title>
 </head>
 <body>
+    <h2>JioSaavn Music Search</h2>
+    <input type="text" id="search-input" placeholder="Search for a song">
+    <button id="search-button">Search</button>
+    
+    <ul id="search-results"></ul>
 
-    <header>
-        <h1>Music45</h1>
-        <button id="load-spotify">Load Spotify</button>
-        <button id="load-jiosaavn">Load JioSaavn</button>
-    </header>
+    <audio id="audio-player" controls></audio>
 
-    <main>
-        <div id="playlist">
-            <h2 id="playlist-title">Playlist</h2>
-            <ul id="songs-list"></ul>
-        </div>
-
-        <div id="player">
-            <h2 id="song-title">Now Playing</h2>
-            <audio id="audio-player" controls></audio>
-        </div>
-    </main>
-
-    <script src="config.js"></script>
-    <script src="app.js"></script>
-    <script src="spotify.js"></script>
     <script src="jiosaavn.js"></script>
-
 </body>
 </html>
