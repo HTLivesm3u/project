@@ -6,26 +6,38 @@ async function searchJioSaavnSongs(query) {
         const response = await fetch(apiUrl);
         const data = await response.json();
 
-        console.log("✅ API Response:", data); // Debugging API response
+        console.log("✅ Full API Response:", data); // Check entire response structure
 
-        if (!data.success || !data.data || !Array.isArray(data.data.results)) {
-            console.error("❌ No valid results found:", data.message || "Unknown error");
+        if (!data.success || !data.data) {
+            console.error("❌ API returned an error:", data.message || "Unknown error");
             return [];
         }
 
-        return data.data.results; // Returns an array of songs
+        console.log("🔍 Checking available keys:", Object.keys(data.data)); // Debugging keys
+
+        // Ensure we get the correct results array
+        const results = data.data.results || data.data.songs || []; // Try multiple keys
+
+        console.log("🔎 Extracted Results:", results); // Check what we get
+
+        if (!Array.isArray(results) || results.length === 0) {
+            console.warn("⚠️ No valid songs found in API response.");
+            return [];
+        }
+
+        return results;
     } catch (error) {
         console.error("❌ Error fetching JioSaavn search results:", error);
         return [];
     }
 }
 
-// ✅ Display search results
+// ✅ Function to search and display results
 async function searchAndDisplaySongs() {
     const query = document.getElementById("search-input").value.trim();
     const searchResultsContainer = document.getElementById("search-results");
 
-    searchResultsContainer.innerHTML = "<p>🔍 Searching...</p>"; // Show loading message
+    searchResultsContainer.innerHTML = "<p>🔍 Searching...</p>"; // Show loading
 
     if (!query) {
         searchResultsContainer.innerHTML = "<p>❌ Enter a song name.</p>";
@@ -33,41 +45,41 @@ async function searchAndDisplaySongs() {
     }
 
     const results = await searchJioSaavnSongs(query);
-    searchResultsContainer.innerHTML = ""; // Clear loading text
+    searchResultsContainer.innerHTML = ""; // Clear previous results
 
-    console.log("🔎 Search Results:", results); // Debugging
+    console.log("🔎 Processed Search Results:", results);
 
     if (!results || results.length === 0) {
         searchResultsContainer.innerHTML = "<p>⚠️ No songs found.</p>";
         return;
     }
 
-    // ✅ Loop through results & display
-    results.forEach(song => {
-        console.log("🎵 Processing song:", song.name, song); // Debugging each song
+    // ✅ Display one song for debugging
+    searchResultsContainer.innerHTML = `<li>${results[0]?.name || "Unknown Song"}</li>`;
 
-        const songTitle = song.name;
-        const songUrl = song.downloadUrl?.[4]?.link || song.downloadUrl?.[0]?.link; // Ensure at least one URL exists
+    // ✅ Display full list of songs
+    results.forEach(song => {
+        console.log("🎵 Processing Song:", song);
+
+        const songTitle = song.name || "Unknown";
+        const songUrl = song.downloadUrl?.[4]?.link || song.downloadUrl?.[0]?.link;
 
         if (songUrl) {
             const listItem = document.createElement("li");
             listItem.textContent = songTitle;
             listItem.style.cursor = "pointer";
-            listItem.style.padding = "10px";
-            listItem.style.borderBottom = "1px solid #ddd";
-            listItem.style.listStyle = "none"; // Ensure it looks good
-
             listItem.addEventListener("click", () => playSong(songUrl, songTitle));
+
             searchResultsContainer.appendChild(listItem);
         } else {
-            console.warn(`⚠️ No valid URL for song: ${songTitle}`, song);
+            console.warn(`⚠️ No valid URL for song: ${songTitle}`);
         }
     });
 
-    console.log("✅ Songs displayed on screen!");
+    console.log("✅ Songs displayed successfully!");
 }
 
-// ✅ Play a song
+// ✅ Function to play a song
 function playSong(songUrl, songTitle) {
     console.log(`▶️ Playing: ${songTitle} - ${songUrl}`);
 
@@ -75,7 +87,7 @@ function playSong(songUrl, songTitle) {
     const nowPlaying = document.getElementById("now-playing");
 
     if (!audioPlayer || !nowPlaying) {
-        console.error("❌ Audio elements not found!");
+        console.error("❌ Audio elements missing in HTML!");
         return;
     }
 
@@ -84,5 +96,5 @@ function playSong(songUrl, songTitle) {
     nowPlaying.textContent = `🎶 Now Playing: ${songTitle}`;
 }
 
-// ✅ Event Listener for search button
+// ✅ Event Listener for Search Button
 document.getElementById("search-btn").addEventListener("click", searchAndDisplaySongs);
