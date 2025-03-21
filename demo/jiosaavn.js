@@ -1,4 +1,4 @@
-// ✅ Function to fetch songs from JioSaavn API
+// ✅ Fetch songs from JioSaavn API
 async function searchJioSaavnSongs(query) {
     const apiUrl = `https://saavn.dev/api/search?query=${encodeURIComponent(query)}`;
 
@@ -8,8 +8,8 @@ async function searchJioSaavnSongs(query) {
 
         console.log("✅ API Response:", data); // Debugging API response
 
-        if (!data.success || !data.data || !data.data.results) {
-            console.error("❌ No results found:", data.message || "Unknown error");
+        if (!data.success || !data.data || !Array.isArray(data.data.results)) {
+            console.error("❌ No valid results found:", data.message || "Unknown error");
             return [];
         }
 
@@ -20,7 +20,7 @@ async function searchJioSaavnSongs(query) {
     }
 }
 
-// ✅ Function to display search results
+// ✅ Display search results
 async function searchAndDisplaySongs() {
     const query = document.getElementById("search-input").value.trim();
     const searchResultsContainer = document.getElementById("search-results");
@@ -41,15 +41,6 @@ async function searchAndDisplaySongs() {
         searchResultsContainer.innerHTML = "<p>⚠️ No songs found.</p>";
         return;
     }
-
-    // ✅ Check if search-results container exists
-    if (!searchResultsContainer) {
-        console.error("❌ Search results container not found!");
-        return;
-    }
-
-    // ✅ Clear previous results
-    searchResultsContainer.innerHTML = "";
 
     // ✅ Loop through results & display
     results.forEach(song => {
@@ -76,7 +67,7 @@ async function searchAndDisplaySongs() {
     console.log("✅ Songs displayed on screen!");
 }
 
-// ✅ Function to play a song
+// ✅ Play a song
 function playSong(songUrl, songTitle) {
     console.log(`▶️ Playing: ${songTitle} - ${songUrl}`);
 
