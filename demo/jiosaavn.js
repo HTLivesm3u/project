@@ -4,14 +4,14 @@ async function searchJioSaavnSongs(query) {
     try {
         const response = await fetch(apiUrl);
         const data = await response.json();
-        console.log("API Response:", data); // Debugging: Log API response
+        console.log("API Response:", data); // Debug API Response
 
         if (!data.success || !data.data) {
             console.error("No results found:", data.message || "Unknown error");
             return [];
         }
 
-        return data.data.results || []; // Ensure we return an array
+        return data.data.results || []; // Ensure array is returned
     } catch (error) {
         console.error("Error fetching JioSaavn search results:", error);
         return [];
@@ -25,16 +25,18 @@ async function searchAndDisplaySongs(query) {
 
     searchResultsContainer.innerHTML = ""; // Clear previous results
 
-    if (!Array.isArray(results) || results.length === 0) {
+    console.log("Results array check:", Array.isArray(results), results.length);
+    if (!results || !Array.isArray(results) || results.length === 0) {
+        console.error("No valid results found!", results);
         searchResultsContainer.innerHTML = "<p>No songs found.</p>";
         return;
     }
 
     results.forEach(song => {
-        console.log("Processing song:", song.name); // Debugging
+        console.log("Processing song:", song.name, song); // Debugging
 
         const songTitle = song.name;
-        const songUrl = song.downloadUrl ? song.downloadUrl[4]?.link : null;
+        const songUrl = song.downloadUrl?.[4]?.link; // Check correct path
 
         if (songUrl) {
             const listItem = document.createElement("li");
@@ -46,7 +48,7 @@ async function searchAndDisplaySongs(query) {
             listItem.addEventListener("click", () => playSong(songUrl, songTitle));
             searchResultsContainer.appendChild(listItem);
         } else {
-            console.warn(`No valid URL for song: ${songTitle}`);
+            console.warn(`No valid URL for song: ${songTitle}`, song);
         }
     });
 
