@@ -6,31 +6,32 @@ async function searchJioSaavnSongs(query) {
         const response = await fetch(apiUrl);
         const data = await response.json();
 
-        console.log("✅ Full API Response:", data); // Check entire response structure
+        console.log("✅ Full API Response:", data); // Print full API response
 
         if (!data.success || !data.data) {
-            console.error("❌ API returned an error:", data.message || "Unknown error");
+            console.error("❌ API Error:", data.message || "Unknown error");
             return [];
         }
 
-        console.log("🔍 Checking available keys:", Object.keys(data.data)); // Debugging keys
+        console.log("🔍 Available keys:", Object.keys(data.data)); // Check existing keys
 
-        // Ensure we get the correct results array
-        const results = data.data.results || data.data.songs || []; // Try multiple keys
+        // Try different keys to extract song list
+        let results = data.data.results || data.data.songs || data.data.tracks || [];
 
-        console.log("🔎 Extracted Results:", results); // Check what we get
+        console.log("🔎 Extracted Results:", results);
 
         if (!Array.isArray(results) || results.length === 0) {
-            console.warn("⚠️ No valid songs found in API response.");
+            console.warn("⚠️ No valid songs found.");
             return [];
         }
 
         return results;
     } catch (error) {
-        console.error("❌ Error fetching JioSaavn search results:", error);
+        console.error("❌ Fetch Error:", error);
         return [];
     }
 }
+
 
 // ✅ Function to search and display results
 async function searchAndDisplaySongs() {
