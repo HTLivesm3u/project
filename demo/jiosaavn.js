@@ -24,9 +24,9 @@ async function searchJioSaavnSongs(query) {
 async function searchAndDisplaySongs() {
     const query = document.getElementById("search-input").value.trim();
     const searchResultsContainer = document.getElementById("search-results");
-    
+
     searchResultsContainer.innerHTML = "<p>🔍 Searching...</p>"; // Show loading message
-    
+
     if (!query) {
         searchResultsContainer.innerHTML = "<p>❌ Enter a song name.</p>";
         return;
@@ -42,6 +42,15 @@ async function searchAndDisplaySongs() {
         return;
     }
 
+    // ✅ Create a UL element dynamically if missing
+    if (!searchResultsContainer) {
+        console.error("❌ Search results container not found!");
+        return;
+    }
+
+    // ✅ Clear previous results
+    searchResultsContainer.innerHTML = "";
+
     // ✅ Loop through results & display
     results.forEach(song => {
         console.log("🎵 Processing song:", song.name, song); // Debugging each song
@@ -53,8 +62,9 @@ async function searchAndDisplaySongs() {
             const listItem = document.createElement("li");
             listItem.textContent = songTitle;
             listItem.style.cursor = "pointer";
-            listItem.style.padding = "8px";
+            listItem.style.padding = "10px";
             listItem.style.borderBottom = "1px solid #ddd";
+            listItem.style.listStyle = "none"; // Ensure it looks good
 
             listItem.addEventListener("click", () => playSong(songUrl, songTitle));
             searchResultsContainer.appendChild(listItem);
