@@ -4,17 +4,31 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>JioSaavn Music Player</title>
+    <style>
+        ul {
+            padding: 0;
+        }
+        li {
+            background: #f4f4f4;
+            margin: 5px 0;
+            padding: 10px;
+            cursor: pointer;
+        }
+        li:hover {
+            background: #ddd;
+        }
+    </style>
 </head>
 <body>
     <h1>🎵 JioSaavn Music Search</h1>
     <input type="text" id="search-input" placeholder="Enter song name...">
     <button id="search-btn">Search</button>
 
-    <ul id="search-results"></ul>
+    <ul id="search-results"></ul> <!-- This will show song results -->
 
     <h3 id="now-playing">🎶 Now Playing: None</h3>
     <audio id="audio-player" controls></audio>
 
-    <script src="jiosaavn.js"></script>
+    <script src="script.js"></script>
 </body>
 </html>
