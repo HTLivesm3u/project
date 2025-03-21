@@ -1,0 +1,52 @@
+body {
+    font-family: Arial, sans-serif;
+    background: #121212;
+    color: white;
+    text-align: center;
+}
+
+header {
+    padding: 20px;
+    background: #1DB954;
+}
+
+button {
+    padding: 10px;
+    margin: 10px;
+    background: #282828;
+    color: white;
+    border: none;
+    cursor: pointer;
+}
+
+button:hover {
+    background: #444;
+}
+
+main {
+    padding: 20px;
+}
+
+#playlist {
+    margin-top: 20px;
+}
+
+#songs-list {
+    list-style: none;
+    padding: 0;
+}
+
+#songs-list li {
+    padding: 10px;
+    cursor: pointer;
+    border-bottom: 1px solid #333;
+}
+
+#songs-list li:hover {
+    background: #222;
+}
+
+#audio-player {
+    width: 100%;
+    margin-top: 20px;
+}
