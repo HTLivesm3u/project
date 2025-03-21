@@ -42,7 +42,7 @@ async function searchAndDisplaySongs() {
         return;
     }
 
-    // ✅ Create a UL element dynamically if missing
+    // ✅ Check if search-results container exists
     if (!searchResultsContainer) {
         console.error("❌ Search results container not found!");
         return;
@@ -56,7 +56,7 @@ async function searchAndDisplaySongs() {
         console.log("🎵 Processing song:", song.name, song); // Debugging each song
 
         const songTitle = song.name;
-        const songUrl = song.downloadUrl?.[4]?.link; // Ensure this exists
+        const songUrl = song.downloadUrl?.[4]?.link || song.downloadUrl?.[0]?.link; // Ensure at least one URL exists
 
         if (songUrl) {
             const listItem = document.createElement("li");
