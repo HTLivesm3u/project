@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Music45 - Spotify & YouTube Audio</title>
+    <script src="https://kit.fontawesome.com/YOUR-FONTAWESOME-KEY.js" crossorigin="anonymous"></script>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; background: #1c1c1c; color: white; padding: 20px; }
+        .search-container { margin-bottom: 20px; }
+        input { padding: 10px; width: 60%; font-size: 16px; border-radius: 5px; border: 1px solid #444; }
+        button { padding: 10px 15px; font-size: 16px; border: none; background: #ff4757; color: white; cursor: pointer; border-radius: 5px; }
+        button:hover { background: #e84118; }
+        .song-item { display: flex; align-items: center; margin: 10px auto; padding: 10px; background: #333; border-radius: 10px; width: 80%; cursor: pointer; }
+        .song-item img { width: 80px; height: 80px; border-radius: 5px; margin-right: 10px; }
+        .song-item p { flex-grow: 1; text-align: left; }
+        iframe { width: 0px; height: 0px; border: none; display: none; }
+        .footer-song-info {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background: #2c2c2c;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 15px;
+    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.4);
+    z-index: 1000;
+}
+.footer-song-info img {
+    width: 50px;
+    height: 50px;
+    border-radius: 5px;
+}
+.song-details {
+    flex-grow: 1;
+    margin-left: 15px;
+    color: #fff;
+}
+.song-details h4 {
+    margin: 0;
+    font-size: 16px;
+}
+.song-details p {
+    margin: 0;
+    font-size: 14px;
+    color: #aaa;
+}
+.controls button {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 20px;
+    cursor: pointer;
+}
+
+    </style>
+</head>
+<body>
+
+    <h1>Search for Songs</h1>
+    
+    <div class="search-container">
+        <input type="text" id="search-query" placeholder="Enter song name..." />
+        <button onclick="searchSongs()">Search</button>
+    </div>
+
+    <div id="song-list"></div>
+    
+    <div id="top-section">
+        <h2>Top 10 Trending English Songs</h2>
+        <div id="top-songs"></div>
+    </div>
+    
+
+    <!-- Hidden YouTube iframe for audio playback -->
+    <iframe id="music-player" frameborder="0" allow="autoplay; encrypted-media"></iframe>
+
+    <!-- Footer Song Info -->
+<div class="footer-song-info" id="footerPlayer">
+    <img id="footer-cover" src="https://via.placeholder.com/50" alt="Cover">
+    <div class="song-details">
+        <h4 id="footer-title">Song Title</h4>
+        <p id="footer-artist">Artist Name</p>
+    </div>
+    <div class="controls">
+        <button onclick="playPause()"><i id="playPauseIcon" class="fas fa-play"></i></button>
+    </div>
+</div>
+
+
+    <script src="/data.js"></script>
+</body>
+</html>
