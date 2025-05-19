@@ -66,11 +66,12 @@ async function displaySongs(songs) {
         // Play song on click
         songItem.onclick = () => {
             if (videoId) {
-                playYouTubeAudio(videoId);
+                playYouTubeAudio(videoId, title, artist, albumCover);
             } else {
                 alert("No playable source found!");
             }
         };
+        
 
         songList.appendChild(songItem);
     }
@@ -90,13 +91,7 @@ async function getYouTubeVideo(query) {
 }
 
 // Play Only Audio from YouTube
-function playYouTubeAudio(videoId) {
-    const player = document.getElementById('music-player');
-    
-    player.src = `https://www.youtube.com/embed/${videoId}?autoplay=1&controls=0&showinfo=0&modestbranding=1&rel=0&playsinline=1`;
-    player.style.display = 'none'; // Hide the video player
-}
-function playYouTubeAudio(videoId, title = '', artist = '', albumCover = '') {
+function playYouTubeAudio(videoId, title, artist, albumCover) {
     const player = document.getElementById('music-player');
     player.src = `https://www.youtube.com/embed/${videoId}?autoplay=1&controls=0&showinfo=0&modestbranding=1&rel=0&playsinline=1`;
     player.style.display = 'none';
@@ -106,8 +101,12 @@ function playYouTubeAudio(videoId, title = '', artist = '', albumCover = '') {
     document.getElementById('footer-title').textContent = title || 'Unknown';
     document.getElementById('footer-artist').textContent = artist || 'Unknown';
 
-    // Set play icon
-    document.getElementById('playPauseIcon').className = 'fas fa-pause';
+    // Set play icon to pause (because it's playing)
+    const icon = document.getElementById('playPauseIcon');
+    if (icon) {
+        icon.classList.remove('fa-play');
+        icon.classList.add('fa-pause');
+    }
 }
 
 // Toggle play/pause icon only (since we're embedding YouTube, true control is limited)
@@ -147,6 +146,7 @@ if (data.tracks.items.length > 0) {
 console.error('Error loading top trending songs:', error);
 }
 }
+window.lastVideoId = videoId; // Save last video ID
 
 // Modified displaySongs to take container ID
 async function displaySongs(songs, containerId = 'song-list') {
@@ -176,6 +176,27 @@ songItem.onclick = () => {
         alert("No playable source found!");
     }
 };
+
+function playPause() {
+    const icon = document.getElementById('playPauseIcon');
+    const player = document.getElementById('music-player');
+
+    if (icon.classList.contains('fa-pause')) {
+        // Pause the music by stopping the iframe
+        player.src = '';
+        icon.classList.remove('fa-pause');
+        icon.classList.add('fa-play');
+    } else {
+        // Resume not possible without full YouTube API, just reload
+        icon.classList.remove('fa-play');
+        icon.classList.add('fa-pause');
+        // NOTE: this reloads the last known video ID, which we need to store
+        if (window.lastVideoId) {
+            player.src = `https://www.youtube.com/embed/${window.lastVideoId}?autoplay=1&controls=0&showinfo=0&modestbranding=1&rel=0&playsinline=1`;
+        }
+    }
+}
+
 
 songList.appendChild(songItem);
 }
