@@ -117,7 +117,8 @@
 
   <div id="song-list"></div>
 
-  <iframe id="music-player" frameborder="0" allow="autoplay; encrypted-media"></iframe>
+  <div id="music-player"></div>
+
 
   <!-- Footer -->
   <div class="footer-player">
@@ -133,7 +134,12 @@
     </div>
   </div>
 
+  <script src="https://www.youtube.com/iframe_api"></script>
   <script>
+    let lastVideoId = null;
+    let player; // YouTube Player instance
+    let isPlaying = false;
+
     const SPOTIFY_CLIENT_ID = '7afe6b39346f4bcc8654c141fe2a6136';
     const SPOTIFY_CLIENT_SECRET = '119278484c2f4c28ac893ea3324bfe84';
     const YOUTUBE_API_KEY = 'AIzaSyAwKYDbklOiCO1o3Dr7uM-xISbjksPkgDk';
@@ -174,6 +180,27 @@
         alert("No results found on Spotify!");
       }
     }
+ 
+     function onYouTubeIframeAPIReady() {
+  player = new YT.Player('music-player', {
+    height: '0',
+    width: '0',
+    videoId: '',
+    playerVars: {
+      autoplay: 0,
+      controls: 0,
+      rel: 0,
+      modestbranding: 1
+    },
+    events: {
+      onReady: () => {},
+      onStateChange: (e) => {
+        // Optional: react to player states
+      }
+    }
+  });
+}
+
 
     async function displaySongs(songs) {
       const songList = document.getElementById('song-list');
@@ -218,38 +245,43 @@
       }
     }
 
-    function playYouTubeAudio(videoId, title, artist, albumCover) {
-      const player = document.getElementById('music-player');
-      player.src = `https://www.youtube.com/embed/${videoId}?autoplay=1&controls=0&showinfo=0&modestbranding=1&rel=0&playsinline=1`;
-      player.style.display = 'none';
+function playYouTubeAudio(videoId, title, artist, albumCover) {
+  if (player && player.loadVideoById) {
+    player.loadVideoById(videoId);
+    isPlaying = true;
 
-      document.getElementById('footer-cover').src = albumCover;
-      document.getElementById('footer-title').textContent = title;
-      document.getElementById('footer-artist').textContent = artist;
+    document.getElementById('footer-cover').src = albumCover;
+    document.getElementById('footer-title').textContent = title;
+    document.getElementById('footer-artist').textContent = artist;
 
-      const icon = document.getElementById('playPauseIcon');
-      icon.classList.remove('fa-play');
-      icon.classList.add('fa-pause');
+    const icon = document.getElementById('playPauseIcon');
+    icon.classList.remove('fa-play');
+    icon.classList.add('fa-pause');
 
-      lastVideoId = videoId;
-    }
+    lastVideoId = videoId;
+  }
+}
 
-    function playPause() {
-      const icon = document.getElementById('playPauseIcon');
-      const player = document.getElementById('music-player');
 
-      if (icon.classList.contains('fa-pause')) {
-        player.src = '';
-        icon.classList.remove('fa-pause');
-        icon.classList.add('fa-play');
-      } else {
-        if (lastVideoId) {
-          player.src = `https://www.youtube.com/embed/${lastVideoId}?autoplay=1&controls=0&showinfo=0&modestbranding=1&rel=0&playsinline=1`;
-          icon.classList.remove('fa-play');
-          icon.classList.add('fa-pause');
-        }
-      }
-    }
+   function playPause() {
+  const icon = document.getElementById('playPauseIcon');
+  if (!player || !player.getPlayerState) return;
+
+  const state = player.getPlayerState();
+
+  if (state === YT.PlayerState.PLAYING) {
+    player.pauseVideo();
+    icon.classList.remove('fa-pause');
+    icon.classList.add('fa-play');
+    isPlaying = false;
+  } else if (state === YT.PlayerState.PAUSED || state === YT.PlayerState.ENDED) {
+    player.playVideo();
+    icon.classList.remove('fa-play');
+    icon.classList.add('fa-pause');
+    isPlaying = true;
+  }
+}
+
 
     // Auto-load top trending songs on page load
     window.onload = async function () {
