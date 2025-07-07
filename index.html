@@ -378,6 +378,134 @@
       }));
       displaySongs(topSongs);
     };
+
+let currentSongIndex = 0;
+let songQueue = [];
+let repeatMode = false;
+let shuffleMode = false;
+
+// Update Time & Progress
+setInterval(() => {
+  if (player && isPlaying && player.getDuration) {
+    const currentTime = player.getCurrentTime();
+    const duration = player.getDuration();
+    const progressPercent = (currentTime / duration) * 100;
+
+    document.getElementById('current-time').textContent = formatTime(currentTime);
+    document.getElementById('duration').textContent = formatTime(duration);
+    document.getElementById('progress').style.width = `${progressPercent}%`;
+  }
+}, 500);
+
+// Time formatter
+function formatTime(seconds) {
+  const mins = Math.floor(seconds / 60);
+  const secs = Math.floor(seconds % 60);
+  return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+}
+
+// Seek on click
+document.getElementById('progress-bar').addEventListener('click', (e) => {
+  if (!player || !player.getDuration) return;
+  const rect = e.target.getBoundingClientRect();
+  const clickX = e.clientX - rect.left;
+  const width = rect.width;
+  const percent = clickX / width;
+  const newTime = percent * player.getDuration();
+  player.seekTo(newTime, true);
+});
+
+// Next Song
+function nextSong() {
+  if (shuffleMode) {
+    currentSongIndex = Math.floor(Math.random() * songQueue.length);
+  } else {
+    currentSongIndex = (currentSongIndex + 1) % songQueue.length;
+  }
+  const song = songQueue[currentSongIndex];
+  playYouTubeAudio(song.videoId, song.title, song.artist, song.cover);
+}
+
+// Prev Song
+function prevSong() {
+  currentSongIndex = (currentSongIndex - 1 + songQueue.length) % songQueue.length;
+  const song = songQueue[currentSongIndex];
+  playYouTubeAudio(song.videoId, song.title, song.artist, song.cover);
+}
+
+// Toggle Shuffle
+document.getElementById('shuffle-btn').addEventListener('click', () => {
+  shuffleMode = !shuffleMode;
+  alert("Shuffle: " + (shuffleMode ? "On" : "Off"));
+});
+
+// Toggle Repeat
+document.getElementById('repeat-btn').addEventListener('click', () => {
+  repeatMode = !repeatMode;
+  alert("Repeat: " + (repeatMode ? "On" : "Off"));
+});
+
+// Handle auto-next
+function onPlayerStateChange(event) {
+  if (event.data === YT.PlayerState.ENDED) {
+    if (repeatMode) {
+      player.seekTo(0);
+      player.playVideo();
+    } else {
+      nextSong();
+    }
+  }
+}
+
+// Add to YouTube setup:
+function onYouTubeIframeAPIReady() {
+  player = new YT.Player('music-player', {
+    height: '0',
+    width: '0',
+    videoId: '',
+    playerVars: {
+      autoplay: 0,
+      controls: 0,
+      rel: 0,
+      modestbranding: 1
+    },
+    events: {
+      onReady: () => isPlayerReady = true,
+      onStateChange: onPlayerStateChange
+    }
+  });
+}
+
+// Push songs to queue in `displaySongs`
+async function displaySongs(songs) {
+  songQueue = []; // clear old
+  const container = document.getElementById('song-list');
+  container.innerHTML = '';
+  for (let i = 0; i < songs.length; i++) {
+    const song = songs[i];
+    const title = song.name;
+    const artist = song.artists[0].name;
+    const albumCover = song.album.images[1].url;
+    const videoId = await getYouTubeVideo(`${title} ${artist} official audio`);
+
+    songQueue.push({ videoId, title, artist, cover: albumCover });
+
+    const item = document.createElement('div');
+    item.className = 'song-item';
+    item.innerHTML = `<img src="${albumCover}" alt="${title}"><p>${title} - ${artist}</p>`;
+    item.onclick = () => {
+      currentSongIndex = i;
+      playYouTubeAudio(videoId, title, artist, albumCover);
+    };
+    container.appendChild(item);
+  }
+}
+
+// Hook Next/Prev/Play in Banner
+document.getElementById("next").addEventListener("click", nextSong);
+document.getElementById("prev").addEventListener("click", prevSong);
+document.getElementById("banner-play-pause").addEventListener("click", playPause);
+
   </script>
 </body>
 </html>
