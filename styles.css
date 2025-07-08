@@ -2,7 +2,7 @@
       font-family: Arial, sans-serif;
       text-align: center;
       background: #1c1c1c;
-      color: white;
+      color: #fff;
       padding-bottom: 120px;
     }
     .search-container {
@@ -88,7 +88,9 @@
       color: white;
       cursor: pointer;
     }
-    .musicplayer { bottom: 100px; padding:20px; border-top-left-radius:20px; border-top-right-radius:20px; display:none; text-align:center; }
+
+
+    .musicplayer { bottom: 100px; padding:20px; border-top-left-radius:20px; border-top-right-radius:20px; display:none; text-align:center; background: #2f3542;}
     .album-cover img { width:120px; height:120px; border-radius:8px; }
     .song-info { margin:10px; }
     .progress-bar { width:80%; height:6px; background:#555; margin:12px auto; position:relative; cursor:pointer; border-radius:4px; }
