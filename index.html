@@ -3,9 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <title>Music45 Player</title>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"></script>
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-  <link href="styles.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet" />
+ <link href="styles.css" rel="stylesheet"/>
 </head>
 <body>
   <h1>Music45 Player</h1>
@@ -14,9 +13,7 @@
     <button onclick="searchSongs()">Search</button>
   </div>
   <div id="song-list"></div>
-
   <div id="music-player"></div>
-
   <div class="footer-player">
     <div class="footer-song-info">
       <img id="footer-cover" src="https://via.placeholder.com/60" />
@@ -30,7 +27,6 @@
       <button id="footerToggleBtn"><i class="fas fa-chevron-up"></i></button>
     </div>
   </div>
-
   <div id="musicbanner" class="musicplayer">
     <button id="close-banner-btn" class="control-btn"><i class="fas fa-chevron-down"></i></button>
     <div class="album-cover"><img id="banner-cover-image" src="https://via.placeholder.com/120" /></div>
@@ -38,185 +34,187 @@
     <div class="progress-bar" id="progress-bar"><div id="progress" class="progress"></div></div>
     <div class="time-stamps"><span id="current-time">00:00</span><span id="duration">00:00</span></div>
     <div class="main-controls">
-      <button id="shuffle-btn" class="control-btn"><i class="fas fa-shuffle"></i></button>
+      <button id="shuffle-btn" class="control-btn"><i class="fas fa-random"></i></button>
       <button id="prev" class="control-btn"><i class="fas fa-backward"></i></button>
       <button id="banner-play-pause" class="control-btn"><i class="fas fa-play"></i></button>
       <button id="next" class="control-btn"><i class="fas fa-forward"></i></button>
-      <button id="repeat-btn" class="control-btn"><i class="fas fa-repeat"></i></button>
+      <button id="repeat-btn" class="control-btn"><i class="fas fa-redo"></i></button>
     </div>
   </div>
-
   <script src="https://www.youtube.com/iframe_api"></script>
   <script>
     const SPOTIFY_CLIENT_ID = '7afe6b39346f4bcc8654c141fe2a6136';
     const SPOTIFY_CLIENT_SECRET = '119278484c2f4c28ac893ea3324bfe84';
     const YOUTUBE_API_KEY = 'AIzaSyAwKYDbklOiCO1o3Dr7uM-xISbjksPkgDk';
 
-    let spotifyToken = '', player, isPlayerReady=false, isPlaying=false;
-    let songQueue = [], currentSongIndex=0, shuffleMode=false, repeatMode=false;
+    let spotifyToken = '', player, isPlayerReady = false, isPlaying = false;
+    let songQueue = [], currentSongIndex = 0, shuffleMode = false, repeatMode = false;
 
     function onYouTubeIframeAPIReady() {
       player = new YT.Player('music-player', {
-        height:'0', width:'0', videoId:'', playerVars:{ autoplay:0, controls:0, rel:0, modestbranding:1 },
-        events:{ onReady:()=>isPlayerReady=true, onStateChange:onPlayerStateChange }
+        height: '0', width: '0', videoId: '',
+        playerVars: { autoplay: 0, controls: 0 },
+        events: {
+          onReady: () => isPlayerReady = true,
+          onStateChange: onPlayerStateChange
+        }
       });
     }
 
     async function getSpotifyToken() {
       const res = await fetch('https://accounts.spotify.com/api/token', {
-        method:'POST',
-        headers:{ 'Content-Type':'application/x-www-form-urlencoded' },
-        body:`grant_type=client_credentials&client_id=${SPOTIFY_CLIENT_ID}&client_secret=${SPOTIFY_CLIENT_SECRET}`
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: `grant_type=client_credentials&client_id=${SPOTIFY_CLIENT_ID}&client_secret=${SPOTIFY_CLIENT_SECRET}`
       });
-      spotifyToken = (await res.json()).access_token;
+      const data = await res.json();
+      spotifyToken = data.access_token;
     }
 
     async function searchSongs() {
       const q = document.getElementById('search-query').value.trim();
-      if (!q) return alert('Enter song!');
+      if (!q) return alert('Enter a song name.');
       document.getElementById('song-list').innerHTML = '';
       await getSpotifyToken();
-      const res = await fetch(`https://api.spotify.com/v1/search?q=${encodeURIComponent(q)}&type=track&limit=10`, {
-        headers:{ Authorization:`Bearer ${spotifyToken}` }
+      const res = await fetch(`https://api.spotify.com/v1/search?q=${encodeURIComponent(q)}&type=track&limit=8`, {
+        headers: { Authorization: `Bearer ${spotifyToken}` }
       });
-      const data=await res.json();
-      if (data.tracks.items.length) displaySongs(data.tracks.items);
-      else alert('No results');
+      const data = await res.json();
+      const songs = data.tracks.items;
+      displaySongs(songs);
     }
 
-    async function getYouTubeVideo(q) {
-      const res = await fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(q)}&type=video&maxResults=1&videoEmbeddable=true&key=${YOUTUBE_API_KEY}`);
-      const d=await res.json();
-      return d.items.length ? d.items[0].id.videoId : null;
+    async function getYouTubeVideo(query) {
+      const res = await fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(query)}&type=video&maxResults=1&videoEmbeddable=true&key=${YOUTUBE_API_KEY}`);
+      const data = await res.json();
+      return data.items.length ? data.items[0].id.videoId : null;
     }
 
     async function displaySongs(songs) {
       songQueue = [];
       const container = document.getElementById('song-list');
-      for (let i=0;i<songs.length;i++){
-        const s=songs[i];
-        const title=s.name, artist=s.artists[0].name, cover=s.album.images[1].url;
-        const vid=await getYouTubeVideo(`${title} ${artist} official audio`);
-        songQueue.push({videoId:vid,title,artist,cover});
-        const div=document.createElement('div');
-        div.className='song-item';
-        div.innerHTML=`<img src="${cover}"/><p>${title} - ${artist}</p>`;
-        div.onclick=()=>{ currentSongIndex=i; playYouTubeAudio(vid,title,artist,cover); };
-        container.appendChild(div);
+      for (let i = 0; i < songs.length; i++) {
+        const song = songs[i];
+        const title = song.name, artist = song.artists[0].name, cover = song.album.images[0].url;
+        const videoId = await getYouTubeVideo(`${title} ${artist} official audio`);
+        songQueue.push({ videoId, title, artist, cover });
+        const item = document.createElement('div');
+        item.className = 'song-item';
+        item.innerHTML = `<img src="${cover}" /><p>${title} - ${artist}</p>`;
+        item.onclick = () => {
+          currentSongIndex = i;
+          playSong(songQueue[currentSongIndex]);
+        };
+        container.appendChild(item);
       }
     }
 
-    function playYouTubeAudio(videoId, title, artist, cover) {
-      if (!isPlayerReady || !videoId) return;
-      player.loadVideoById(videoId);
+    function playSong(song) {
+      if (!isPlayerReady || !song.videoId) return;
+      player.loadVideoById(song.videoId);
       isPlaying = true;
-      updateUI(title,artist,cover);
+      updateUI(song);
     }
 
-    function updateUI(title,artist,cover){
-      document.getElementById('footer-cover').src=cover;
-      document.getElementById('footer-title').textContent=title;
-      document.getElementById('footer-artist').textContent=artist;
-      document.getElementById('banner-cover-image').src=cover;
-      document.getElementById('banner-song-title').textContent=title;
-      document.getElementById('banner-artist-name').textContent=artist;
+    function updateUI(song) {
+      document.getElementById('footer-cover').src = song.cover;
+      document.getElementById('footer-title').textContent = song.title;
+      document.getElementById('footer-artist').textContent = song.artist;
+      document.getElementById('banner-cover-image').src = song.cover;
+      document.getElementById('banner-song-title').textContent = song.title;
+      document.getElementById('banner-artist-name').textContent = song.artist;
       document.getElementById('playPauseIcon').className = 'fas fa-pause';
-      document.getElementById('banner-play-pause').innerHTML=`<i class="fas fa-pause"></i>`;
+      document.getElementById('banner-play-pause').innerHTML = '<i class="fas fa-pause"></i>';
     }
 
     function playPause() {
       if (!player) return;
       const state = player.getPlayerState();
-      if (state===YT.PlayerState.PLAYING){
-        player.pauseVideo(); isPlaying=false;
-        document.getElementById('playPauseIcon').className='fas fa-play';
-        document.getElementById('banner-play-pause').innerHTML=`<i class="fas fa-play"></i>`;
+      if (state === YT.PlayerState.PLAYING) {
+        player.pauseVideo();
+        isPlaying = false;
+        document.getElementById('playPauseIcon').className = 'fas fa-play';
+        document.getElementById('banner-play-pause').innerHTML = '<i class="fas fa-play"></i>';
       } else {
-        player.playVideo(); isPlaying=true;
-        document.getElementById('playPauseIcon').className='fas fa-pause';
-        document.getElementById('banner-play-pause').innerHTML=`<i class="fas fa-pause"></i>`;
+        player.playVideo();
+        isPlaying = true;
+        document.getElementById('playPauseIcon').className = 'fas fa-pause';
+        document.getElementById('banner-play-pause').innerHTML = '<i class="fas fa-pause"></i>';
       }
     }
 
     function nextSong() {
-      if (!songQueue.length) return;
-      currentSongIndex = shuffleMode ?
-        Math.floor(Math.random()*songQueue.length) :
-        (currentSongIndex+1)%songQueue.length;
-      const s=songQueue[currentSongIndex];
-      playYouTubeAudio(s.videoId, s.title, s.artist, s.cover);
+      currentSongIndex = (currentSongIndex + 1) % songQueue.length;
+      playSong(songQueue[currentSongIndex]);
     }
 
     function prevSong() {
-      if (!songQueue.length) return;
-      currentSongIndex = (currentSongIndex -1 + songQueue.length)%songQueue.length;
-      const s=songQueue[currentSongIndex];
-      playYouTubeAudio(s.videoId, s.title, s.artist, s.cover);
+      currentSongIndex = (currentSongIndex - 1 + songQueue.length) % songQueue.length;
+      playSong(songQueue[currentSongIndex]);
     }
 
-    function onPlayerStateChange(e){
-      if (e.data===YT.PlayerState.ENDED){
+    function toggleShuffle() {
+      shuffleMode = !shuffleMode;
+      alert('Shuffle ' + (shuffleMode ? 'ON' : 'OFF'));
+    }
+
+    function toggleRepeat() {
+      repeatMode = !repeatMode;
+      alert('Repeat ' + (repeatMode ? 'ON' : 'OFF'));
+    }
+
+    function onPlayerStateChange(e) {
+      if (e.data === YT.PlayerState.ENDED) {
         if (repeatMode) player.seekTo(0), player.playVideo();
         else nextSong();
       }
     }
 
-    // Progress Updater
-    setInterval(()=>{
-      if (player && isPlaying){
-        const cur=player.getCurrentTime(), dur=player.getDuration();
-        if (!isNaN(cur) && !isNaN(dur)){
-          document.getElementById('current-time').textContent=fmt(cur);
-          document.getElementById('duration').textContent=fmt(dur);
-          document.getElementById('progress').style.width=((cur/dur)*100)+'%';
-        }
-      }
-    },500);
-
-    function fmt(sec){
-      const m=Math.floor(sec/60), s=Math.floor(sec%60);
-      return `${m.toString().padStart(2,0)}:${s.toString().padStart(2,0)}`;
+    function formatTime(seconds) {
+      const m = Math.floor(seconds / 60);
+      const s = Math.floor(seconds % 60);
+      return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
     }
 
-    document.getElementById('progress-bar').addEventListener('click',e=>{
-      if (!player) return;
-      const rect=e.target.getBoundingClientRect();
-      const pct=(e.clientX-rect.left)/rect.width;
-      const sec=pct*player.getDuration();
-      player.seekTo(sec,true);
+    setInterval(() => {
+      if (player && isPlaying) {
+        const cur = player.getCurrentTime(), dur = player.getDuration();
+        document.getElementById('current-time').textContent = formatTime(cur);
+        document.getElementById('duration').textContent = formatTime(dur);
+        document.getElementById('progress').style.width = ((cur / dur) * 100) + '%';
+      }
+    }, 500);
+
+    document.getElementById('progress-bar').addEventListener('click', e => {
+      const rect = e.target.getBoundingClientRect();
+      const percent = (e.clientX - rect.left) / rect.width;
+      player.seekTo(player.getDuration() * percent, true);
     });
 
-    document.getElementById('shuffle-btn').addEventListener('click', ()=>{
-      shuffleMode = !shuffleMode;
-      alert('Shuffle is ' + (shuffleMode? 'ON':'OFF'));
-    });
-
-    document.getElementById('repeat-btn').addEventListener('click', ()=>{
-      repeatMode = !repeatMode;
-      alert('Repeat is ' + (repeatMode? 'ON':'OFF'));
-    });
-
+    document.getElementById('shuffle-btn').addEventListener('click', toggleShuffle);
+    document.getElementById('repeat-btn').addEventListener('click', toggleRepeat);
     document.getElementById('next').addEventListener('click', nextSong);
     document.getElementById('prev').addEventListener('click', prevSong);
     document.getElementById('banner-play-pause').addEventListener('click', playPause);
-    document.getElementById('footerToggleBtn').addEventListener('click', ()=>{
-      const b=document.getElementById('musicbanner');
-      b.style.display = b.style.display === 'block' ? 'none' : 'block';
+    document.getElementById('footerToggleBtn').addEventListener('click', () => {
+      const banner = document.getElementById('musicbanner');
+      banner.style.display = banner.style.display === 'block' ? 'none' : 'block';
     });
-    document.getElementById('close-banner-btn').addEventListener('click', ()=>{
+    document.getElementById('close-banner-btn').addEventListener('click', () => {
       document.getElementById('musicbanner').style.display = 'none';
     });
 
-    // Auto-load trending on page load
-    window.onload = async ()=>{
+    window.onload = async () => {
       await getSpotifyToken();
       const res = await fetch(`https://api.spotify.com/v1/browse/new-releases?limit=8`, {
-        headers:{ Authorization:`Bearer ${spotifyToken}` }
+        headers: { Authorization: `Bearer ${spotifyToken}` }
       });
-      const d=await res.json();
-      displaySongs(d.albums.items.map(a=>{
-        return {name:a.name,artists:[{name:a.artists[0].name}],album:{images:a.images}};
-      }));
+      const data = await res.json();
+      displaySongs(data.albums.items.map(a => ({
+        name: a.name,
+        artists: [{ name: a.artists[0].name }],
+        album: { images: a.images }
+      })));
     };
   </script>
 </body>
