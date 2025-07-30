@@ -86,19 +86,18 @@ body {
     }
     .musicplayer {
       bottom: 100px;
-      padding: 20px;
-      border-top-left-radius: 20px;
-      border-top-right-radius: 20px;
-      display: none;
-      position: fixed;
-      top: 5%;
-      left: 50%;
-      z-index: 9999;
-      transform: translateX(-50%);
-      background: #2f3542;
-      flex-direction: column;
-      justify-content: center;
-      text-align: center;
+      display: flex;
+  position: fixed;
+  top: -3%;
+  left: 50%;
+  transform: translateX(-50%);
+  color: white;
+  z-index: 9999;
+  padding: 20px;
+  flex-direction: column;
+  align-items : center;
+  justify-content:center;
+  text-align: center;
     }
     .album-cover img {
       width: 120px;
