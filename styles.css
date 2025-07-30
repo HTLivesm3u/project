@@ -143,3 +143,14 @@ body {
       font-size: 24px;
       cursor: pointer;
     }
+
+          @media (max-width: 768px) {
+    body {
+      padding: 0;
+          }
+  .musicplayer{
+      max-width: 100%;
+      padding: 15px;
+  }
+
+
