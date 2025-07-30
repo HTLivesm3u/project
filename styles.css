@@ -86,7 +86,7 @@ body {
     }
     .musicplayer {
       bottom: 100px;
-      display: flex;
+      display: none;
   position: fixed;
   top: -3%;
   left: 50%;
