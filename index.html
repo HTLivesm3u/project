@@ -1,477 +1,140 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>Music45 – JioSaavn Player (No Limits)</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" rel="stylesheet"/>
-
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Music45 (JioSaavn)</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
   <style>
-    :root{
-      --bg: #121212;
-      --card:#1c1c1c;
-      --accent:#1db954;
-      --muted:#b3b3b3;
-      --bar:#2b2b2b;
-      --danger:#ff4757;
-      --text:#fff;
-    }
-    *{box-sizing:border-box}
-    body{
-      margin:0; background:var(--bg); color:var(--text);
-      font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
-      padding-bottom:120px;
-    }
-    header{
-      position:sticky; top:0; z-index:5;
-      background:rgba(18,18,18,.9); backdrop-filter: blur(6px);
-      padding:16px 16px 10px;
-      border-bottom:1px solid #232323;
-    }
-    h1{margin:0 0 10px; font-size:20px; font-weight:700;}
-    .search-row{display:flex; gap:10px;}
-    .search-row input{
-      flex:1; padding:12px 14px; font-size:16px; border-radius:10px; border:1px solid #2c2c2c;
-      background:#0f0f0f; color:var(--text); outline:none;
-    }
-    .btn{
-      padding:12px 14px; border:none; cursor:pointer; border-radius:10px; color:#fff;
-    }
-    .btn-accent{ background:var(--accent); }
-    .btn-accent:hover{ filter:brightness(1.05); }
-    .btn-ghost{ background:#242424; }
-    .btn-ghost:hover{ background:#2a2a2a; }
-
-    main{
-      padding:16px;
-      display:grid; grid-template-columns:repeat(auto-fill, minmax(180px, 1fr)); gap:14px;
-    }
-    .card{
-      background:var(--card); border-radius:14px; padding:10px; cursor:pointer;
-      transition:transform .15s ease, box-shadow .15s ease; box-shadow:0 0 0 rgba(0,0,0,0);
-    }
-    .card:hover{ transform: translateY(-2px); box-shadow:0 10px 22px rgba(0,0,0,.25); }
-    .cover{ width:100%; aspect-ratio:1/1; border-radius:10px; object-fit:cover; }
-    .title{ font-weight:700; margin:10px 4px 2px; font-size:14px; }
-    .artist{ color:var(--muted); font-size:12px; margin:0 4px 6px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
-
-    /* Footer Player */
-    footer{
-      position:fixed; left:0; right:0; bottom:0; z-index:20; background:#1b1b1b;
-      border-top:1px solid #2a2a2a; padding:10px 12px;
-      display:flex; align-items:center; gap:12px;
-    }
-    .mini-info{display:flex; align-items:center; gap:10px; min-width:0;}
-    .mini-info img{ width:56px; height:56px; border-radius:8px; object-fit:cover; }
-    .mini-meta{ min-width:0; }
-    .mini-title{ font-size:14px; font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
-    .mini-artist{ font-size:12px; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-    .controls{ display:flex; align-items:center; gap:10px;}
-    .icon-btn{ background:transparent; border:none; color:#fff; font-size:18px; cursor:pointer; padding:8px; border-radius:10px;}
-    .icon-btn:hover{ background:#262626; }
-    .progress-wrap{ display:flex; align-items:center; gap:10px; flex:1;}
-    .progress-rail{ position:relative; height:6px; background:#2b2b2b; border-radius:999px; flex:1; cursor:pointer; }
-    .progress-fill{ position:absolute; left:0; top:0; bottom:0; width:0%; background:var(--accent); border-radius:999px;}
-    .time{ font-size:12px; color:var(--muted); width:40px; text-align:center;}
-
-    /* Banner Player */
-    #banner{
-      position:fixed; inset:0; background:rgba(0,0,0,.7); display:none; z-index:30;
-      align-items:flex-end; justify-content:center; padding:0;
-    }
-    .banner-card{
-      background:#191919; width:min(880px, 96vw); margin:0 auto; border-top-left-radius:24px; border-top-right-radius:24px;
-      padding:16px 16px 22px; box-shadow:0 -10px 30px rgba(0,0,0,.45);
-      display:grid; grid-template-columns:180px 1fr; gap:16px;
-    }
-    @media (max-width:720px){
-      .banner-card{ grid-template-columns:1fr; text-align:center; }
-    }
-    .banner-cover{ width:180px; height:180px; border-radius:14px; object-fit:cover; }
-    .banner-head{ display:flex; align-items:center; justify-content:space-between; margin-bottom:6px;}
-    .banner-title{ font-size:18px; font-weight:800; }
-    .banner-artist{ color:var(--muted); margin-top:2px; }
-    .banner-controls{ display:flex; align-items:center; gap:12px; margin-top:10px; flex-wrap:wrap;}
-    .chip{ font-size:12px; padding:8px 10px; border-radius:999px; background:#242424; color:#ddd; border:none; cursor:pointer;}
-    .chip.active{ background:var(--accent); color:#111; }
+    body { font-family: Arial, sans-serif; background: #111; color: #fff; text-align: center; }
+    #searchResults .song-item { cursor: pointer; display: flex; align-items: center; gap: 10px; padding: 10px; border-bottom: 1px solid #333; }
+    #searchResults img { border-radius: 8px; }
+    #music-banner { position: fixed; bottom: 0; left: 0; right: 0; background: #222; padding: 15px; display: none; }
+    #progress-bar { width: 100%; height: 6px; background: #555; cursor: pointer; margin-top: 10px; }
+    #progress { width: 0%; height: 6px; background: #1db954; }
   </style>
 </head>
 <body>
 
-  <header>
-    <h1>Music45</h1>
-    <div class="search-row">
-      <input id="search" placeholder="Search songs / artists (JioSaavn)..." />
-      <button id="searchBtn" class="btn btn-accent"><i class="fa fa-magnifying-glass"></i> Search</button>
-      <button id="bannerOpen" class="btn btn-ghost"><i class="fa fa-up-right-and-down-left-from-center"></i></button>
-    </div>
-  </header>
+  <h2>🎵 Music45 (JioSaavn API)</h2>
 
-  <main id="grid"></main>
+  <input type="text" id="searchBox" placeholder="Search for songs..." style="width:70%;padding:10px;">
+  <button onclick="searchSongs()">Search</button>
 
-  <!-- Footer Player -->
-  <footer>
-    <div class="mini-info">
-      <img id="miniCover" src="https://via.placeholder.com/56x56?text=♪" alt="">
-      <div class="mini-meta">
-        <div id="miniTitle" class="mini-title">Nothing playing</div>
-        <div id="miniArtist" class="mini-artist">—</div>
+  <div id="searchResults"></div>
+
+  <!-- Music Banner -->
+  <div id="music-banner">
+    <img id="banner-cover" src="" width="60" style="float:left; margin-right:10px; border-radius:10px;">
+    <div style="text-align:left;">
+      <div id="songTitle">Title</div>
+      <div id="songArtist">Artist</div>
+      <div style="margin-top:10px;">
+        <button onclick="playPause()" id="banner-play-pause"><i class="fas fa-play"></i></button>
       </div>
-    </div>
-
-    <div class="controls">
-      <button id="prev" class="icon-btn" title="Previous"><i class="fa fa-backward"></i></button>
-      <button id="playPause" class="icon-btn" title="Play/Pause"><i class="fa fa-play"></i></button>
-      <button id="next" class="icon-btn" title="Next"><i class="fa fa-forward"></i></button>
-    </div>
-
-    <div class="progress-wrap">
-      <div id="cur" class="time">0:00</div>
-      <div id="footerRail" class="progress-rail"><div id="footerFill" class="progress-fill"></div></div>
-      <div id="dur" class="time">0:00</div>
-    </div>
-  </footer>
-
-  <!-- Banner Player -->
-  <div id="banner">
-    <div class="banner-card">
-      <div style="display:flex; justify-content:center;">
-        <img id="bannerCover" class="banner-cover" src="https://via.placeholder.com/300x300?text=♪" alt="">
-      </div>
-      <div>
-        <div class="banner-head">
-          <div>
-            <div id="bannerTitle" class="banner-title">Nothing playing</div>
-            <div id="bannerArtist" class="banner-artist">—</div>
-          </div>
-          <button id="bannerClose" class="icon-btn" title="Close"><i class="fa fa-xmark"></i></button>
-        </div>
-
-        <div class="banner-controls">
-          <button id="bannerPrev" class="icon-btn"><i class="fa fa-backward"></i></button>
-          <button id="bannerPlayPause" class="icon-btn"><i class="fa fa-play"></i></button>
-          <button id="bannerNext" class="icon-btn"><i class="fa fa-forward"></i></button>
-
-          <button id="shuffleBtn" class="chip">Shuffle</button>
-          <button id="repeatBtn" class="chip">Repeat</button>
-        </div>
-
-        <div class="progress-wrap" style="margin-top:12px;">
-          <div id="curB" class="time">0:00</div>
-          <div id="bannerRail" class="progress-rail"><div id="bannerFill" class="progress-fill"></div></div>
-          <div id="durB" class="time">0:00</div>
-        </div>
-      </div>
+      <div id="progress-bar"><div id="progress"></div></div>
+      <span id="current-time">0:00</span> / <span id="duration">0:00</span>
     </div>
   </div>
 
-  <audio id="player" crossorigin="anonymous"></audio>
+  <audio id="audio-player"></audio>
 
-  <script>
-    // =========================
-    // Config & State
-    // =========================
-    const JSAAVN_BASE = "https://saavn.dev/api";
-    const grid = document.getElementById("grid");
-    const searchInput = document.getElementById("search");
-    const searchBtn = document.getElementById("searchBtn");
-    const audio = document.getElementById("player");
+<script>
+let audio = document.getElementById('audio-player');
+let songQueue = [];
+let currentSongIndex = 0;
+let isPlaying = false;
 
-    let queue = [];        // [{id,title,artist,cover,stream}]
-    let idx = -1;          // current index in queue
-    let isPlaying = false;
-    let shuffle = false;
-    let repeat = false;
+// 🔍 Search Songs
+async function searchSongs() {
+  const query = document.getElementById("searchBox").value.trim();
+  if (!query) return alert("Enter song name");
 
-    // Footer elements
-    const miniCover = document.getElementById("miniCover");
-    const miniTitle = document.getElementById("miniTitle");
-    const miniArtist = document.getElementById("miniArtist");
-    const playPause = document.getElementById("playPause");
-    const prevBtn = document.getElementById("prev");
-    const nextBtn = document.getElementById("next");
-    const footerRail = document.getElementById("footerRail");
-    const footerFill = document.getElementById("footerFill");
-    const tCur = document.getElementById("cur");
-    const tDur = document.getElementById("dur");
+  const res = await fetch(`https://saavn.dev/api/search/songs?query=${encodeURIComponent(query)}`);
+  const data = await res.json();
 
-    // Banner elements
-    const banner = document.getElementById("banner");
-    const bannerOpen = document.getElementById("bannerOpen");
-    const bannerClose = document.getElementById("bannerClose");
-    const bannerCover = document.getElementById("bannerCover");
-    const bannerTitle = document.getElementById("bannerTitle");
-    const bannerArtist = document.getElementById("bannerArtist");
-    const bannerPlayPause = document.getElementById("bannerPlayPause");
-    const bannerPrev = document.getElementById("bannerPrev");
-    const bannerNext = document.getElementById("bannerNext");
-    const shuffleBtn = document.getElementById("shuffleBtn");
-    const repeatBtn = document.getElementById("repeatBtn");
-    const bannerRail = document.getElementById("bannerRail");
-    const bannerFill = document.getElementById("bannerFill");
-    const tCurB = document.getElementById("curB");
-    const tDurB = document.getElementById("durB");
+  if (!data.data.results.length) {
+    document.getElementById("searchResults").innerHTML = "<p>No results found</p>";
+    return;
+  }
+  displaySongs(data.data.results);
+}
 
-    // =========================
-    // Helpers
-    // =========================
-    const fmt = (s) => {
-      if (!isFinite(s)) return "0:00";
-      const m = Math.floor(s/60);
-      const ss = Math.floor(s%60).toString().padStart(2, "0");
-      return `${m}:${ss}`;
-    };
+// 🎶 Show Search Results
+function displaySongs(songs) {
+  let resultsDiv = document.getElementById("searchResults");
+  resultsDiv.innerHTML = "";
+  songQueue = songs;
 
-    function setPlayIcons(playing){
-      playPause.innerHTML = playing ? '<i class="fa fa-pause"></i>' : '<i class="fa fa-play"></i>';
-      bannerPlayPause.innerHTML = playing ? '<i class="fa fa-pause"></i>' : '<i class="fa fa-play"></i>';
-    }
+  songs.forEach((song, index) => {
+    let div = document.createElement("div");
+    div.className = "song-item";
+    div.innerHTML = `
+      <img src="${song.image[song.image.length - 1].link}" width="50">
+      <span>${song.name} - ${song.primaryArtists}</span>
+    `;
+    div.onclick = () => playSong(index);
+    resultsDiv.appendChild(div);
+  });
+}
 
-    function updateNowPlaying(meta){
-      const { title, artist, cover } = meta;
-      miniTitle.textContent = title || "Unknown";
-      miniArtist.textContent = artist || "—";
-      miniCover.src = cover || "https://via.placeholder.com/56x56?text=%E2%99%AA";
-      bannerTitle.textContent = title || "Unknown";
-      bannerArtist.textContent = artist || "—";
-      bannerCover.src = cover || "https://via.placeholder.com/300x300?text=%E2%99%AA";
-    }
+// ▶️ Play Selected Song
+function playSong(index) {
+  currentSongIndex = index;
+  let song = songQueue[index];
 
-    // Choose highest quality secure link from downloadUrl list
-    function bestStreamFromDownloadArray(arr){
-      if (!Array.isArray(arr) || !arr.length) return null;
-      // prefer the last (usually highest bitrate)
-      const sorted = arr.slice().sort((a,b)=> (a.quality||'').localeCompare(b.quality||''));
-      const chosen = sorted[sorted.length-1];
-      if (!chosen?.link) return null;
-      return chosen.link.replace(/^http:/, 'https:');
-    }
+  // ✅ Fix image + audio link
+  let imageUrl = song.image[song.image.length - 1].link;
+  let audioUrl = song.downloadUrl[song.downloadUrl.length - 1].link;
 
-    // Resolve track stream: direct from search result, or via detail lookup by ID
-    async function resolveStream(song){
-      // try direct
-      let url = bestStreamFromDownloadArray(song.downloadUrl);
-      if (url) return url;
-      // fallback: fetch by id (more reliable)
-      if (song.id){
-        const r = await fetch(`${JSAAVN_BASE}/songs?id=${encodeURIComponent(song.id)}`);
-        const js = await r.json();
-        const track = js?.data?.[0];
-        return bestStreamFromDownloadArray(track?.downloadUrl);
-      }
-      return null;
-    }
+  document.getElementById("banner-cover").src = imageUrl;
+  document.getElementById("songTitle").textContent = song.name;
+  document.getElementById("songArtist").textContent = song.primaryArtists;
 
-    function pickImage(images){
-      // images often: [{quality:'50x50', link:...}, ...]
-      if (!Array.isArray(images) || !images.length) return "";
-      const hi = images[images.length-1];
-      return (hi.link || "").replace(/^http:/, 'https:');
-    }
+  document.getElementById("music-banner").style.display = "block";
 
-    function card(song, index){
-      const c = document.createElement("div");
-      c.className = "card";
-      const img = pickImage(song.image);
-      const artist = (song.primaryArtists || song.artists?.primary?.map(a=>a.name).join(", ") || "");
-      c.innerHTML = `
-        <img class="cover" src="${img}" alt="">
-        <div class="title" title="${song.name}">${song.name}</div>
-        <div class="artist" title="${artist}">${artist || "Unknown"}</div>
-      `;
-      c.addEventListener("click", async () => {
-        await enqueueFromSearchAndPlay(index);
-      });
-      return c;
-    }
+  audio.src = audioUrl;
+  audio.play();
+  isPlaying = true;
 
-    // =========================
-    // Search & Display
-    // =========================
-    let lastSearchResults = []; // raw JioSaavn search results (to resolve streams later)
+  document.getElementById("banner-play-pause").innerHTML = '<i class="fas fa-pause"></i>';
+}
 
-    async function doSearch(q){
-      if (!q.trim()) return;
-      grid.innerHTML = "<div style='grid-column:1/-1;opacity:.8'>Searching…</div>";
-      try{
-        const res = await fetch(`${JSAAVN_BASE}/search/songs?query=${encodeURIComponent(q)}&page=1&limit=24`);
-        const json = await res.json();
-        const results = json?.data?.results || [];
-        lastSearchResults = results;
-        grid.innerHTML = "";
-        if (!results.length){
-          grid.innerHTML = "<div style='grid-column:1/-1;opacity:.8'>No songs found.</div>";
-          return;
-        }
-        results.forEach((s, i) => grid.appendChild(card(s, i)));
-      }catch(e){
-        console.error(e);
-        grid.innerHTML = "<div style='grid-column:1/-1;color:#ff6'>Search failed. Try again.</div>";
-      }
-    }
+// ⏯ Play / Pause
+function playPause() {
+  if (audio.paused) {
+    audio.play();
+    isPlaying = true;
+    document.getElementById("banner-play-pause").innerHTML = '<i class="fas fa-pause"></i>';
+  } else {
+    audio.pause();
+    isPlaying = false;
+    document.getElementById("banner-play-pause").innerHTML = '<i class="fas fa-play"></i>';
+  }
+}
 
-    // Build queue from lastSearchResults once (with lazy stream resolution)
-    async function enqueueFromSearchAndPlay(startIndex){
-      // Map raw results to lightweight meta; resolve stream for the selected one immediately
-      queue = lastSearchResults.map(s => ({
-        id: s.id,
-        title: s.name,
-        artist: s.primaryArtists || (s.artists?.primary?.map(a=>a.name).join(", ") || ""),
-        cover: pickImage(s.image),
-        stream: null, // lazy
-        _raw: s
-      }));
+// ⏱ Progress Bar
+setInterval(() => {
+  if (isPlaying && audio.duration) {
+    document.getElementById("current-time").textContent = formatTime(audio.currentTime);
+    document.getElementById("duration").textContent = formatTime(audio.duration);
+    document.getElementById("progress").style.width = ((audio.currentTime / audio.duration) * 100) + "%";
+  }
+}, 500);
 
-      idx = startIndex;
-      await playIndex(idx, true);
-    }
+document.getElementById("progress-bar").addEventListener("click", e => {
+  const rect = e.target.getBoundingClientRect();
+  const percent = (e.clientX - rect.left) / rect.width;
+  audio.currentTime = audio.duration * percent;
+});
 
-    // =========================
-    // Playback
-    // =========================
-    async function playIndex(i, ensureResolved=false){
-      if (i < 0 || i >= queue.length) return;
-      idx = i;
+// ⏳ Format Time
+function formatTime(sec) {
+  let m = Math.floor(sec / 60);
+  let s = Math.floor(sec % 60);
+  return `${m}:${s < 10 ? "0" : ""}${s}`;
+}
+</script>
 
-      // Resolve stream if needed
-      if (!queue[i].stream && ensureResolved){
-        const url = await resolveStream(queue[i]._raw);
-        queue[i].stream = url;
-      }
-
-      if (!queue[i].stream){
-        // Skip unplayable and move to next
-        console.warn("No stream for this track, skipping:", queue[i].title);
-        const next = nextIndex();
-        if (next === i){ // single unplayable
-          alert("No playable stream for this song.");
-          return;
-        }
-        return playIndex(next, true);
-      }
-
-      audio.src = queue[i].stream;
-      updateNowPlaying(queue[i]);
-      try{
-        await audio.play();
-        isPlaying = true;
-        setPlayIcons(true);
-      }catch(e){
-        // Autoplay might be blocked; user must press play
-        isPlaying = false;
-        setPlayIcons(false);
-        console.warn("Autoplay blocked by browser. Click play.");
-      }
-    }
-
-    function nextIndex(){
-      if (!queue.length) return -1;
-      if (shuffle){
-        if (queue.length === 1) return idx;
-        let r;
-        do { r = Math.floor(Math.random()*queue.length); } while (r === idx);
-        return r;
-      }
-      return (idx + 1) % queue.length;
-    }
-
-    function prevIndex(){
-      if (!queue.length) return -1;
-      if (shuffle){
-        if (queue.length === 1) return idx;
-        let r;
-        do { r = Math.floor(Math.random()*queue.length); } while (r === idx);
-        return r;
-      }
-      return (idx - 1 + queue.length) % queue.length;
-    }
-
-    async function playNext(){ const n = nextIndex(); if (n>=0) await playIndex(n, true); }
-    async function playPrev(){ const p = prevIndex(); if (p>=0) await playIndex(p, true); }
-
-    function togglePlay(){
-      if (!audio.src){ // nothing loaded yet
-        if (queue.length && idx>=0) { playIndex(idx, true); return; }
-        // no queue: maybe search default
-        return;
-      }
-      if (audio.paused){ audio.play(); isPlaying=true; setPlayIcons(true); }
-      else { audio.pause(); isPlaying=false; setPlayIcons(false); }
-    }
-
-    // =========================
-    // Progress & Seeking
-    // =========================
-    function updateProgressUI(){
-      const cur = audio.currentTime || 0;
-      const dur = audio.duration || 0;
-      const p = dur ? (cur/dur)*100 : 0;
-
-      footerFill.style.width = p + "%";
-      bannerFill.style.width = p + "%";
-      tCur.textContent = fmt(cur);
-      tDur.textContent = fmt(dur);
-      tCurB.textContent = fmt(cur);
-      tDurB.textContent = fmt(dur);
-    }
-
-    function seekFromRail(ev, railEl){
-      const rect = railEl.getBoundingClientRect();
-      const x = ev.clientX - rect.left;
-      const pct = Math.max(0, Math.min(1, x / rect.width));
-      if (isFinite(audio.duration)) {
-        audio.currentTime = audio.duration * pct;
-      }
-    }
-
-    footerRail.addEventListener("click", (e)=> seekFromRail(e, footerRail));
-    bannerRail.addEventListener("click", (e)=> seekFromRail(e, bannerRail));
-    audio.addEventListener("timeupdate", updateProgressUI);
-    audio.addEventListener("loadedmetadata", updateProgressUI);
-    audio.addEventListener("seeked", updateProgressUI);
-
-    audio.addEventListener("ended", async ()=>{
-      if (repeat){ audio.currentTime = 0; audio.play(); return; }
-      await playNext();
-    });
-
-    audio.addEventListener("play", ()=>{ isPlaying=true; setPlayIcons(true); });
-    audio.addEventListener("pause", ()=>{ isPlaying=false; setPlayIcons(false); });
-
-    // =========================
-    // UI Events
-    // =========================
-    playPause.addEventListener("click", togglePlay);
-    bannerPlayPause.addEventListener("click", togglePlay);
-    nextBtn.addEventListener("click", playNext);
-    bannerNext.addEventListener("click", playNext);
-    prevBtn.addEventListener("click", playPrev);
-    bannerPrev.addEventListener("click", playPrev);
-
-    bannerOpen.addEventListener("click", ()=> banner.style.display="flex");
-    bannerClose.addEventListener("click", ()=> banner.style.display="none");
-
-    shuffleBtn.addEventListener("click", ()=>{
-      shuffle = !shuffle;
-      shuffleBtn.classList.toggle("active", shuffle);
-    });
-    repeatBtn.addEventListener("click", ()=>{
-      repeat = !repeat;
-      repeatBtn.classList.toggle("active", repeat);
-    });
-
-    searchBtn.addEventListener("click", ()=> doSearch(searchInput.value));
-    searchInput.addEventListener("keydown", (e)=>{
-      if (e.key === "Enter") doSearch(searchInput.value);
-    });
-
-    // =========================
-    // Default content on load
-    // =========================
-    (async function init(){
-      // Try a default search to populate the grid
-      doSearch("Top Hits");
-    })();
-  </script>
 </body>
 </html>
