@@ -1,152 +1,222 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Music45 (JioSaavn)</title>
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-  <style>
-    body { font-family: Arial, sans-serif; background: #111; color: #fff; text-align: center; }
-    #searchResults .song-item { cursor: pointer; display: flex; align-items: center; gap: 10px; padding: 10px; border-bottom: 1px solid #333; }
-    #searchResults img { border-radius: 8px; }
-    #music-banner { position: fixed; bottom: 0; left: 0; right: 0; background: #222; padding: 15px; display: none; }
-    #progress-bar { width: 100%; height: 6px; background: #555; cursor: pointer; margin-top: 10px; }
-    #progress { width: 0%; height: 6px; background: #1db954; }
-  </style>
+  <meta charset="UTF-8" />
+  <title>Music45 Player</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet" />
+ <link href="styles.css" rel="stylesheet"/>
 </head>
 <body>
-
-  <h2>🎵 Music45 (JioSaavn API)</h2>
-
-  <input type="text" id="searchBox" placeholder="Search for songs..." style="width:70%;padding:10px;">
-  <button onclick="searchSongs()">Search</button>
-
-  <div id="searchResults"></div>
-
-  <!-- Music Banner -->
-  <div id="music-banner">
-    <img id="banner-cover" src="" width="60" style="float:left; margin-right:10px; border-radius:10px;">
-    <div style="text-align:left;">
-      <div id="songTitle">Title</div>
-      <div id="songArtist">Artist</div>
-      <div style="margin-top:10px;">
-        <button onclick="playPause()" id="banner-play-pause"><i class="fas fa-play"></i></button>
+  <h1>Music45 Player</h1>
+<link rel="icon" type="image/webp" href="https://music45.vercel.app/music/music45.webp">
+  <div class="search-container">
+    <input id="search-query" placeholder="Search song..." />
+    <button onclick="searchSongs()">Search</button>
+  </div>
+  <div id="song-list"></div>
+  <div id="music-player"></div>
+  <div class="footer-player">
+    <div class="footer-song-info">
+      <img id="footer-cover" src="https://via.placeholder.com/60" />
+      <div>
+        <div id="footer-title">No Song</div>
+        <div id="footer-artist">---</div>
       </div>
-      <div id="progress-bar"><div id="progress"></div></div>
-      <span id="current-time">0:00</span> / <span id="duration">0:00</span>
+    </div>
+    <div class="footer-controls">
+      <i class="fas fa-play" id="playPauseIcon" onclick="playPause()"></i>
+      <button id="footerToggleBtn"><i class="fas fa-chevron-up"></i></button>
     </div>
   </div>
+  <div id="musicbanner" class="musicplayer">
+    <button id="close-banner-btn" class="control-btn"><i class="fas fa-chevron-down"></i></button>
+    <div class="album-cover"><img id="banner-cover-image" src="https://via.placeholder.com/120" /></div>
+    <div class="song-info"><h2 id="banner-song-title">Title</h2><p id="banner-artist-name">Artist</p></div>
+    <div class="progress-bar" id="progress-bar"><div id="progress" class="progress"></div></div>
+    <div class="time-stamps"><span id="current-time">00:00</span><span id="duration">00:00</span></div>
+    <div class="main-controls">
+      <button id="shuffle-btn" class="control-btn"><i class="fas fa-random"></i></button>
+      <button id="prev" class="control-btn"><i class="fas fa-backward"></i></button>
+      <button id="banner-play-pause" class="control-btn"><i class="fas fa-play"></i></button>
+      <button id="next" class="control-btn"><i class="fas fa-forward"></i></button>
+      <button id="repeat-btn" class="control-btn"><i class="fas fa-redo"></i></button>
+    </div>
+  </div>
+  <script src="https://www.youtube.com/iframe_api"></script>
+  <script>
+    const SPOTIFY_CLIENT_ID = '7afe6b39346f4bcc8654c141fe2a6136';
+    const SPOTIFY_CLIENT_SECRET = '119278484c2f4c28ac893ea3324bfe84';
+    const YOUTUBE_API_KEY = 'AIzaSyAwKYDbklOiCO1o3Dr7uM-xISbjksPkgDk';
 
-  <audio id="audio-player"></audio>
+    let spotifyToken = '', player, isPlayerReady = false, isPlaying = false;
+    let songQueue = [], currentSongIndex = 0, shuffleMode = false, repeatMode = false;
 
-<script>
-let audio = document.getElementById('audio-player');
-let songQueue = [];
-let currentSongIndex = 0;
-let isPlaying = false;
+    function onYouTubeIframeAPIReady() {
+      player = new YT.Player('music-player', {
+        height: '0', width: '0', videoId: '',
+        playerVars: { autoplay: 0, controls: 0 },
+        events: {
+          onReady: () => isPlayerReady = true,
+          onStateChange: onPlayerStateChange
+        }
+      });
+    }
 
-// 🔍 Search Songs
-async function searchSongs() {
-  const query = document.getElementById("searchBox").value.trim();
-  if (!query) return alert("Enter song name");
+    async function getSpotifyToken() {
+      const res = await fetch('https://accounts.spotify.com/api/token', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: `grant_type=client_credentials&client_id=${SPOTIFY_CLIENT_ID}&client_secret=${SPOTIFY_CLIENT_SECRET}`
+      });
+      const data = await res.json();
+      spotifyToken = data.access_token;
+    }
 
-  const res = await fetch(`https://saavn.dev/api/search/songs?query=${encodeURIComponent(query)}`);
-  const data = await res.json();
+    async function searchSongs() {
+      const q = document.getElementById('search-query').value.trim();
+      if (!q) return alert('Enter a song name.');
+      document.getElementById('song-list').innerHTML = '';
+      await getSpotifyToken();
+      const res = await fetch(`https://api.spotify.com/v1/search?q=${encodeURIComponent(q)}&type=track&limit=8`, {
+        headers: { Authorization: `Bearer ${spotifyToken}` }
+      });
+      const data = await res.json();
+      const songs = data.tracks.items;
+      displaySongs(songs);
+    }
 
-  if (!data.data.results.length) {
-    document.getElementById("searchResults").innerHTML = "<p>No results found</p>";
-    return;
-  }
-  displaySongs(data.data.results);
-}
+    async function getYouTubeVideo(query) {
+      const res = await fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(query)}&type=video&maxResults=1&videoEmbeddable=true&key=${YOUTUBE_API_KEY}`);
+      const data = await res.json();
+      return data.items.length ? data.items[0].id.videoId : null;
+    }
 
-// 🎶 Show Search Results
-function displaySongs(songs) {
-  let resultsDiv = document.getElementById("searchResults");
-  resultsDiv.innerHTML = "";
-  songQueue = songs;
+    async function displaySongs(songs) {
+      songQueue = [];
+      const container = document.getElementById('song-list');
+      for (let i = 0; i < songs.length; i++) {
+        const song = songs[i];
+        const title = song.name, artist = song.artists[0].name, cover = song.album.images[0].url;
+        const videoId = await getYouTubeVideo(`${title} ${artist} official audio`);
+        songQueue.push({ videoId, title, artist, cover });
+        const item = document.createElement('div');
+        item.className = 'song-item';
+        item.innerHTML = `<img src="${cover}" /><p>${title} - ${artist}</p>`;
+        item.onclick = () => {
+          currentSongIndex = i;
+          playSong(songQueue[currentSongIndex]);
+        };
+        container.appendChild(item);
+      }
+    }
 
-  songs.forEach((song, index) => {
-    let div = document.createElement("div");
-    div.className = "song-item";
-    div.innerHTML = `
-      <img src="${song.image[song.image.length - 1].link}" width="50">
-      <span>${song.name} - ${song.primaryArtists}</span>
-    `;
-    div.onclick = () => playSong(index);
-    resultsDiv.appendChild(div);
-  });
-}
+    function playSong(song) {
+      if (!isPlayerReady || !song.videoId) return;
+      player.loadVideoById(song.videoId);
+      isPlaying = true;
+      updateUI(song);
+    }
 
-// ▶️ Play Selected Song
-function playSong(index) {
-  currentSongIndex = index;
-  let song = songQueue[index];
+    function updateUI(song) {
+      document.getElementById('footer-cover').src = song.cover;
+      document.getElementById('footer-title').textContent = song.title;
+      document.getElementById('footer-artist').textContent = song.artist;
+      document.getElementById('banner-cover-image').src = song.cover;
+      document.getElementById('banner-song-title').textContent = song.title;
+      document.getElementById('banner-artist-name').textContent = song.artist;
+      document.getElementById('playPauseIcon').className = 'fas fa-pause';
+      document.getElementById('banner-play-pause').innerHTML = '<i class="fas fa-pause"></i>';
+    }
 
-  // ✅ Image
-  let imageUrl = song.image[song.image.length - 1].link;
+    function playPause() {
+      if (!player) return;
+      const state = player.getPlayerState();
+      if (state === YT.PlayerState.PLAYING) {
+        player.pauseVideo();
+        isPlaying = false;
+        document.getElementById('playPauseIcon').className = 'fas fa-play';
+        document.getElementById('banner-play-pause').innerHTML = '<i class="fas fa-play"></i>';
+      } else {
+        player.playVideo();
+        isPlaying = true;
+        document.getElementById('playPauseIcon').className = 'fas fa-pause';
+        document.getElementById('banner-play-pause').innerHTML = '<i class="fas fa-pause"></i>';
+      }
+    }
 
-  // ✅ Prefer HD (last downloadUrl), else fallback to previewUrl
-  let audioUrl = song.downloadUrl?.length 
-      ? song.downloadUrl[song.downloadUrl.length - 1].link 
-      : song.previewUrl;
+    function nextSong() {
+      currentSongIndex = (currentSongIndex + 1) % songQueue.length;
+      playSong(songQueue[currentSongIndex]);
+    }
 
-  if (!audioUrl) {
-    alert("No playable URL for this song 😢");
-    return;
-  }
+    function prevSong() {
+      currentSongIndex = (currentSongIndex - 1 + songQueue.length) % songQueue.length;
+      playSong(songQueue[currentSongIndex]);
+    }
 
-  document.getElementById("banner-cover").src = imageUrl;
-  document.getElementById("songTitle").textContent = song.name;
-  document.getElementById("songArtist").textContent = song.primaryArtists;
-  document.getElementById("music-banner").style.display = "block";
+    function toggleShuffle() {
+      shuffleMode = !shuffleMode;
+      alert('Shuffle ' + (shuffleMode ? 'ON' : 'OFF'));
+    }
 
-  audio.src = audioUrl;
-  audio.play().then(() => {
-    isPlaying = true;
-    document.getElementById("banner-play-pause").innerHTML = '<i class="fas fa-pause"></i>';
-  }).catch(err => {
-    console.error("Playback error:", err);
-    alert("⚠️ Song could not be played (maybe region-locked).");
-  });
-}
+    function toggleRepeat() {
+      repeatMode = !repeatMode;
+      alert('Repeat ' + (repeatMode ? 'ON' : 'OFF'));
+    }
 
-// ⏯ Play / Pause
-function playPause() {
-  if (audio.paused) {
-    audio.play();
-    isPlaying = true;
-    document.getElementById("banner-play-pause").innerHTML = '<i class="fas fa-pause"></i>';
-  } else {
-    audio.pause();
-    isPlaying = false;
-    document.getElementById("banner-play-pause").innerHTML = '<i class="fas fa-play"></i>';
-  }
-}
+    function onPlayerStateChange(e) {
+      if (e.data === YT.PlayerState.ENDED) {
+        if (repeatMode) player.seekTo(0), player.playVideo();
+        else nextSong();
+      }
+    }
 
-// ⏱ Progress Bar
-setInterval(() => {
-  if (isPlaying && audio.duration) {
-    document.getElementById("current-time").textContent = formatTime(audio.currentTime);
-    document.getElementById("duration").textContent = formatTime(audio.duration);
-    document.getElementById("progress").style.width = ((audio.currentTime / audio.duration) * 100) + "%";
-  }
-}, 500);
+    function formatTime(seconds) {
+      const m = Math.floor(seconds / 60);
+      const s = Math.floor(seconds % 60);
+      return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+    }
 
-document.getElementById("progress-bar").addEventListener("click", e => {
-  const rect = e.target.getBoundingClientRect();
-  const percent = (e.clientX - rect.left) / rect.width;
-  audio.currentTime = audio.duration * percent;
-});
+    setInterval(() => {
+      if (player && isPlaying) {
+        const cur = player.getCurrentTime(), dur = player.getDuration();
+        document.getElementById('current-time').textContent = formatTime(cur);
+        document.getElementById('duration').textContent = formatTime(dur);
+        document.getElementById('progress').style.width = ((cur / dur) * 100) + '%';
+      }
+    }, 500);
 
-// ⏳ Format Time
-function formatTime(sec) {
-  let m = Math.floor(sec / 60);
-  let s = Math.floor(sec % 60);
-  return `${m}:${s < 10 ? "0" : ""}${s}`;
-}
-</script>
+    document.getElementById('progress-bar').addEventListener('click', e => {
+      const rect = e.target.getBoundingClientRect();
+      const percent = (e.clientX - rect.left) / rect.width;
+      player.seekTo(player.getDuration() * percent, true);
+    });
 
+    document.getElementById('shuffle-btn').addEventListener('click', toggleShuffle);
+    document.getElementById('repeat-btn').addEventListener('click', toggleRepeat);
+    document.getElementById('next').addEventListener('click', nextSong);
+    document.getElementById('prev').addEventListener('click', prevSong);
+    document.getElementById('banner-play-pause').addEventListener('click', playPause);
+    document.getElementById('footerToggleBtn').addEventListener('click', () => {
+      const banner = document.getElementById('musicbanner');
+      banner.style.display = banner.style.display === 'block' ? 'none' : 'block';
+    });
+    document.getElementById('close-banner-btn').addEventListener('click', () => {
+      document.getElementById('musicbanner').style.display = 'none';
+    });
 
+    window.onload = async () => {
+      await getSpotifyToken();
+      const res = await fetch(`https://api.spotify.com/v1/browse/new-releases?limit=8`, {
+        headers: { Authorization: `Bearer ${spotifyToken}` }
+      });
+      const data = await res.json();
+      displaySongs(data.albums.items.map(a => ({
+        name: a.name,
+        artists: [{ name: a.artists[0].name }],
+        album: { images: a.images }
+      })));
+    };
+  </script>
 </body>
 </html>
