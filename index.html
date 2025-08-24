@@ -83,21 +83,32 @@ function playSong(index) {
   currentSongIndex = index;
   let song = songQueue[index];
 
-  // ✅ Fix image + audio link
+  // ✅ Image
   let imageUrl = song.image[song.image.length - 1].link;
-  let audioUrl = song.downloadUrl[song.downloadUrl.length - 1].link;
+
+  // ✅ Prefer HD (last downloadUrl), else fallback to previewUrl
+  let audioUrl = song.downloadUrl?.length 
+      ? song.downloadUrl[song.downloadUrl.length - 1].link 
+      : song.previewUrl;
+
+  if (!audioUrl) {
+    alert("No playable URL for this song 😢");
+    return;
+  }
 
   document.getElementById("banner-cover").src = imageUrl;
   document.getElementById("songTitle").textContent = song.name;
   document.getElementById("songArtist").textContent = song.primaryArtists;
-
   document.getElementById("music-banner").style.display = "block";
 
   audio.src = audioUrl;
-  audio.play();
-  isPlaying = true;
-
-  document.getElementById("banner-play-pause").innerHTML = '<i class="fas fa-pause"></i>';
+  audio.play().then(() => {
+    isPlaying = true;
+    document.getElementById("banner-play-pause").innerHTML = '<i class="fas fa-pause"></i>';
+  }).catch(err => {
+    console.error("Playback error:", err);
+    alert("⚠️ Song could not be played (maybe region-locked).");
+  });
 }
 
 // ⏯ Play / Pause
@@ -135,6 +146,7 @@ function formatTime(sec) {
   return `${m}:${s < 10 ? "0" : ""}${s}`;
 }
 </script>
+
 
 </body>
 </html>
