@@ -3,9 +3,9 @@
 <head>
   <meta charset="UTF-8" />
   <title>Music45 Player</title>
-<link rel="icon" type="image/webp" href="https://music45.vercel.app/music/music45.webp">
+  <link rel="icon" type="image/webp" href="https://music45.vercel.app/music/music45.webp">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet" />
- <link href="styles.css" rel="stylesheet"/>
+  <link href="styles.css" rel="stylesheet"/>
 </head>
 <body>
   <h1>Music45 Player</h1>
@@ -15,6 +15,8 @@
   </div>
   <div id="song-list"></div>
   <div id="music-player"></div>
+
+  <!-- Footer Player -->
   <div class="footer-player">
     <div class="footer-song-info">
       <img id="footer-cover" src="https://via.placeholder.com/60" />
@@ -28,7 +30,9 @@
       <button id="footerToggleBtn"><i class="fas fa-chevron-up"></i></button>
     </div>
   </div>
-  <div id="musicbanner" class="musicplayer">
+
+  <!-- Music Banner -->
+  <div id="musicbanner" class="musicplayer" style="display:none;">
     <button id="close-banner-btn" class="control-btn"><i class="fas fa-chevron-down"></i></button>
     <div class="album-cover"><img id="banner-cover-image" src="https://via.placeholder.com/120" /></div>
     <div class="song-info"><h2 id="banner-song-title">Title</h2><p id="banner-artist-name">Artist</p></div>
@@ -42,6 +46,7 @@
       <button id="repeat-btn" class="control-btn"><i class="fas fa-redo"></i></button>
     </div>
   </div>
+
   <script src="https://www.youtube.com/iframe_api"></script>
   <script>
     const SPOTIFY_CLIENT_ID = '8c1845f661f44da19b382058aa125fb4';
@@ -94,6 +99,7 @@
     async function displaySongs(songs) {
       songQueue = [];
       const container = document.getElementById('song-list');
+      container.innerHTML = '';
       for (let i = 0; i < songs.length; i++) {
         const song = songs[i];
         const title = song.name, artist = song.artists[0].name, cover = song.album.images[0].url;
@@ -205,18 +211,23 @@
       document.getElementById('musicbanner').style.display = 'none';
     });
 
+    // ✅ FIXED: load featured playlist tracks (not albums)
     window.onload = async () => {
       await getSpotifyToken();
-      const res = await fetch(`https://api.spotify.com/v1/browse/new-releases?limit=8`, {
+      const res = await fetch(`https://api.spotify.com/v1/browse/featured-playlists?limit=1`, {
         headers: { Authorization: `Bearer ${spotifyToken}` }
       });
       const data = await res.json();
-      displaySongs(data.albums.items.map(a => ({
-        name: a.name,
-        artists: [{ name: a.artists[0].name }],
-        album: { images: a.images }
-      })));
+      const playlistId = data.playlists.items[0].id;
+
+      const tracksRes = await fetch(`https://api.spotify.com/v1/playlists/${playlistId}/tracks?limit=8`, {
+        headers: { Authorization: `Bearer ${spotifyToken}` }
+      });
+      const tracksData = await tracksRes.json();
+
+      displaySongs(tracksData.items.map(i => i.track));
     };
   </script>
 </body>
 </html>
+
