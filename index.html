@@ -86,14 +86,18 @@
         headers: { Authorization: `Bearer ${spotifyToken}` }
       });
       const data = await res.json();
-      const songs = data.tracks.items;
-      displaySongs(songs);
+      displaySongs(data.tracks.items);
     }
 
     async function getYouTubeVideo(query) {
-      const res = await fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(query)}&type=video&maxResults=1&videoEmbeddable=true&key=${YOUTUBE_API_KEY}`);
-      const data = await res.json();
-      return data.items.length ? data.items[0].id.videoId : null;
+      try {
+        const res = await fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(query)}&type=video&maxResults=1&videoEmbeddable=true&key=${YOUTUBE_API_KEY}`);
+        const data = await res.json();
+        return data.items.length ? data.items[0].id.videoId : null;
+      } catch (err) {
+        console.error("YouTube API error:", err);
+        return null;
+      }
     }
 
     async function displaySongs(songs) {
@@ -102,9 +106,17 @@
       container.innerHTML = '';
       for (let i = 0; i < songs.length; i++) {
         const song = songs[i];
-        const title = song.name, artist = song.artists[0].name, cover = song.album.images[0].url;
-        const videoId = await getYouTubeVideo(`${title} ${artist} official audio`);
+        if (!song || !song.artists || !song.album) continue;
+
+        const title = song.name || "Unknown Title";
+        const artist = song.artists[0]?.name || "Unknown Artist";
+        const cover = song.album.images[0]?.url || "https://via.placeholder.com/120";
+
+        const videoId = await getYouTubeVideo(`${title} ${artist}`);
+        if (!videoId) continue;
+
         songQueue.push({ videoId, title, artist, cover });
+
         const item = document.createElement('div');
         item.className = 'song-item';
         item.innerHTML = `<img src="${cover}" /><p>${title} - ${artist}</p>`;
@@ -113,6 +125,10 @@
           playSong(songQueue[currentSongIndex]);
         };
         container.appendChild(item);
+      }
+
+      if (!songQueue.length) {
+        container.innerHTML = "<p>No songs found.</p>";
       }
     }
 
@@ -186,9 +202,11 @@
     setInterval(() => {
       if (player && isPlaying) {
         const cur = player.getCurrentTime(), dur = player.getDuration();
-        document.getElementById('current-time').textContent = formatTime(cur);
-        document.getElementById('duration').textContent = formatTime(dur);
-        document.getElementById('progress').style.width = ((cur / dur) * 100) + '%';
+        if (!isNaN(cur) && !isNaN(dur)) {
+          document.getElementById('current-time').textContent = formatTime(cur);
+          document.getElementById('duration').textContent = formatTime(dur);
+          document.getElementById('progress').style.width = ((cur / dur) * 100) + '%';
+        }
       }
     }, 500);
 
@@ -211,23 +229,26 @@
       document.getElementById('musicbanner').style.display = 'none';
     });
 
-    // ✅ FIXED: load featured playlist tracks (not albums)
+    // ✅ Load featured playlist tracks instead of albums
     window.onload = async () => {
-      await getSpotifyToken();
-      const res = await fetch(`https://api.spotify.com/v1/browse/featured-playlists?limit=1`, {
-        headers: { Authorization: `Bearer ${spotifyToken}` }
-      });
-      const data = await res.json();
-      const playlistId = data.playlists.items[0].id;
+      try {
+        await getSpotifyToken();
+        const res = await fetch(`https://api.spotify.com/v1/browse/featured-playlists?limit=1`, {
+          headers: { Authorization: `Bearer ${spotifyToken}` }
+        });
+        const data = await res.json();
+        const playlistId = data.playlists.items[0].id;
 
-      const tracksRes = await fetch(`https://api.spotify.com/v1/playlists/${playlistId}/tracks?limit=8`, {
-        headers: { Authorization: `Bearer ${spotifyToken}` }
-      });
-      const tracksData = await tracksRes.json();
+        const tracksRes = await fetch(`https://api.spotify.com/v1/playlists/${playlistId}/tracks?limit=8`, {
+          headers: { Authorization: `Bearer ${spotifyToken}` }
+        });
+        const tracksData = await tracksRes.json();
 
-      displaySongs(tracksData.items.map(i => i.track));
+        displaySongs(tracksData.items.map(i => i.track));
+      } catch (err) {
+        console.error("Spotify API error:", err);
+      }
     };
   </script>
 </body>
 </html>
-
