@@ -4,8 +4,120 @@
   <meta charset="UTF-8" />
   <title>Music45 Player</title>
   <link rel="icon" type="image/webp" href="https://music45.vercel.app/music/music45.webp">
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet" />
-  <link href="styles.css" rel="stylesheet"/>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      background: #1c1c1c;
+      color: #fff;
+      padding-bottom: 120px;
+    }
+    .search-container {
+      margin-bottom: 20px;
+    }
+    input {
+      padding: 10px;
+      width: 60%;
+      font-size: 16px;
+      border-radius: 5px;
+      border: 1px solid #444;
+    }
+    button {
+      padding: 10px 15px;
+      font-size: 16px;
+      border: none;
+      background: #ff4757;
+      color: white;
+      cursor: pointer;
+      border-radius: 5px;
+    }
+    button:hover {
+      background: #e84118;
+    }
+    .song-item {
+      display: flex;
+      align-items: center;
+      margin: 10px auto;
+      padding: 10px;
+      background: #333;
+      border-radius: 10px;
+      width: 80%;
+      cursor: pointer;
+    }
+    .song-item img {
+      width: 80px;
+      height: 80px;
+      border-radius: 5px;
+      margin-right: 10px;
+    }
+    .song-item p {
+      flex-grow: 1;
+      text-align: left;
+    }
+
+    /* Footer Player */
+    .footer-player, .musicplayer { position: fixed; left: 0; right: 0; background: #2f3542; color: #fff; z-index: 999; }
+    .footer-player {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 100px;
+      background: #2f3542;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 20px;
+      z-index: 1000;
+    }
+
+    .footer-song-info {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .footer-song-info img {
+      width: 60px;
+      height: 60px;
+      border-radius: 5px;
+    }
+
+    .footer-song-text {
+      text-align: left;
+    }
+
+    .footer-song-text .title {
+      font-weight: bold;
+    }
+
+    .footer-controls i {
+      font-size: 24px;
+      color: white;
+      cursor: pointer;
+    }
+
+
+    .musicplayer { bottom: 100px; padding:20px; border-top-left-radius:20px; border-top-right-radius:20px; display: none;
+ transform: translateX(-50%);
+z-index: 9999;
+flex-direction: column;
+ justify-content:center;
+  position: fixed;
+  top: -5%;
+  left: 50%;
+text-align: center;
+ text-align:center; background: #2f3542;}
+    .album-cover img { width:120px; height:120px; border-radius:8px; }
+    .song-info { margin:10px; }
+    .progress-bar { width:80%; height:6px; background:#555; margin:12px auto; position:relative; cursor:pointer; border-radius:4px; }
+    .progress { height:100%; background:#ff4757; width:0%; border-radius:4px; }
+    .time-stamps { display:flex; justify-content: space-between; font-size:12px; width:80%; margin:0 auto; }
+    .main-controls, .secondary-controls { display:flex; justify-content:center; gap:20px; margin:12px 0; }
+    .control-btn { background:none; border:none; color:#fff; font-size:24px; cursor:pointer; }
+</style>
 </head>
 <body>
   <h1>Music45 Player</h1>
@@ -14,9 +126,9 @@
     <button onclick="searchSongs()">Search</button>
   </div>
   <div id="song-list"></div>
+
   <div id="music-player"></div>
 
-  <!-- Footer Player -->
   <div class="footer-player">
     <div class="footer-song-info">
       <img id="footer-cover" src="https://via.placeholder.com/60" />
@@ -31,223 +143,192 @@
     </div>
   </div>
 
-  <!-- Music Banner -->
-  <div id="musicbanner" class="musicplayer" style="display:none;">
+  <div id="musicbanner" class="musicplayer">
     <button id="close-banner-btn" class="control-btn"><i class="fas fa-chevron-down"></i></button>
     <div class="album-cover"><img id="banner-cover-image" src="https://via.placeholder.com/120" /></div>
     <div class="song-info"><h2 id="banner-song-title">Title</h2><p id="banner-artist-name">Artist</p></div>
     <div class="progress-bar" id="progress-bar"><div id="progress" class="progress"></div></div>
     <div class="time-stamps"><span id="current-time">00:00</span><span id="duration">00:00</span></div>
     <div class="main-controls">
-      <button id="shuffle-btn" class="control-btn"><i class="fas fa-random"></i></button>
+      <button id="shuffle-btn" class="control-btn"><i class="fas fa-shuffle"></i></button>
       <button id="prev" class="control-btn"><i class="fas fa-backward"></i></button>
       <button id="banner-play-pause" class="control-btn"><i class="fas fa-play"></i></button>
       <button id="next" class="control-btn"><i class="fas fa-forward"></i></button>
-      <button id="repeat-btn" class="control-btn"><i class="fas fa-redo"></i></button>
+      <button id="repeat-btn" class="control-btn"><i class="fas fa-repeat"></i></button>
     </div>
   </div>
 
   <script src="https://www.youtube.com/iframe_api"></script>
   <script>
-    const SPOTIFY_CLIENT_ID = '8c1845f661f44da19b382058aa125fb4';
-    const SPOTIFY_CLIENT_SECRET = '961ce1cbcf5b4ef1a1ea70e5e076f160';
+    const SPOTIFY_CLIENT_ID = '7afe6b39346f4bcc8654c141fe2a6136';
+    const SPOTIFY_CLIENT_SECRET = '119278484c2f4c28ac893ea3324bfe84';
     const YOUTUBE_API_KEY = 'AIzaSyAwKYDbklOiCO1o3Dr7uM-xISbjksPkgDk';
 
-    let spotifyToken = '', player, isPlayerReady = false, isPlaying = false;
-    let songQueue = [], currentSongIndex = 0, shuffleMode = false, repeatMode = false;
+    let spotifyToken = '', player, isPlayerReady=false, isPlaying=false;
+    let songQueue = [], currentSongIndex=0, shuffleMode=false, repeatMode=false;
 
     function onYouTubeIframeAPIReady() {
       player = new YT.Player('music-player', {
-        height: '0', width: '0', videoId: '',
-        playerVars: { autoplay: 0, controls: 0 },
-        events: {
-          onReady: () => isPlayerReady = true,
-          onStateChange: onPlayerStateChange
-        }
+        height:'0', width:'0', videoId:'', playerVars:{ autoplay:0, controls:0, rel:0, modestbranding:1 },
+        events:{ onReady:()=>isPlayerReady=true, onStateChange:onPlayerStateChange }
       });
     }
 
     async function getSpotifyToken() {
       const res = await fetch('https://accounts.spotify.com/api/token', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: `grant_type=client_credentials&client_id=${SPOTIFY_CLIENT_ID}&client_secret=${SPOTIFY_CLIENT_SECRET}`
+        method:'POST',
+        headers:{ 'Content-Type':'application/x-www-form-urlencoded' },
+        body:`grant_type=client_credentials&client_id=${SPOTIFY_CLIENT_ID}&client_secret=${SPOTIFY_CLIENT_SECRET}`
       });
-      const data = await res.json();
-      spotifyToken = data.access_token;
+      spotifyToken = (await res.json()).access_token;
     }
 
     async function searchSongs() {
       const q = document.getElementById('search-query').value.trim();
-      if (!q) return alert('Enter a song name.');
+      if (!q) return alert('Enter song!');
       document.getElementById('song-list').innerHTML = '';
       await getSpotifyToken();
-      const res = await fetch(`https://api.spotify.com/v1/search?q=${encodeURIComponent(q)}&type=track&limit=8`, {
-        headers: { Authorization: `Bearer ${spotifyToken}` }
+      const res = await fetch(`https://api.spotify.com/v1/search?q=${encodeURIComponent(q)}&type=track&limit=10`, {
+        headers:{ Authorization:`Bearer ${spotifyToken}` }
       });
-      const data = await res.json();
-      displaySongs(data.tracks.items);
+      const data=await res.json();
+      if (data.tracks.items.length) displaySongs(data.tracks.items);
+      else alert('No results');
     }
 
-    async function getYouTubeVideo(query) {
-      try {
-        const res = await fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(query)}&type=video&maxResults=1&videoEmbeddable=true&key=${YOUTUBE_API_KEY}`);
-        const data = await res.json();
-        return data.items.length ? data.items[0].id.videoId : null;
-      } catch (err) {
-        console.error("YouTube API error:", err);
-        return null;
-      }
+    async function getYouTubeVideo(q) {
+      const res = await fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(q)}&type=video&maxResults=1&videoEmbeddable=true&key=${YOUTUBE_API_KEY}`);
+      const d=await res.json();
+      return d.items.length ? d.items[0].id.videoId : null;
     }
 
     async function displaySongs(songs) {
       songQueue = [];
       const container = document.getElementById('song-list');
-      container.innerHTML = '';
-      for (let i = 0; i < songs.length; i++) {
-        const song = songs[i];
-        if (!song || !song.artists || !song.album) continue;
-
-        const title = song.name || "Unknown Title";
-        const artist = song.artists[0]?.name || "Unknown Artist";
-        const cover = song.album.images[0]?.url || "https://via.placeholder.com/120";
-
-        const videoId = await getYouTubeVideo(`${title} ${artist}`);
-        if (!videoId) continue;
-
-        songQueue.push({ videoId, title, artist, cover });
-
-        const item = document.createElement('div');
-        item.className = 'song-item';
-        item.innerHTML = `<img src="${cover}" /><p>${title} - ${artist}</p>`;
-        item.onclick = () => {
-          currentSongIndex = i;
-          playSong(songQueue[currentSongIndex]);
-        };
-        container.appendChild(item);
-      }
-
-      if (!songQueue.length) {
-        container.innerHTML = "<p>No songs found.</p>";
+      for (let i=0;i<songs.length;i++){
+        const s=songs[i];
+        const title=s.name, artist=s.artists[0].name, cover=s.album.images[1].url;
+        const vid=await getYouTubeVideo(`${title} ${artist} official audio`);
+        songQueue.push({videoId:vid,title,artist,cover});
+        const div=document.createElement('div');
+        div.className='song-item';
+        div.innerHTML=`<img src="${cover}"/><p>${title} - ${artist}</p>`;
+        div.onclick=()=>{ currentSongIndex=i; playYouTubeAudio(vid,title,artist,cover); };
+        container.appendChild(div);
       }
     }
 
-    function playSong(song) {
-      if (!isPlayerReady || !song.videoId) return;
-      player.loadVideoById(song.videoId);
+    function playYouTubeAudio(videoId, title, artist, cover) {
+      if (!isPlayerReady || !videoId) return;
+      player.loadVideoById(videoId);
       isPlaying = true;
-      updateUI(song);
+      updateUI(title,artist,cover);
     }
 
-    function updateUI(song) {
-      document.getElementById('footer-cover').src = song.cover;
-      document.getElementById('footer-title').textContent = song.title;
-      document.getElementById('footer-artist').textContent = song.artist;
-      document.getElementById('banner-cover-image').src = song.cover;
-      document.getElementById('banner-song-title').textContent = song.title;
-      document.getElementById('banner-artist-name').textContent = song.artist;
+    function updateUI(title,artist,cover){
+      document.getElementById('footer-cover').src=cover;
+      document.getElementById('footer-title').textContent=title;
+      document.getElementById('footer-artist').textContent=artist;
+      document.getElementById('banner-cover-image').src=cover;
+      document.getElementById('banner-song-title').textContent=title;
+      document.getElementById('banner-artist-name').textContent=artist;
       document.getElementById('playPauseIcon').className = 'fas fa-pause';
-      document.getElementById('banner-play-pause').innerHTML = '<i class="fas fa-pause"></i>';
+      document.getElementById('banner-play-pause').innerHTML=`<i class="fas fa-pause"></i>`;
     }
 
     function playPause() {
       if (!player) return;
       const state = player.getPlayerState();
-      if (state === YT.PlayerState.PLAYING) {
-        player.pauseVideo();
-        isPlaying = false;
-        document.getElementById('playPauseIcon').className = 'fas fa-play';
-        document.getElementById('banner-play-pause').innerHTML = '<i class="fas fa-play"></i>';
+      if (state===YT.PlayerState.PLAYING){
+        player.pauseVideo(); isPlaying=false;
+        document.getElementById('playPauseIcon').className='fas fa-play';
+        document.getElementById('banner-play-pause').innerHTML=`<i class="fas fa-play"></i>`;
       } else {
-        player.playVideo();
-        isPlaying = true;
-        document.getElementById('playPauseIcon').className = 'fas fa-pause';
-        document.getElementById('banner-play-pause').innerHTML = '<i class="fas fa-pause"></i>';
+        player.playVideo(); isPlaying=true;
+        document.getElementById('playPauseIcon').className='fas fa-pause';
+        document.getElementById('banner-play-pause').innerHTML=`<i class="fas fa-pause"></i>`;
       }
     }
 
     function nextSong() {
-      currentSongIndex = (currentSongIndex + 1) % songQueue.length;
-      playSong(songQueue[currentSongIndex]);
+      if (!songQueue.length) return;
+      currentSongIndex = shuffleMode ?
+        Math.floor(Math.random()*songQueue.length) :
+        (currentSongIndex+1)%songQueue.length;
+      const s=songQueue[currentSongIndex];
+      playYouTubeAudio(s.videoId, s.title, s.artist, s.cover);
     }
 
     function prevSong() {
-      currentSongIndex = (currentSongIndex - 1 + songQueue.length) % songQueue.length;
-      playSong(songQueue[currentSongIndex]);
+      if (!songQueue.length) return;
+      currentSongIndex = (currentSongIndex -1 + songQueue.length)%songQueue.length;
+      const s=songQueue[currentSongIndex];
+      playYouTubeAudio(s.videoId, s.title, s.artist, s.cover);
     }
 
-    function toggleShuffle() {
-      shuffleMode = !shuffleMode;
-      alert('Shuffle ' + (shuffleMode ? 'ON' : 'OFF'));
-    }
-
-    function toggleRepeat() {
-      repeatMode = !repeatMode;
-      alert('Repeat ' + (repeatMode ? 'ON' : 'OFF'));
-    }
-
-    function onPlayerStateChange(e) {
-      if (e.data === YT.PlayerState.ENDED) {
+    function onPlayerStateChange(e){
+      if (e.data===YT.PlayerState.ENDED){
         if (repeatMode) player.seekTo(0), player.playVideo();
         else nextSong();
       }
     }
 
-    function formatTime(seconds) {
-      const m = Math.floor(seconds / 60);
-      const s = Math.floor(seconds % 60);
-      return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
-    }
-
-    setInterval(() => {
-      if (player && isPlaying) {
-        const cur = player.getCurrentTime(), dur = player.getDuration();
-        if (!isNaN(cur) && !isNaN(dur)) {
-          document.getElementById('current-time').textContent = formatTime(cur);
-          document.getElementById('duration').textContent = formatTime(dur);
-          document.getElementById('progress').style.width = ((cur / dur) * 100) + '%';
+    // Progress Updater
+    setInterval(()=>{
+      if (player && isPlaying){
+        const cur=player.getCurrentTime(), dur=player.getDuration();
+        if (!isNaN(cur) && !isNaN(dur)){
+          document.getElementById('current-time').textContent=fmt(cur);
+          document.getElementById('duration').textContent=fmt(dur);
+          document.getElementById('progress').style.width=((cur/dur)*100)+'%';
         }
       }
-    }, 500);
+    },500);
 
-    document.getElementById('progress-bar').addEventListener('click', e => {
-      const rect = e.target.getBoundingClientRect();
-      const percent = (e.clientX - rect.left) / rect.width;
-      player.seekTo(player.getDuration() * percent, true);
+    function fmt(sec){
+      const m=Math.floor(sec/60), s=Math.floor(sec%60);
+      return `${m.toString().padStart(2,0)}:${s.toString().padStart(2,0)}`;
+    }
+
+    document.getElementById('progress-bar').addEventListener('click',e=>{
+      if (!player) return;
+      const rect=e.target.getBoundingClientRect();
+      const pct=(e.clientX-rect.left)/rect.width;
+      const sec=pct*player.getDuration();
+      player.seekTo(sec,true);
     });
 
-    document.getElementById('shuffle-btn').addEventListener('click', toggleShuffle);
-    document.getElementById('repeat-btn').addEventListener('click', toggleRepeat);
+    document.getElementById('shuffle-btn').addEventListener('click', ()=>{
+      shuffleMode = !shuffleMode;
+      alert('Shuffle is ' + (shuffleMode? 'ON':'OFF'));
+    });
+
+    document.getElementById('repeat-btn').addEventListener('click', ()=>{
+      repeatMode = !repeatMode;
+      alert('Repeat is ' + (repeatMode? 'ON':'OFF'));
+    });
+
     document.getElementById('next').addEventListener('click', nextSong);
     document.getElementById('prev').addEventListener('click', prevSong);
     document.getElementById('banner-play-pause').addEventListener('click', playPause);
-    document.getElementById('footerToggleBtn').addEventListener('click', () => {
-      const banner = document.getElementById('musicbanner');
-      banner.style.display = banner.style.display === 'block' ? 'none' : 'block';
+    document.getElementById('footerToggleBtn').addEventListener('click', ()=>{
+      const b=document.getElementById('musicbanner');
+      b.style.display = b.style.display === 'block' ? 'none' : 'block';
     });
-    document.getElementById('close-banner-btn').addEventListener('click', () => {
+    document.getElementById('close-banner-btn').addEventListener('click', ()=>{
       document.getElementById('musicbanner').style.display = 'none';
     });
 
-    // ✅ Load featured playlist tracks instead of albums
-    window.onload = async () => {
-      try {
-        await getSpotifyToken();
-        const res = await fetch(`https://api.spotify.com/v1/browse/featured-playlists?limit=1`, {
-          headers: { Authorization: `Bearer ${spotifyToken}` }
-        });
-        const data = await res.json();
-        const playlistId = data.playlists.items[0].id;
-
-        const tracksRes = await fetch(`https://api.spotify.com/v1/playlists/${playlistId}/tracks?limit=8`, {
-          headers: { Authorization: `Bearer ${spotifyToken}` }
-        });
-        const tracksData = await tracksRes.json();
-
-        displaySongs(tracksData.items.map(i => i.track));
-      } catch (err) {
-        console.error("Spotify API error:", err);
-      }
+    // Auto-load trending on page load
+    window.onload = async ()=>{
+      await getSpotifyToken();
+      const res = await fetch(`https://api.spotify.com/v1/browse/new-releases?limit=8`, {
+        headers:{ Authorization:`Bearer ${spotifyToken}` }
+      });
+      const d=await res.json();
+      displaySongs(d.albums.items.map(a=>{
+        return {name:a.name,artists:[{name:a.artists[0].name}],album:{images:a.images}};
+      }));
     };
   </script>
 </body>
