@@ -3,120 +3,160 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Music45 YouTube Search</title>
+  <title>Music45 - YouTube & Spotify Player</title>
   <style>
     body { font-family: Arial, sans-serif; background: #111; color: #fff; text-align: center; }
     #results { margin-top: 20px; display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 15px; }
-    .video-card { background: #222; padding: 10px; border-radius: 8px; box-shadow: 0 0 10px #444; }
-    .video-card img { width: 100%; border-radius: 8px; }
-    .video-title { font-size: 14px; margin-top: 8px; }
+    .card { background: #222; padding: 10px; border-radius: 8px; box-shadow: 0 0 10px #444; }
+    .card img { width: 100%; border-radius: 8px; }
+    .title { font-size: 14px; margin-top: 8px; }
+    audio { width: 100%; margin-top: 20px; }
   </style>
 </head>
 <body>
-  <h2>🎵 Music45 YouTube Search</h2>
+  <h2>🎵 Music45: YouTube + Spotify</h2>
   <input type="text" id="searchBox" placeholder="Search songs..." style="padding:10px; width:60%;">
   <button onclick="handleSearch()">Search</button>
+  
+  <h3>Results</h3>
   <div id="results"></div>
 
+  <!-- Audio Player -->
+  <audio id="player" controls autoplay></audio>
+
   <script>
-    // 🚀 1. Multiple API Keys (Add more keys here)
-    const API_KEYS = [
+    /* ============================================================
+       🔹 1. YouTube API with Rotation
+    ============================================================ */
+    const YT_KEYS = [
       "AIzaSyAwKYDbklOiCO1o3Dr7uM-xISbjksPkgDk",
       "AIzaSyCwFRzcS_3E_ADULIdtesolIbbD5YD8Sgs",
       "61036401f4msh42afa629c15c59bp1de3a8jsn9b9bfc7bc873"
+
     ];
-    let currentKeyIndex = 0;
+    let ytKeyIndex = 0;
+    function getYTKey() { return YT_KEYS[ytKeyIndex]; }
+    function switchYTKey() { ytKeyIndex = (ytKeyIndex + 1) % YT_KEYS.length; }
 
-    function getApiKey() {
-      return API_KEYS[currentKeyIndex];
-    }
-
-    function switchKey() {
-      currentKeyIndex = (currentKeyIndex + 1) % API_KEYS.length;
-      console.log("Switched to API key:", currentKeyIndex);
-    }
-
-    // 🚀 2. Cache System
     const CACHE_EXPIRY = 24 * 60 * 60 * 1000; // 24h
-
-    function setCache(query, data) {
-      const item = { data, timestamp: Date.now() };
-      localStorage.setItem("cache_" + query, JSON.stringify(item));
-    }
-
+    function setCache(query, data) { localStorage.setItem("cache_" + query, JSON.stringify({data, ts:Date.now()})); }
     function getCache(query) {
-      const item = localStorage.getItem("cache_" + query);
-      if (!item) return null;
-      const parsed = JSON.parse(item);
-      if (Date.now() - parsed.timestamp > CACHE_EXPIRY) {
-        localStorage.removeItem("cache_" + query);
-        return null;
-      }
-      return parsed.data;
+      let d = localStorage.getItem("cache_" + query);
+      if (!d) return null;
+      d = JSON.parse(d);
+      if (Date.now() - d.ts > CACHE_EXPIRY) return null;
+      return d.data;
     }
 
-    // 🚀 3. YouTube Search Function (with rotation + cache)
     async function searchYouTube(query) {
-      // 1. Try Cache First
-      const cached = getCache(query);
-      if (cached) {
-        console.log("Loaded from cache:", query);
-        return cached;
-      }
+      const cache = getCache("yt_" + query);
+      if (cache) return cache;
 
-      // 2. API Request with rotation
       let attempts = 0;
-      while (attempts < API_KEYS.length) {
-        const apiKey = getApiKey();
-        const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&q=${encodeURIComponent(query)}&maxResults=8&key=${apiKey}`;
-
+      while (attempts < YT_KEYS.length) {
         try {
-          const res = await fetch(url);
+          const res = await fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&q=${encodeURIComponent(query)}&maxResults=5&key=${getYTKey()}`);
           const data = await res.json();
-
-          if (data.error) {
-            console.warn("API Error:", data.error.message);
-            switchKey(); // Try next key
-            attempts++;
-          } else if (data.items) {
-            setCache(query, data.items);
-            return data.items;
-          } else {
-            return [];
-          }
-        } catch (err) {
-          console.error("Fetch Error:", err);
-          switchKey();
-          attempts++;
-        }
+          if (data.error) { switchYTKey(); attempts++; }
+          else { setCache("yt_" + query, data.items); return data.items; }
+        } catch { switchYTKey(); attempts++; }
       }
-
-      return []; // If all keys fail
+      return [];
     }
 
-    // 🚀 4. Handle Search + Show Results
-    async function handleSearch() {
-      const query = document.getElementById("searchBox").value.trim();
-      if (!query) return;
+    /* ============================================================
+       🔹 2. Spotify API (Client Credentials Flow)
+    ============================================================ */
+    const SPOTIFY_CLIENT_ID = "7afe6b39346f4bcc8654c141fe2a6136";
+    const SPOTIFY_CLIENT_SECRET = "119278484c2f4c28ac893ea3324bfe84";
+    let spotifyToken = "";
 
+    async function getSpotifyToken() {
+      const res = await fetch("https://accounts.spotify.com/api/token", {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded", "Authorization": "Basic " + btoa(SPOTIFY_CLIENT_ID + ":" + SPOTIFY_CLIENT_SECRET) },
+        body: "grant_type=client_credentials"
+      });
+      const data = await res.json();
+      spotifyToken = data.access_token;
+    }
+
+    async function searchSpotify(query) {
+      if (!spotifyToken) await getSpotifyToken();
+      const res = await fetch(`https://api.spotify.com/v1/search?q=${encodeURIComponent(query)}&type=track&limit=5`, {
+        headers: { "Authorization": "Bearer " + spotifyToken }
+      });
+      const data = await res.json();
+      return data.tracks.items || [];
+    }
+
+    /* ============================================================
+       🔹 3. Handle Search (YouTube + Spotify)
+    ============================================================ */
+    async function handleSearch() {
+      const q = document.getElementById("searchBox").value.trim();
+      if (!q) return;
       document.getElementById("results").innerHTML = "<p>Loading...</p>";
 
-      const items = await searchYouTube(query);
+      const [ytResults, spResults] = await Promise.all([
+        searchYouTube(q),
+        searchSpotify(q)
+      ]);
 
-      if (items.length === 0) {
-        document.getElementById("results").innerHTML = "<p>No results found or quota exceeded.</p>";
-        return;
-      }
+      let html = "";
 
-      document.getElementById("results").innerHTML = items.map(video => `
-        <div class="video-card">
-          <a href="https://www.youtube.com/watch?v=${video.id.videoId}" target="_blank">
-            <img src="${video.snippet.thumbnails.medium.url}" alt="${video.snippet.title}">
-          </a>
-          <div class="video-title">${video.snippet.title}</div>
-        </div>
-      `).join("");
+      ytResults.forEach(v => {
+        html += `
+          <div class="card">
+            <img src="${v.snippet.thumbnails.medium.url}" alt="">
+            <div class="title">${v.snippet.title}</div>
+            <button onclick="playYouTube('${v.id.videoId}')">▶ Play</button>
+          </div>
+        `;
+      });
+
+      spResults.forEach(t => {
+        html += `
+          <div class="card">
+            <img src="${t.album.images[0].url}" alt="">
+            <div class="title">${t.name} - ${t.artists[0].name}</div>
+            <button onclick="playSpotify('${t.preview_url}')">▶ Play</button>
+          </div>
+        `;
+      });
+
+      document.getElementById("results").innerHTML = html;
     }
+
+    /* ============================================================
+       🔹 4. Play Functions
+    ============================================================ */
+    const player = document.getElementById("player");
+
+    function playYouTube(videoId) {
+      // For background play, we can use an audio extractor API (since YT blocks direct audio).
+      alert("YouTube playback needs a backend proxy (YT blocks direct audio). Use youtube-dl API or RapidAPI extractor.");
+    }
+
+    function playSpotify(previewUrl) {
+      if (previewUrl) {
+        player.src = previewUrl;
+        player.play();
+      } else {
+        alert("No preview available (Spotify restricts full playback).");
+      }
+    }
+
+    /* ============================================================
+       🔹 5. Background Play (Media Session API)
+    ============================================================ */
+    if ('mediaSession' in navigator) {
+      navigator.mediaSession.setActionHandler('play', () => player.play());
+      navigator.mediaSession.setActionHandler('pause', () => player.pause());
+      navigator.mediaSession.setActionHandler('previoustrack', () => console.log("Prev"));
+      navigator.mediaSession.setActionHandler('nexttrack', () => console.log("Next"));
+    }
+
   </script>
 </body>
 </html>
