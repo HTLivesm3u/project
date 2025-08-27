@@ -2,394 +2,357 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Music45 – YouTube (RapidAPI) + Spotify | Background Audio</title>
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+  <title>Music45 Player</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
   <style>
-    :root { --bg:#111; --card:#1b1b1b; --text:#fff; --muted:#a7a7a7; --brand:#ff4757; }
-    * { box-sizing: border-box; }
-    body { margin:0; font-family: system-ui, Arial, sans-serif; background:var(--bg); color:var(--text); padding-bottom:120px; }
-    header { padding:20px; text-align:center; }
-    header h1 { margin:0 0 10px; font-size:22px; }
-    .search { display:flex; gap:8px; justify-content:center; padding:0 12px; }
-    .search input { width:min(720px,90vw); padding:12px 14px; border-radius:10px; border:1px solid #2b2b2b; background:#141414; color:var(--text); }
-    .search button { padding:12px 16px; border:0; border-radius:10px; background:var(--brand); color:#fff; cursor:pointer; }
-    .wrap { padding:16px; max-width:1200px; margin:0 auto; }
-    .grid { display:grid; grid-template-columns: repeat(auto-fill,minmax(240px,1fr)); gap:14px; }
-    .card { background:var(--card); border:1px solid #2a2a2a; border-radius:14px; overflow:hidden; display:flex; flex-direction:column; }
-    .thumb { width:100%; aspect-ratio:16/9; object-fit:cover; background:#000; }
-    .content { padding:10px 12px; display:flex; flex-direction:column; gap:10px; }
-    .title { font-size:14px; line-height:1.2; }
-    .muted { color:var(--muted); font-size:12px; }
-    .btns { display:flex; gap:8px; }
-    .btn { flex:1; padding:10px; font-size:14px; border-radius:10px; border:1px solid #2f2f2f; background:#202020; color:#fff; cursor:pointer; }
-    .btn.play { background:var(--brand); border-color:var(--brand); }
-    /* footer player */
-    .player { position:fixed; left:0; right:0; bottom:0; height:100px; background:#181818; border-top:1px solid #2a2a2a; display:flex; align-items:center; padding:0 14px; gap:12px; z-index:9999;}
-    .cover { width:68px; height:68px; border-radius:10px; background:#000; object-fit:cover; }
-    .meta { min-width:0; flex:1; }
-    .meta .t { font-weight:600; font-size:14px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-    .meta .a { color:var(--muted); font-size:12px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-    .controls { display:flex; align-items:center; gap:12px; }
-    .icon-btn { width:42px; height:42px; border-radius:50%; border:1px solid #2a2a2a; display:inline-grid; place-items:center; background:#222; color:#fff; cursor:pointer; }
-    .progress { position:absolute; left:0; right:0; bottom:100px; height:4px; background:#2a2a2a; }
-    .bar { height:100%; width:0%; background:var(--brand); }
-    audio { display:none; }
-    .badge { font-size:11px; padding:2px 8px; border-radius:999px; background:#262626; color:#ddd; border:1px solid #303030; }
-  </style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      background: #1c1c1c;
+      color: #fff;
+      padding-bottom: 120px;
+    }
+    .search-container {
+      margin-bottom: 20px;
+    }
+    input {
+      padding: 10px;
+      width: 60%;
+      font-size: 16px;
+      border-radius: 5px;
+      border: 1px solid #444;
+    }
+    button {
+      padding: 10px 15px;
+      font-size: 16px;
+      border: none;
+      background: #ff4757;
+      color: white;
+      cursor: pointer;
+      border-radius: 5px;
+    }
+    button:hover {
+      background: #e84118;
+    }
+    .song-item {
+      display: flex;
+      align-items: center;
+      margin: 10px auto;
+      padding: 10px;
+      background: #333;
+      border-radius: 10px;
+      width: 80%;
+      cursor: pointer;
+    }
+    .song-item img {
+      width: 80px;
+      height: 80px;
+      border-radius: 5px;
+      margin-right: 10px;
+    }
+    .song-item p {
+      flex-grow: 1;
+      text-align: left;
+    }
+
+    /* Footer Player */
+    .footer-player, .musicplayer { position: fixed; left: 0; right: 0; background: #2f3542; color: #fff; z-index: 999; }
+    .footer-player {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 100px;
+      background: #2f3542;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 20px;
+      z-index: 1000;
+    }
+
+    .footer-song-info {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .footer-song-info img {
+      width: 60px;
+      height: 60px;
+      border-radius: 5px;
+    }
+
+    .footer-song-text {
+      text-align: left;
+    }
+
+    .footer-song-text .title {
+      font-weight: bold;
+    }
+
+    .footer-controls i {
+      font-size: 24px;
+      color: white;
+      cursor: pointer;
+    }
+
+
+    .musicplayer { bottom: 100px; padding:20px; border-top-left-radius:20px; border-top-right-radius:20px; display: none;
+ transform: translateX(-50%);
+z-index: 9999;
+flex-direction: column;
+ justify-content:center;
+  position: fixed;
+  top: -5%;
+  left: 50%;
+text-align: center;
+ text-align:center; background: #2f3542;}
+    .album-cover img { width:120px; height:120px; border-radius:8px; }
+    .song-info { margin:10px; }
+    .progress-bar { width:80%; height:6px; background:#555; margin:12px auto; position:relative; cursor:pointer; border-radius:4px; }
+    .progress { height:100%; background:#ff4757; width:0%; border-radius:4px; }
+    .time-stamps { display:flex; justify-content: space-between; font-size:12px; width:80%; margin:0 auto; }
+    .main-controls, .secondary-controls { display:flex; justify-content:center; gap:20px; margin:12px 0; }
+    .control-btn { background:none; border:none; color:#fff; font-size:24px; cursor:pointer; }
+</style>
 </head>
 <body>
-  <header>
-    <h1>🎵 Music45 – YouTube (RapidAPI) + Spotify</h1>
-    <div class="search">
-      <input id="q" placeholder="Search a song, artist, or album…" />
-      <button id="go"><i class="fa fa-search"></i> Search</button>
-    </div>
-    <p class="muted" style="margin-top:8px">Background audio works via native &lt;audio&gt; + Media Session. You can switch tabs and it keeps playing.</p>
-  </header>
-
-  <div class="wrap">
-    <h3 style="margin:8px 4px;">YouTube (via RapidAPI) <span class="badge" id="yt-badge">search</span></h3>
-    <div id="yt" class="grid"></div>
-
-    <h3 style="margin:16px 4px;">Spotify Tracks (30s preview) <span class="badge" id="sp-badge">search</span></h3>
-    <div id="sp" class="grid"></div>
+  <h1>Music45 Player</h1>
+  <div class="search-container">
+    <input id="search-query" placeholder="Search song..." />
+    <button onclick="searchSongs()">Search</button>
   </div>
+  <div id="song-list"></div>
 
-  <!-- Progress line above footer -->
-  <div class="progress"><div id="bar" class="bar"></div></div>
+  <div id="music-player"></div>
 
-  <!-- Footer Player -->
-  <div class="player">
-    <img id="cover" class="cover" alt="">
-    <div class="meta">
-      <div class="t" id="title">Nothing playing</div>
-      <div class="a" id="artist">—</div>
+  <div class="footer-player">
+    <div class="footer-song-info">
+      <img id="footer-cover" src="https://via.placeholder.com/60" />
+      <div>
+        <div id="footer-title">No Song</div>
+        <div id="footer-artist">---</div>
+      </div>
     </div>
-    <div class="controls">
-      <button class="icon-btn" id="prev"><i class="fa fa-backward"></i></button>
-      <button class="icon-btn" id="pp"><i class="fa fa-play"></i></button>
-      <button class="icon-btn" id="next"><i class="fa fa-forward"></i></button>
-      <button class="icon-btn" id="rep"><i class="fa fa-repeat"></i></button>
-      <button class="icon-btn" id="shf"><i class="fa fa-shuffle"></i></button>
+    <div class="footer-controls">
+      <i class="fas fa-play" id="playPauseIcon" onclick="playPause()"></i>
+      <button id="footerToggleBtn"><i class="fas fa-chevron-up"></i></button>
     </div>
   </div>
 
-  <audio id="audio" crossorigin="anonymous"></audio>
+  <div id="musicbanner" class="musicplayer">
+    <button id="close-banner-btn" class="control-btn"><i class="fas fa-chevron-down"></i></button>
+    <div class="album-cover"><img id="banner-cover-image" src="https://via.placeholder.com/120" /></div>
+    <div class="song-info"><h2 id="banner-song-title">Title</h2><p id="banner-artist-name">Artist</p></div>
+    <div class="progress-bar" id="progress-bar"><div id="progress" class="progress"></div></div>
+    <div class="time-stamps"><span id="current-time">00:00</span><span id="duration">00:00</span></div>
+    <div class="main-controls">
+      <button id="shuffle-btn" class="control-btn"><i class="fas fa-shuffle"></i></button>
+      <button id="prev" class="control-btn"><i class="fas fa-backward"></i></button>
+      <button id="banner-play-pause" class="control-btn"><i class="fas fa-play"></i></button>
+      <button id="next" class="control-btn"><i class="fas fa-forward"></i></button>
+      <button id="repeat-btn" class="control-btn"><i class="fas fa-repeat"></i></button>
+    </div>
+  </div>
 
+  <script src="https://www.youtube.com/iframe_api"></script>
   <script>
-    /* ================================================
-       CONFIG (fill your Spotify creds if you want)
-    ================================================= */
-    // RapidAPI keys (rotation-ready). You provided one; add more if you have them.
-    const RAPID_KEYS = [
-      "61036401f4msh42afa629c15c59bp1de3a8jsn9b9bfc7bc873"
-    ];
-    let rapidIdx = 0;
-    const RAPID_HOST_YT_SEARCH = "youtube-v31.p.rapidapi.com";
-    const RAPID_HOST_YT_MP3    = "youtube-mp36.p.rapidapi.com"; // MP3 extractor
+    const SPOTIFY_CLIENT_ID = '7afe6b39346f4bcc8654c141fe2a6136';
+    const SPOTIFY_CLIENT_SECRET = '119278484c2f4c28ac893ea3324bfe84';
+    const YOUTUBE_API_KEY = 'AIzaSyAwKYDbklOiCO1o3Dr7uM-xISbjksPkgDk';
 
-    // OPTIONAL: Spotify client credentials (for 30s previews)
-    const SPOTIFY_CLIENT_ID     = "7afe6b39346f4bcc8654c141fe2a6136";
-    const SPOTIFY_CLIENT_SECRET = "119278484c2f4c28ac893ea3324bfe84";
+    let spotifyToken = '', player, isPlayerReady=false, isPlaying=false;
+    let songQueue = [], currentSongIndex=0, shuffleMode=false, repeatMode=false;
 
-    /* ================================================
-       Simple cache (localStorage)
-    ================================================= */
-    const DAY = 24*60*60*1000;
-    function setCache(key, data, ttlMs = DAY) {
-      localStorage.setItem(key, JSON.stringify({ t: Date.now(), e: ttlMs, d: data }));
-    }
-    function getCache(key) {
-      const raw = localStorage.getItem(key);
-      if (!raw) return null;
-      try {
-        const { t, e, d } = JSON.parse(raw);
-        if (Date.now() - t > e) { localStorage.removeItem(key); return null; }
-        return d;
-      } catch { return null; }
-    }
-
-    /* ================================================
-       Helpers
-    ================================================= */
-    function rotateRapidKey() { rapidIdx = (rapidIdx + 1) % RAPID_KEYS.length; }
-    function rapidHeaders(host){
-      return { "X-RapidAPI-Key": RAPID_KEYS[rapidIdx], "X-RapidAPI-Host": host };
-    }
-    function esc(s){ return (s||"").replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c])); }
-
-    /* ================================================
-       YouTube search (RapidAPI)
-    ================================================= */
-    async function ytSearch(q){
-      const k = `cache_yt_${q}`;
-      const c = getCache(k);
-      if (c) return c;
-      let tries = 0;
-      while (tries < RAPID_KEYS.length) {
-        try {
-          const url = `https://${RAPID_HOST_YT_SEARCH}/search?part=snippet&q=${encodeURIComponent(q)}&type=video&maxResults=8`;
-          const res = await fetch(url, { headers: rapidHeaders(RAPID_HOST_YT_SEARCH) });
-          const data = await res.json();
-          if (data?.items) {
-            const mapped = data.items.map(it => ({
-              id: it.id?.videoId,
-              title: it.snippet?.title,
-              channel: it.snippet?.channelTitle,
-              thumb: it.snippet?.thumbnails?.medium?.url || it.snippet?.thumbnails?.high?.url
-            })).filter(v => v.id);
-            setCache(k, mapped);
-            return mapped;
-          }
-          // if quota or error, rotate
-          rotateRapidKey(); tries++;
-        } catch(e){ rotateRapidKey(); tries++; }
-      }
-      return [];
-    }
-
-    /* ================================================
-       YouTube MP3 (RapidAPI extractor)
-       Endpoint: https://youtube-mp36.p.rapidapi.com/dl?id=VIDEO_ID
-       Returns: {status, link, title, ...}
-    ================================================= */
-    async function ytMp3(videoId){
-      const k = `cache_mp3_${videoId}`;
-      const c = getCache(k, DAY);
-      if (c) return c;
-      let tries=0;
-      while (tries < RAPID_KEYS.length) {
-        try {
-          const url = `https://${RAPID_HOST_YT_MP3}/dl?id=${encodeURIComponent(videoId)}`;
-          const res = await fetch(url, { headers: rapidHeaders(RAPID_HOST_YT_MP3) });
-          const data = await res.json();
-          if (data?.status === "ok" && data.link) {
-            setCache(k, data, DAY); // cache the audio URL
-            return data;
-          }
-          rotateRapidKey(); tries++;
-        } catch(e){ rotateRapidKey(); tries++; }
-      }
-      return null;
-    }
-
-    /* ================================================
-       Spotify (client credentials)
-    ================================================= */
-    let spToken = "";
-    async function getSpotifyToken(){
-      const c = getCache("sp_token");
-      if (c) { spToken = c; return c; }
-      const body = new URLSearchParams({ grant_type: "client_credentials" });
-      const res = await fetch("https://accounts.spotify.com/api/token", {
-        method:"POST",
-        headers:{
-          "Content-Type":"application/x-www-form-urlencoded",
-          "Authorization":"Basic " + btoa(`${SPOTIFY_CLIENT_ID}:${SPOTIFY_CLIENT_SECRET}`)
-        },
-        body
+    function onYouTubeIframeAPIReady() {
+      player = new YT.Player('music-player', {
+        height:'0', width:'0', videoId:'', playerVars:{ autoplay:0, controls:0, rel:0, modestbranding:1 },
+        events:{ onReady:()=>isPlayerReady=true, onStateChange:onPlayerStateChange }
       });
-      const data = await res.json();
-      spToken = data.access_token;
-      setCache("sp_token", spToken, 55*60*1000); // ~55min
-      return spToken;
     }
 
-    async function spSearch(q){
-      try{
-        if (!spToken) await getSpotifyToken();
-        const res = await fetch(`https://api.spotify.com/v1/search?q=${encodeURIComponent(q)}&type=track&limit=8`, {
-          headers: { Authorization: `Bearer ${spToken}` }
-        });
-        const data = await res.json();
-        return (data?.tracks?.items || []).map(t => ({
-          id: t.id,
-          title: t.name,
-          artist: t.artists?.[0]?.name || "Unknown",
-          preview: t.preview_url, // 30s preview
-          cover: t.album?.images?.[0]?.url
-        }));
-      }catch(e){
-        return [];
+    async function getSpotifyToken() {
+      const res = await fetch('https://accounts.spotify.com/api/token', {
+        method:'POST',
+        headers:{ 'Content-Type':'application/x-www-form-urlencoded' },
+        body:`grant_type=client_credentials&client_id=${SPOTIFY_CLIENT_ID}&client_secret=${SPOTIFY_CLIENT_SECRET}`
+      });
+      spotifyToken = (await res.json()).access_token;
+    }
+
+    async function searchSongs() {
+      const q = document.getElementById('search-query').value.trim();
+      if (!q) return alert('Enter song!');
+      document.getElementById('song-list').innerHTML = '';
+      await getSpotifyToken();
+      const res = await fetch(`https://api.spotify.com/v1/search?q=${encodeURIComponent(q)}&type=track&limit=10`, {
+        headers:{ Authorization:`Bearer ${spotifyToken}` }
+      });
+      const data=await res.json();
+      if (data.tracks.items.length) displaySongs(data.tracks.items);
+      else alert('No results');
+    }
+
+    async function getYouTubeVideo(q) {
+      const res = await fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(q)}&type=video&maxResults=1&videoEmbeddable=true&key=${YOUTUBE_API_KEY}`);
+      const d=await res.json();
+      return d.items.length ? d.items[0].id.videoId : null;
+    }
+
+    async function displaySongs(songs) {
+      songQueue = [];
+      const container = document.getElementById('song-list');
+      for (let i=0;i<songs.length;i++){
+        const s=songs[i];
+        const title=s.name, artist=s.artists[0].name, cover=s.album.images[1].url;
+        const vid=await getYouTubeVideo(`${title} ${artist} official audio`);
+        songQueue.push({videoId:vid,title,artist,cover});
+        const div=document.createElement('div');
+        div.className='song-item';
+        div.innerHTML=`<img src="${cover}"/><p>${title} - ${artist}</p>`;
+        div.onclick=()=>{ currentSongIndex=i; playYouTubeAudio(vid,title,artist,cover); };
+        container.appendChild(div);
       }
     }
 
-    /* ================================================
-       UI render
-    ================================================= */
-    const ytEl = document.getElementById("yt");
-    const spEl = document.getElementById("sp");
-
-    function renderYT(list){
-      ytEl.innerHTML = list.map(v => `
-        <div class="card">
-          <img class="thumb" src="${esc(v.thumb)}" alt="">
-          <div class="content">
-            <div class="title" title="${esc(v.title)}">${esc(v.title)}</div>
-            <div class="muted">${esc(v.channel||"")}</div>
-            <div class="btns">
-              <button class="btn play" onclick="playYT('${v.id}','${esc(v.title)}','${esc(v.channel||"YouTube")}','${esc(v.thumb||"")}')">
-                <i class="fa fa-play"></i> Play
-              </button>
-              <a class="btn" href="https://www.youtube.com/watch?v=${v.id}" target="_blank" rel="noopener">
-                Watch
-              </a>
-            </div>
-          </div>
-        </div>
-      `).join("") || `<div class="muted">No results</div>`;
+    function playYouTubeAudio(videoId, title, artist, cover) {
+      if (!isPlayerReady || !videoId) return;
+      player.loadVideoById(videoId);
+      isPlaying = true;
+      updateUI(title,artist,cover);
     }
 
-    function renderSP(list){
-      spEl.innerHTML = list.map(t => `
-        <div class="card">
-          <img class="thumb" src="${esc(t.cover)}" alt="">
-          <div class="content">
-            <div class="title" title="${esc(t.title)}">${esc(t.title)}</div>
-            <div class="muted">${esc(t.artist)}</div>
-            <div class="btns">
-              <button class="btn play" onclick="playSP('${t.preview||""}','${esc(t.title)}','${esc(t.artist)}','${esc(t.cover||"")}')" ${t.preview ? "" : "disabled"}>
-                <i class="fa fa-play"></i> ${t.preview ? "Play 30s" : "No preview"}
-              </button>
-            </div>
-          </div>
-        </div>
-      `).join("") || `<div class="muted">No results</div>`;
+    function updateUI(title,artist,cover){
+      document.getElementById('footer-cover').src=cover;
+      document.getElementById('footer-title').textContent=title;
+      document.getElementById('footer-artist').textContent=artist;
+      document.getElementById('banner-cover-image').src=cover;
+      document.getElementById('banner-song-title').textContent=title;
+      document.getElementById('banner-artist-name').textContent=artist;
+      document.getElementById('playPauseIcon').className = 'fas fa-pause';
+      document.getElementById('banner-play-pause').innerHTML=`<i class="fas fa-pause"></i>`;
     }
 
-    /* ================================================
-       Player + queue
-    ================================================= */
-    const audio = document.getElementById("audio");
-    const titleEl = document.getElementById("title");
-    const artistEl = document.getElementById("artist");
-    const coverEl  = document.getElementById("cover");
-    const barEl    = document.getElementById("bar");
-    const ppBtn    = document.getElementById("pp");
-    const prevBtn  = document.getElementById("prev");
-    const nextBtn  = document.getElementById("next");
-    const repBtn   = document.getElementById("rep");
-    const shfBtn   = document.getElementById("shf");
-
-    let queue = []; // {src, title, artist, cover, type:'yt'|'sp', id?}
-    let idx = -1;
-    let repeat = false;
-    let shuffle = false;
-
-    function setNowPlaying(meta){
-      titleEl.textContent = meta.title || "Unknown";
-      artistEl.textContent = meta.artist || "—";
-      coverEl.src = meta.cover || "";
-      // Media Session (lock screen / notification controls)
-      if ('mediaSession' in navigator) {
-        navigator.mediaSession.metadata = new MediaMetadata({
-          title: meta.title || "Music45",
-          artist: meta.artist || "",
-          album: meta.type?.toUpperCase() || "",
-          artwork: meta.cover ? [{ src: meta.cover, sizes: "512x512", type: "image/jpeg" }] : []
-        });
-        navigator.mediaSession.setActionHandler('play', () => audio.play());
-        navigator.mediaSession.setActionHandler('pause', () => audio.pause());
-        navigator.mediaSession.setActionHandler('previoustrack', prevTrack);
-        navigator.mediaSession.setActionHandler('nexttrack', nextTrack);
-      }
-    }
-
-    function playAt(i){
-      if (i < 0 || i >= queue.length) return;
-      idx = i;
-      const it = queue[idx];
-      audio.src = it.src;
-      audio.play().catch(()=>{ /* user gesture might be needed */ });
-      setNowPlaying(it);
-      ppBtn.innerHTML = `<i class="fa fa-pause"></i>`;
-    }
-
-    function addToQueue(item, autoplay=true){
-      queue.push(item);
-      if (autoplay) playAt(queue.length-1);
-    }
-
-    function prevTrack(){ if (!queue.length) return; playAt( (idx - 1 + queue.length) % queue.length ); }
-    function nextTrack(){
-      if (!queue.length) return;
-      if (shuffle) {
-        const r = Math.floor(Math.random()*queue.length);
-        playAt(r);
+    function playPause() {
+      if (!player) return;
+      const state = player.getPlayerState();
+      if (state===YT.PlayerState.PLAYING){
+        player.pauseVideo(); isPlaying=false;
+        document.getElementById('playPauseIcon').className='fas fa-play';
+        document.getElementById('banner-play-pause').innerHTML=`<i class="fas fa-play"></i>`;
       } else {
-        playAt( (idx + 1) % queue.length );
+        player.playVideo(); isPlaying=true;
+        document.getElementById('playPauseIcon').className='fas fa-pause';
+        document.getElementById('banner-play-pause').innerHTML=`<i class="fas fa-pause"></i>`;
       }
     }
 
-    prevBtn.onclick = prevTrack;
-    nextBtn.onclick = nextTrack;
-    repBtn.onclick  = () => { repeat = !repeat; repBtn.style.background = repeat ? "#2b2b2b" : "#222"; };
-    shfBtn.onclick  = () => { shuffle = !shuffle; shfBtn.style.background = shuffle ? "#2b2b2b" : "#222"; };
-    ppBtn.onclick   = () => {
-      if (audio.paused) { audio.play(); ppBtn.innerHTML = `<i class="fa fa-pause"></i>`; }
-      else { audio.pause(); ppBtn.innerHTML = `<i class="fa fa-play"></i>`; }
-    };
+    function nextSong() {
+      if (!songQueue.length) return;
+      currentSongIndex = shuffleMode ?
+        Math.floor(Math.random()*songQueue.length) :
+        (currentSongIndex+1)%songQueue.length;
+      const s=songQueue[currentSongIndex];
+      playYouTubeAudio(s.videoId, s.title, s.artist, s.cover);
+    }
 
-    audio.addEventListener("ended", () => {
-      if (repeat) { audio.currentTime = 0; audio.play(); return; }
-      nextTrack();
+    function prevSong() {
+      if (!songQueue.length) return;
+      currentSongIndex = (currentSongIndex -1 + songQueue.length)%songQueue.length;
+      const s=songQueue[currentSongIndex];
+      playYouTubeAudio(s.videoId, s.title, s.artist, s.cover);
+    }
+
+    function onPlayerStateChange(e){
+      if (e.data===YT.PlayerState.ENDED){
+        if (repeatMode) player.seekTo(0), player.playVideo();
+        else nextSong();
+      }
+    }
+
+    // Progress Updater
+    setInterval(()=>{
+      if (player && isPlaying){
+        const cur=player.getCurrentTime(), dur=player.getDuration();
+        if (!isNaN(cur) && !isNaN(dur)){
+          document.getElementById('current-time').textContent=fmt(cur);
+          document.getElementById('duration').textContent=fmt(dur);
+          document.getElementById('progress').style.width=((cur/dur)*100)+'%';
+        }
+      }
+    },500);
+
+    function fmt(sec){
+      const m=Math.floor(sec/60), s=Math.floor(sec%60);
+      return `${m.toString().padStart(2,0)}:${s.toString().padStart(2,0)}`;
+    }
+
+    document.getElementById('progress-bar').addEventListener('click',e=>{
+      if (!player) return;
+      const rect=e.target.getBoundingClientRect();
+      const pct=(e.clientX-rect.left)/rect.width;
+      const sec=pct*player.getDuration();
+      player.seekTo(sec,true);
     });
 
-    // progress bar tick
-    setInterval(()=>{
-      if (!audio.duration) return;
-      barEl.style.width = ((audio.currentTime / audio.duration) * 100).toFixed(2) + "%";
-    }, 500);
+    document.getElementById('shuffle-btn').addEventListener('click', ()=>{
+      shuffleMode = !shuffleMode;
+      alert('Shuffle is ' + (shuffleMode? 'ON':'OFF'));
+    });
 
-    /* ================================================
-       Play handlers (exposed to HTML)
-    ================================================= */
-    window.playYT = async (vid, title, channel, thumb) => {
-      // Resolve MP3 via RapidAPI
-      const mp3 = await ytMp3(vid);
-      if (!mp3?.link) { alert("Could not fetch audio stream. (Quota or extractor limit)"); return; }
-      addToQueue({
-        src: mp3.link,
-        title: title || mp3.title || "YouTube",
-        artist: channel || "YouTube",
-        cover: thumb || "",
-        type: "yt",
-        id: vid
-      }, true);
+    document.getElementById('repeat-btn').addEventListener('click', ()=>{
+      repeatMode = !repeatMode;
+      alert('Repeat is ' + (repeatMode? 'ON':'OFF'));
+    });
+
+    document.getElementById('next').addEventListener('click', nextSong);
+    document.getElementById('prev').addEventListener('click', prevSong);
+    document.getElementById('banner-play-pause').addEventListener('click', playPause);
+    document.getElementById('footerToggleBtn').addEventListener('click', ()=>{
+      const b=document.getElementById('musicbanner');
+      b.style.display = b.style.display === 'block' ? 'none' : 'block';
+    });
+    document.getElementById('close-banner-btn').addEventListener('click', ()=>{
+      document.getElementById('musicbanner').style.display = 'none';
+    });
+if ('mediaSession' in navigator) {
+  function updateMediaSession(song) {
+    navigator.mediaSession.metadata = new MediaMetadata({
+      title: song.title,
+      artist: song.artist,
+      artwork: [
+        { src: song.cover, sizes: '512x512', type: 'image/png' }
+      ]
+    });
+
+    navigator.mediaSession.setActionHandler('play', playPause);
+    navigator.mediaSession.setActionHandler('pause', playPause);
+    navigator.mediaSession.setActionHandler('previoustrack', prevSong);
+    navigator.mediaSession.setActionHandler('nexttrack', nextSong);
+  }
+
+  // Call update when song changes
+  function playYouTubeAudio(videoId, title, artist, cover) {
+    if (!isPlayerReady || !videoId) return;
+    player.loadVideoById(videoId);
+    isPlaying = true;
+    updateUI(title, artist, cover);
+    updateMediaSession({ title, artist, cover }); // ✅ New line
+  }
+}
+    // Auto-load trending on page load
+    window.onload = async ()=>{
+      await getSpotifyToken();
+      const res = await fetch(`https://api.spotify.com/v1/browse/new-releases?limit=8`, {
+        headers:{ Authorization:`Bearer ${spotifyToken}` }
+      });
+      const d=await res.json();
+      displaySongs(d.albums.items.map(a=>{
+        return {name:a.name,artists:[{name:a.artists[0].name}],album:{images:a.images}};
+      }));
     };
-
-    window.playSP = (preview, title, artist, cover) => {
-      if (!preview) { alert("No Spotify preview available for this track."); return; }
-      addToQueue({
-        src: preview,
-        title, artist, cover, type: "sp"
-      }, true);
-    };
-
-    /* ================================================
-       Search glue
-    ================================================= */
-    async function doSearch(){
-      const q = document.getElementById("q").value.trim();
-      if (!q) return;
-      document.getElementById("yt-badge").textContent = "loading…";
-      document.getElementById("sp-badge").textContent = "loading…";
-      const [yt, sp] = await Promise.all([ ytSearch(q), spSearch(q) ]);
-      renderYT(yt);
-      renderSP(sp);
-      document.getElementById("yt-badge").textContent = `${yt.length} results`;
-      document.getElementById("sp-badge").textContent = `${sp.length} results`;
-    }
-
-    document.getElementById("go").addEventListener("click", doSearch);
-    document.getElementById("q").addEventListener("keydown", e => { if (e.key === "Enter") doSearch(); });
-
-    // Optional: initial trending seed
-    (async ()=> {
-      document.getElementById("q").value = "Arijit Singh";
-      doSearch();
-    })();
   </script>
 </body>
 </html>
