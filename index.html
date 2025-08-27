@@ -4,7 +4,6 @@
   <meta charset="UTF-8" />
   <title>Music45 Player</title>
   <link rel="icon" type="image/webp" href="https://music45.vercel.app/music/music45.webp">
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"></script>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
   <style>
     body {
@@ -14,9 +13,7 @@
       color: #fff;
       padding-bottom: 120px;
     }
-    .search-container {
-      margin-bottom: 20px;
-    }
+    .search-container { margin-bottom: 20px; }
     input {
       padding: 10px;
       width: 60%;
@@ -33,9 +30,8 @@
       cursor: pointer;
       border-radius: 5px;
     }
-    button:hover {
-      background: #e84118;
-    }
+    button:hover { background: #e84118; }
+
     .song-item {
       display: flex;
       align-items: center;
@@ -46,78 +42,38 @@
       width: 80%;
       cursor: pointer;
     }
-    .song-item img {
-      width: 80px;
-      height: 80px;
-      border-radius: 5px;
-      margin-right: 10px;
-    }
-    .song-item p {
-      flex-grow: 1;
-      text-align: left;
-    }
+    .song-item img { width: 80px; height: 80px; border-radius: 5px; margin-right: 10px; }
+    .song-item p { flex-grow: 1; text-align: left; }
 
     /* Footer Player */
     .footer-player, .musicplayer { position: fixed; left: 0; right: 0; background: #2f3542; color: #fff; z-index: 999; }
     .footer-player {
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      height: 100px;
-      background: #2f3542;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
+      bottom: 0; height: 100px;
+      display: flex; align-items: center; justify-content: space-between;
       padding: 0 20px;
-      z-index: 1000;
     }
+    .footer-song-info { display: flex; align-items: center; gap: 15px; }
+    .footer-song-info img { width: 60px; height: 60px; border-radius: 5px; }
+    .footer-controls i { font-size: 24px; cursor: pointer; color: #fff; }
 
-    .footer-song-info {
-      display: flex;
-      align-items: center;
-      gap: 15px;
+    .musicplayer {
+      bottom: 100px; left: 50%;
+      transform: translateX(-50%);
+      width: 90%;
+      max-width: 400px;
+      padding:20px;
+      border-top-left-radius:20px; border-top-right-radius:20px;
+      display: none; flex-direction: column;
+      background: #2f3542; text-align:center;
     }
-
-    .footer-song-info img {
-      width: 60px;
-      height: 60px;
-      border-radius: 5px;
-    }
-
-    .footer-song-text {
-      text-align: left;
-    }
-
-    .footer-song-text .title {
-      font-weight: bold;
-    }
-
-    .footer-controls i {
-      font-size: 24px;
-      color: white;
-      cursor: pointer;
-    }
-
-
-    .musicplayer { bottom: 100px; padding:20px; border-top-left-radius:20px; border-top-right-radius:20px; display: none;
- transform: translateX(-50%);
-z-index: 9999;
-flex-direction: column;
- justify-content:center;
-  position: fixed;
-  top: -5%;
-  left: 50%;
-text-align: center;
- text-align:center; background: #2f3542;}
     .album-cover img { width:120px; height:120px; border-radius:8px; }
     .song-info { margin:10px; }
     .progress-bar { width:80%; height:6px; background:#555; margin:12px auto; position:relative; cursor:pointer; border-radius:4px; }
     .progress { height:100%; background:#ff4757; width:0%; border-radius:4px; }
     .time-stamps { display:flex; justify-content: space-between; font-size:12px; width:80%; margin:0 auto; }
-    .main-controls, .secondary-controls { display:flex; justify-content:center; gap:20px; margin:12px 0; }
+    .main-controls { display:flex; justify-content:center; gap:20px; margin:12px 0; }
     .control-btn { background:none; border:none; color:#fff; font-size:24px; cursor:pointer; }
-</style>
+  </style>
 </head>
 <body>
   <h1>Music45 Player</h1>
@@ -162,14 +118,15 @@ text-align: center;
   <script>
     const SPOTIFY_CLIENT_ID = '7afe6b39346f4bcc8654c141fe2a6136';
     const SPOTIFY_CLIENT_SECRET = '119278484c2f4c28ac893ea3324bfe84';
-    const YOUTUBE_API_KEY = 'AIzaSyAwKYDbklOiCO1o3Dr7uM-xISbjksPkgDk';
+    const RAPIDAPI_KEY = '61036401f4msh42afa629c15c59bp1de3a8jsn9b9bfc7bc873';
 
     let spotifyToken = '', player, isPlayerReady=false, isPlaying=false;
     let songQueue = [], currentSongIndex=0, shuffleMode=false, repeatMode=false;
 
     function onYouTubeIframeAPIReady() {
       player = new YT.Player('music-player', {
-        height:'0', width:'0', videoId:'', playerVars:{ autoplay:0, controls:0, rel:0, modestbranding:1 },
+        height:'0', width:'0',
+        videoId:'', playerVars:{ autoplay:0, controls:0, rel:0, modestbranding:1 },
         events:{ onReady:()=>isPlayerReady=true, onStateChange:onPlayerStateChange }
       });
     }
@@ -197,17 +154,31 @@ text-align: center;
     }
 
     async function getYouTubeVideo(q) {
-      const res = await fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(q)}&type=video&maxResults=1&videoEmbeddable=true&key=${YOUTUBE_API_KEY}`);
-      const d=await res.json();
-      return d.items.length ? d.items[0].id.videoId : null;
+      const url = `https://youtube-v31.p.rapidapi.com/search?part=snippet&q=${encodeURIComponent(q)}&maxResults=1`;
+      const options = {
+        method: 'GET',
+        headers: {
+          'X-RapidAPI-Key': RAPIDAPI_KEY,
+          'X-RapidAPI-Host': 'youtube-v31.p.rapidapi.com'
+        }
+      };
+      try {
+        const res = await fetch(url, options);
+        const d = await res.json();
+        return d.items && d.items.length ? d.items[0].id.videoId : null;
+      } catch (err) {
+        console.error(err);
+        return null;
+      }
     }
 
     async function displaySongs(songs) {
       songQueue = [];
       const container = document.getElementById('song-list');
+      container.innerHTML = '';
       for (let i=0;i<songs.length;i++){
         const s=songs[i];
-        const title=s.name, artist=s.artists[0].name, cover=s.album.images[1].url;
+        const title=s.name, artist=s.artists[0].name, cover=s.album.images[1]?.url || s.album.images[0]?.url;
         const vid=await getYouTubeVideo(`${title} ${artist} official audio`);
         songQueue.push({videoId:vid,title,artist,cover});
         const div=document.createElement('div');
@@ -287,48 +258,36 @@ text-align: center;
 
     function fmt(sec){
       const m=Math.floor(sec/60), s=Math.floor(sec%60);
-      return `${m.toString().padStart(2,0)}:${s.toString().padStart(2,0)}`;
+      return `${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
     }
 
     document.getElementById('progress-bar').addEventListener('click',e=>{
       if (!player) return;
-      const rect=e.target.getBoundingClientRect();
+      const rect=e.currentTarget.getBoundingClientRect();
       const pct=(e.clientX-rect.left)/rect.width;
       const sec=pct*player.getDuration();
       player.seekTo(sec,true);
     });
 
-    document.getElementById('shuffle-btn').addEventListener('click', ()=>{
-      shuffleMode = !shuffleMode;
-      alert('Shuffle is ' + (shuffleMode? 'ON':'OFF'));
-    });
-
-    document.getElementById('repeat-btn').addEventListener('click', ()=>{
-      repeatMode = !repeatMode;
-      alert('Repeat is ' + (repeatMode? 'ON':'OFF'));
-    });
-
+    document.getElementById('shuffle-btn').addEventListener('click', ()=>{ shuffleMode = !shuffleMode; alert('Shuffle is ' + (shuffleMode? 'ON':'OFF')); });
+    document.getElementById('repeat-btn').addEventListener('click', ()=>{ repeatMode = !repeatMode; alert('Repeat is ' + (repeatMode? 'ON':'OFF')); });
     document.getElementById('next').addEventListener('click', nextSong);
     document.getElementById('prev').addEventListener('click', prevSong);
     document.getElementById('banner-play-pause').addEventListener('click', playPause);
-    document.getElementById('footerToggleBtn').addEventListener('click', ()=>{
-      const b=document.getElementById('musicbanner');
-      b.style.display = b.style.display === 'block' ? 'none' : 'block';
+    document.getElementById('footerToggleBtn').addEventListener('click', ()=>{ 
+      const b=document.getElementById('musicbanner'); 
+      b.style.display = b.style.display === 'block' ? 'none' : 'block'; 
     });
-    document.getElementById('close-banner-btn').addEventListener('click', ()=>{
-      document.getElementById('musicbanner').style.display = 'none';
-    });
+    document.getElementById('close-banner-btn').addEventListener('click', ()=>{ document.getElementById('musicbanner').style.display = 'none'; });
 
-    // Auto-load trending on page load
+    // ✅ Trending songs on load
     window.onload = async ()=>{
       await getSpotifyToken();
-      const res = await fetch(`https://api.spotify.com/v1/browse/new-releases?limit=8`, {
+      const res = await fetch(`https://api.spotify.com/v1/playlists/37i9dQZEVXbNG2KDcFcKOF/tracks?limit=8`, {
         headers:{ Authorization:`Bearer ${spotifyToken}` }
       });
       const d=await res.json();
-      displaySongs(d.albums.items.map(a=>{
-        return {name:a.name,artists:[{name:a.artists[0].name}],album:{images:a.images}};
-      }));
+      displaySongs(d.items.map(it=>it.track));
     };
   </script>
 </body>
