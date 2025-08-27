@@ -1,162 +1,395 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Music45 - YouTube & Spotify Player</title>
+  <meta charset="UTF-8" />
+  <title>Music45 – YouTube (RapidAPI) + Spotify | Background Audio</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
   <style>
-    body { font-family: Arial, sans-serif; background: #111; color: #fff; text-align: center; }
-    #results { margin-top: 20px; display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 15px; }
-    .card { background: #222; padding: 10px; border-radius: 8px; box-shadow: 0 0 10px #444; }
-    .card img { width: 100%; border-radius: 8px; }
-    .title { font-size: 14px; margin-top: 8px; }
-    audio { width: 100%; margin-top: 20px; }
+    :root { --bg:#111; --card:#1b1b1b; --text:#fff; --muted:#a7a7a7; --brand:#ff4757; }
+    * { box-sizing: border-box; }
+    body { margin:0; font-family: system-ui, Arial, sans-serif; background:var(--bg); color:var(--text); padding-bottom:120px; }
+    header { padding:20px; text-align:center; }
+    header h1 { margin:0 0 10px; font-size:22px; }
+    .search { display:flex; gap:8px; justify-content:center; padding:0 12px; }
+    .search input { width:min(720px,90vw); padding:12px 14px; border-radius:10px; border:1px solid #2b2b2b; background:#141414; color:var(--text); }
+    .search button { padding:12px 16px; border:0; border-radius:10px; background:var(--brand); color:#fff; cursor:pointer; }
+    .wrap { padding:16px; max-width:1200px; margin:0 auto; }
+    .grid { display:grid; grid-template-columns: repeat(auto-fill,minmax(240px,1fr)); gap:14px; }
+    .card { background:var(--card); border:1px solid #2a2a2a; border-radius:14px; overflow:hidden; display:flex; flex-direction:column; }
+    .thumb { width:100%; aspect-ratio:16/9; object-fit:cover; background:#000; }
+    .content { padding:10px 12px; display:flex; flex-direction:column; gap:10px; }
+    .title { font-size:14px; line-height:1.2; }
+    .muted { color:var(--muted); font-size:12px; }
+    .btns { display:flex; gap:8px; }
+    .btn { flex:1; padding:10px; font-size:14px; border-radius:10px; border:1px solid #2f2f2f; background:#202020; color:#fff; cursor:pointer; }
+    .btn.play { background:var(--brand); border-color:var(--brand); }
+    /* footer player */
+    .player { position:fixed; left:0; right:0; bottom:0; height:100px; background:#181818; border-top:1px solid #2a2a2a; display:flex; align-items:center; padding:0 14px; gap:12px; z-index:9999;}
+    .cover { width:68px; height:68px; border-radius:10px; background:#000; object-fit:cover; }
+    .meta { min-width:0; flex:1; }
+    .meta .t { font-weight:600; font-size:14px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .meta .a { color:var(--muted); font-size:12px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .controls { display:flex; align-items:center; gap:12px; }
+    .icon-btn { width:42px; height:42px; border-radius:50%; border:1px solid #2a2a2a; display:inline-grid; place-items:center; background:#222; color:#fff; cursor:pointer; }
+    .progress { position:absolute; left:0; right:0; bottom:100px; height:4px; background:#2a2a2a; }
+    .bar { height:100%; width:0%; background:var(--brand); }
+    audio { display:none; }
+    .badge { font-size:11px; padding:2px 8px; border-radius:999px; background:#262626; color:#ddd; border:1px solid #303030; }
   </style>
 </head>
 <body>
-  <h2>🎵 Music45: YouTube + Spotify</h2>
-  <input type="text" id="searchBox" placeholder="Search songs..." style="padding:10px; width:60%;">
-  <button onclick="handleSearch()">Search</button>
-  
-  <h3>Results</h3>
-  <div id="results"></div>
+  <header>
+    <h1>🎵 Music45 – YouTube (RapidAPI) + Spotify</h1>
+    <div class="search">
+      <input id="q" placeholder="Search a song, artist, or album…" />
+      <button id="go"><i class="fa fa-search"></i> Search</button>
+    </div>
+    <p class="muted" style="margin-top:8px">Background audio works via native &lt;audio&gt; + Media Session. You can switch tabs and it keeps playing.</p>
+  </header>
 
-  <!-- Audio Player -->
-  <audio id="player" controls autoplay></audio>
+  <div class="wrap">
+    <h3 style="margin:8px 4px;">YouTube (via RapidAPI) <span class="badge" id="yt-badge">search</span></h3>
+    <div id="yt" class="grid"></div>
+
+    <h3 style="margin:16px 4px;">Spotify Tracks (30s preview) <span class="badge" id="sp-badge">search</span></h3>
+    <div id="sp" class="grid"></div>
+  </div>
+
+  <!-- Progress line above footer -->
+  <div class="progress"><div id="bar" class="bar"></div></div>
+
+  <!-- Footer Player -->
+  <div class="player">
+    <img id="cover" class="cover" alt="">
+    <div class="meta">
+      <div class="t" id="title">Nothing playing</div>
+      <div class="a" id="artist">—</div>
+    </div>
+    <div class="controls">
+      <button class="icon-btn" id="prev"><i class="fa fa-backward"></i></button>
+      <button class="icon-btn" id="pp"><i class="fa fa-play"></i></button>
+      <button class="icon-btn" id="next"><i class="fa fa-forward"></i></button>
+      <button class="icon-btn" id="rep"><i class="fa fa-repeat"></i></button>
+      <button class="icon-btn" id="shf"><i class="fa fa-shuffle"></i></button>
+    </div>
+  </div>
+
+  <audio id="audio" crossorigin="anonymous"></audio>
 
   <script>
-    /* ============================================================
-       🔹 1. YouTube API with Rotation
-    ============================================================ */
-    const YT_KEYS = [
-      "AIzaSyAwKYDbklOiCO1o3Dr7uM-xISbjksPkgDk",
-      "AIzaSyCwFRzcS_3E_ADULIdtesolIbbD5YD8Sgs",
+    /* ================================================
+       CONFIG (fill your Spotify creds if you want)
+    ================================================= */
+    // RapidAPI keys (rotation-ready). You provided one; add more if you have them.
+    const RAPID_KEYS = [
       "61036401f4msh42afa629c15c59bp1de3a8jsn9b9bfc7bc873"
-
     ];
-    let ytKeyIndex = 0;
-    function getYTKey() { return YT_KEYS[ytKeyIndex]; }
-    function switchYTKey() { ytKeyIndex = (ytKeyIndex + 1) % YT_KEYS.length; }
+    let rapidIdx = 0;
+    const RAPID_HOST_YT_SEARCH = "youtube-v31.p.rapidapi.com";
+    const RAPID_HOST_YT_MP3    = "youtube-mp36.p.rapidapi.com"; // MP3 extractor
 
-    const CACHE_EXPIRY = 24 * 60 * 60 * 1000; // 24h
-    function setCache(query, data) { localStorage.setItem("cache_" + query, JSON.stringify({data, ts:Date.now()})); }
-    function getCache(query) {
-      let d = localStorage.getItem("cache_" + query);
-      if (!d) return null;
-      d = JSON.parse(d);
-      if (Date.now() - d.ts > CACHE_EXPIRY) return null;
-      return d.data;
+    // OPTIONAL: Spotify client credentials (for 30s previews)
+    const SPOTIFY_CLIENT_ID     = "7afe6b39346f4bcc8654c141fe2a6136";
+    const SPOTIFY_CLIENT_SECRET = "119278484c2f4c28ac893ea3324bfe84";
+
+    /* ================================================
+       Simple cache (localStorage)
+    ================================================= */
+    const DAY = 24*60*60*1000;
+    function setCache(key, data, ttlMs = DAY) {
+      localStorage.setItem(key, JSON.stringify({ t: Date.now(), e: ttlMs, d: data }));
+    }
+    function getCache(key) {
+      const raw = localStorage.getItem(key);
+      if (!raw) return null;
+      try {
+        const { t, e, d } = JSON.parse(raw);
+        if (Date.now() - t > e) { localStorage.removeItem(key); return null; }
+        return d;
+      } catch { return null; }
     }
 
-    async function searchYouTube(query) {
-      const cache = getCache("yt_" + query);
-      if (cache) return cache;
+    /* ================================================
+       Helpers
+    ================================================= */
+    function rotateRapidKey() { rapidIdx = (rapidIdx + 1) % RAPID_KEYS.length; }
+    function rapidHeaders(host){
+      return { "X-RapidAPI-Key": RAPID_KEYS[rapidIdx], "X-RapidAPI-Host": host };
+    }
+    function esc(s){ return (s||"").replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c])); }
 
-      let attempts = 0;
-      while (attempts < YT_KEYS.length) {
+    /* ================================================
+       YouTube search (RapidAPI)
+    ================================================= */
+    async function ytSearch(q){
+      const k = `cache_yt_${q}`;
+      const c = getCache(k);
+      if (c) return c;
+      let tries = 0;
+      while (tries < RAPID_KEYS.length) {
         try {
-          const res = await fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&q=${encodeURIComponent(query)}&maxResults=5&key=${getYTKey()}`);
+          const url = `https://${RAPID_HOST_YT_SEARCH}/search?part=snippet&q=${encodeURIComponent(q)}&type=video&maxResults=8`;
+          const res = await fetch(url, { headers: rapidHeaders(RAPID_HOST_YT_SEARCH) });
           const data = await res.json();
-          if (data.error) { switchYTKey(); attempts++; }
-          else { setCache("yt_" + query, data.items); return data.items; }
-        } catch { switchYTKey(); attempts++; }
+          if (data?.items) {
+            const mapped = data.items.map(it => ({
+              id: it.id?.videoId,
+              title: it.snippet?.title,
+              channel: it.snippet?.channelTitle,
+              thumb: it.snippet?.thumbnails?.medium?.url || it.snippet?.thumbnails?.high?.url
+            })).filter(v => v.id);
+            setCache(k, mapped);
+            return mapped;
+          }
+          // if quota or error, rotate
+          rotateRapidKey(); tries++;
+        } catch(e){ rotateRapidKey(); tries++; }
       }
       return [];
     }
 
-    /* ============================================================
-       🔹 2. Spotify API (Client Credentials Flow)
-    ============================================================ */
-    const SPOTIFY_CLIENT_ID = "7afe6b39346f4bcc8654c141fe2a6136";
-    const SPOTIFY_CLIENT_SECRET = "119278484c2f4c28ac893ea3324bfe84";
-    let spotifyToken = "";
+    /* ================================================
+       YouTube MP3 (RapidAPI extractor)
+       Endpoint: https://youtube-mp36.p.rapidapi.com/dl?id=VIDEO_ID
+       Returns: {status, link, title, ...}
+    ================================================= */
+    async function ytMp3(videoId){
+      const k = `cache_mp3_${videoId}`;
+      const c = getCache(k, DAY);
+      if (c) return c;
+      let tries=0;
+      while (tries < RAPID_KEYS.length) {
+        try {
+          const url = `https://${RAPID_HOST_YT_MP3}/dl?id=${encodeURIComponent(videoId)}`;
+          const res = await fetch(url, { headers: rapidHeaders(RAPID_HOST_YT_MP3) });
+          const data = await res.json();
+          if (data?.status === "ok" && data.link) {
+            setCache(k, data, DAY); // cache the audio URL
+            return data;
+          }
+          rotateRapidKey(); tries++;
+        } catch(e){ rotateRapidKey(); tries++; }
+      }
+      return null;
+    }
 
-    async function getSpotifyToken() {
+    /* ================================================
+       Spotify (client credentials)
+    ================================================= */
+    let spToken = "";
+    async function getSpotifyToken(){
+      const c = getCache("sp_token");
+      if (c) { spToken = c; return c; }
+      const body = new URLSearchParams({ grant_type: "client_credentials" });
       const res = await fetch("https://accounts.spotify.com/api/token", {
-        method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded", "Authorization": "Basic " + btoa(SPOTIFY_CLIENT_ID + ":" + SPOTIFY_CLIENT_SECRET) },
-        body: "grant_type=client_credentials"
+        method:"POST",
+        headers:{
+          "Content-Type":"application/x-www-form-urlencoded",
+          "Authorization":"Basic " + btoa(`${SPOTIFY_CLIENT_ID}:${SPOTIFY_CLIENT_SECRET}`)
+        },
+        body
       });
       const data = await res.json();
-      spotifyToken = data.access_token;
+      spToken = data.access_token;
+      setCache("sp_token", spToken, 55*60*1000); // ~55min
+      return spToken;
     }
 
-    async function searchSpotify(query) {
-      if (!spotifyToken) await getSpotifyToken();
-      const res = await fetch(`https://api.spotify.com/v1/search?q=${encodeURIComponent(query)}&type=track&limit=5`, {
-        headers: { "Authorization": "Bearer " + spotifyToken }
-      });
-      const data = await res.json();
-      return data.tracks.items || [];
-    }
-
-    /* ============================================================
-       🔹 3. Handle Search (YouTube + Spotify)
-    ============================================================ */
-    async function handleSearch() {
-      const q = document.getElementById("searchBox").value.trim();
-      if (!q) return;
-      document.getElementById("results").innerHTML = "<p>Loading...</p>";
-
-      const [ytResults, spResults] = await Promise.all([
-        searchYouTube(q),
-        searchSpotify(q)
-      ]);
-
-      let html = "";
-
-      ytResults.forEach(v => {
-        html += `
-          <div class="card">
-            <img src="${v.snippet.thumbnails.medium.url}" alt="">
-            <div class="title">${v.snippet.title}</div>
-            <button onclick="playYouTube('${v.id.videoId}')">▶ Play</button>
-          </div>
-        `;
-      });
-
-      spResults.forEach(t => {
-        html += `
-          <div class="card">
-            <img src="${t.album.images[0].url}" alt="">
-            <div class="title">${t.name} - ${t.artists[0].name}</div>
-            <button onclick="playSpotify('${t.preview_url}')">▶ Play</button>
-          </div>
-        `;
-      });
-
-      document.getElementById("results").innerHTML = html;
-    }
-
-    /* ============================================================
-       🔹 4. Play Functions
-    ============================================================ */
-    const player = document.getElementById("player");
-
-    function playYouTube(videoId) {
-      // For background play, we can use an audio extractor API (since YT blocks direct audio).
-      alert("YouTube playback needs a backend proxy (YT blocks direct audio). Use youtube-dl API or RapidAPI extractor.");
-    }
-
-    function playSpotify(previewUrl) {
-      if (previewUrl) {
-        player.src = previewUrl;
-        player.play();
-      } else {
-        alert("No preview available (Spotify restricts full playback).");
+    async function spSearch(q){
+      try{
+        if (!spToken) await getSpotifyToken();
+        const res = await fetch(`https://api.spotify.com/v1/search?q=${encodeURIComponent(q)}&type=track&limit=8`, {
+          headers: { Authorization: `Bearer ${spToken}` }
+        });
+        const data = await res.json();
+        return (data?.tracks?.items || []).map(t => ({
+          id: t.id,
+          title: t.name,
+          artist: t.artists?.[0]?.name || "Unknown",
+          preview: t.preview_url, // 30s preview
+          cover: t.album?.images?.[0]?.url
+        }));
+      }catch(e){
+        return [];
       }
     }
 
-    /* ============================================================
-       🔹 5. Background Play (Media Session API)
-    ============================================================ */
-    if ('mediaSession' in navigator) {
-      navigator.mediaSession.setActionHandler('play', () => player.play());
-      navigator.mediaSession.setActionHandler('pause', () => player.pause());
-      navigator.mediaSession.setActionHandler('previoustrack', () => console.log("Prev"));
-      navigator.mediaSession.setActionHandler('nexttrack', () => console.log("Next"));
+    /* ================================================
+       UI render
+    ================================================= */
+    const ytEl = document.getElementById("yt");
+    const spEl = document.getElementById("sp");
+
+    function renderYT(list){
+      ytEl.innerHTML = list.map(v => `
+        <div class="card">
+          <img class="thumb" src="${esc(v.thumb)}" alt="">
+          <div class="content">
+            <div class="title" title="${esc(v.title)}">${esc(v.title)}</div>
+            <div class="muted">${esc(v.channel||"")}</div>
+            <div class="btns">
+              <button class="btn play" onclick="playYT('${v.id}','${esc(v.title)}','${esc(v.channel||"YouTube")}','${esc(v.thumb||"")}')">
+                <i class="fa fa-play"></i> Play
+              </button>
+              <a class="btn" href="https://www.youtube.com/watch?v=${v.id}" target="_blank" rel="noopener">
+                Watch
+              </a>
+            </div>
+          </div>
+        </div>
+      `).join("") || `<div class="muted">No results</div>`;
     }
 
+    function renderSP(list){
+      spEl.innerHTML = list.map(t => `
+        <div class="card">
+          <img class="thumb" src="${esc(t.cover)}" alt="">
+          <div class="content">
+            <div class="title" title="${esc(t.title)}">${esc(t.title)}</div>
+            <div class="muted">${esc(t.artist)}</div>
+            <div class="btns">
+              <button class="btn play" onclick="playSP('${t.preview||""}','${esc(t.title)}','${esc(t.artist)}','${esc(t.cover||"")}')" ${t.preview ? "" : "disabled"}>
+                <i class="fa fa-play"></i> ${t.preview ? "Play 30s" : "No preview"}
+              </button>
+            </div>
+          </div>
+        </div>
+      `).join("") || `<div class="muted">No results</div>`;
+    }
+
+    /* ================================================
+       Player + queue
+    ================================================= */
+    const audio = document.getElementById("audio");
+    const titleEl = document.getElementById("title");
+    const artistEl = document.getElementById("artist");
+    const coverEl  = document.getElementById("cover");
+    const barEl    = document.getElementById("bar");
+    const ppBtn    = document.getElementById("pp");
+    const prevBtn  = document.getElementById("prev");
+    const nextBtn  = document.getElementById("next");
+    const repBtn   = document.getElementById("rep");
+    const shfBtn   = document.getElementById("shf");
+
+    let queue = []; // {src, title, artist, cover, type:'yt'|'sp', id?}
+    let idx = -1;
+    let repeat = false;
+    let shuffle = false;
+
+    function setNowPlaying(meta){
+      titleEl.textContent = meta.title || "Unknown";
+      artistEl.textContent = meta.artist || "—";
+      coverEl.src = meta.cover || "";
+      // Media Session (lock screen / notification controls)
+      if ('mediaSession' in navigator) {
+        navigator.mediaSession.metadata = new MediaMetadata({
+          title: meta.title || "Music45",
+          artist: meta.artist || "",
+          album: meta.type?.toUpperCase() || "",
+          artwork: meta.cover ? [{ src: meta.cover, sizes: "512x512", type: "image/jpeg" }] : []
+        });
+        navigator.mediaSession.setActionHandler('play', () => audio.play());
+        navigator.mediaSession.setActionHandler('pause', () => audio.pause());
+        navigator.mediaSession.setActionHandler('previoustrack', prevTrack);
+        navigator.mediaSession.setActionHandler('nexttrack', nextTrack);
+      }
+    }
+
+    function playAt(i){
+      if (i < 0 || i >= queue.length) return;
+      idx = i;
+      const it = queue[idx];
+      audio.src = it.src;
+      audio.play().catch(()=>{ /* user gesture might be needed */ });
+      setNowPlaying(it);
+      ppBtn.innerHTML = `<i class="fa fa-pause"></i>`;
+    }
+
+    function addToQueue(item, autoplay=true){
+      queue.push(item);
+      if (autoplay) playAt(queue.length-1);
+    }
+
+    function prevTrack(){ if (!queue.length) return; playAt( (idx - 1 + queue.length) % queue.length ); }
+    function nextTrack(){
+      if (!queue.length) return;
+      if (shuffle) {
+        const r = Math.floor(Math.random()*queue.length);
+        playAt(r);
+      } else {
+        playAt( (idx + 1) % queue.length );
+      }
+    }
+
+    prevBtn.onclick = prevTrack;
+    nextBtn.onclick = nextTrack;
+    repBtn.onclick  = () => { repeat = !repeat; repBtn.style.background = repeat ? "#2b2b2b" : "#222"; };
+    shfBtn.onclick  = () => { shuffle = !shuffle; shfBtn.style.background = shuffle ? "#2b2b2b" : "#222"; };
+    ppBtn.onclick   = () => {
+      if (audio.paused) { audio.play(); ppBtn.innerHTML = `<i class="fa fa-pause"></i>`; }
+      else { audio.pause(); ppBtn.innerHTML = `<i class="fa fa-play"></i>`; }
+    };
+
+    audio.addEventListener("ended", () => {
+      if (repeat) { audio.currentTime = 0; audio.play(); return; }
+      nextTrack();
+    });
+
+    // progress bar tick
+    setInterval(()=>{
+      if (!audio.duration) return;
+      barEl.style.width = ((audio.currentTime / audio.duration) * 100).toFixed(2) + "%";
+    }, 500);
+
+    /* ================================================
+       Play handlers (exposed to HTML)
+    ================================================= */
+    window.playYT = async (vid, title, channel, thumb) => {
+      // Resolve MP3 via RapidAPI
+      const mp3 = await ytMp3(vid);
+      if (!mp3?.link) { alert("Could not fetch audio stream. (Quota or extractor limit)"); return; }
+      addToQueue({
+        src: mp3.link,
+        title: title || mp3.title || "YouTube",
+        artist: channel || "YouTube",
+        cover: thumb || "",
+        type: "yt",
+        id: vid
+      }, true);
+    };
+
+    window.playSP = (preview, title, artist, cover) => {
+      if (!preview) { alert("No Spotify preview available for this track."); return; }
+      addToQueue({
+        src: preview,
+        title, artist, cover, type: "sp"
+      }, true);
+    };
+
+    /* ================================================
+       Search glue
+    ================================================= */
+    async function doSearch(){
+      const q = document.getElementById("q").value.trim();
+      if (!q) return;
+      document.getElementById("yt-badge").textContent = "loading…";
+      document.getElementById("sp-badge").textContent = "loading…";
+      const [yt, sp] = await Promise.all([ ytSearch(q), spSearch(q) ]);
+      renderYT(yt);
+      renderSP(sp);
+      document.getElementById("yt-badge").textContent = `${yt.length} results`;
+      document.getElementById("sp-badge").textContent = `${sp.length} results`;
+    }
+
+    document.getElementById("go").addEventListener("click", doSearch);
+    document.getElementById("q").addEventListener("keydown", e => { if (e.key === "Enter") doSearch(); });
+
+    // Optional: initial trending seed
+    (async ()=> {
+      document.getElementById("q").value = "Arijit Singh";
+      doSearch();
+    })();
   </script>
 </body>
 </html>
