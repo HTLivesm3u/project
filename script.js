@@ -1,183 +1,248 @@
-// =============================
-// 🎵 Music45 Full JS
-// With JioSaavn API + Cover Fix + Queue Controls
-// =============================
+    // ====== State ======
+    const audio = document.getElementById('audio');
+    let songQueue = [];          // [{id,title,artist,cover,url?:string|null}]
+    let currentSongIndex = 0;
+    let shuffleMode = false;
+    let repeatMode = false;
+    let isPlaying = false;
 
-const searchInput = document.getElementById("search-input");
-const resultsDiv = document.getElementById("results");
-const audioPlayer = document.getElementById("audio-player");
-const musicBanner = document.getElementById("music-banner");
-const songImg = document.getElementById("song-img");
-const songTitle = document.getElementById("song-title");
-const songArtist = document.getElementById("song-artist");
-const footerPlayer = document.getElementById("player");
-const footerImg = document.getElementById("footer-img");
-const footerTitle = document.getElementById("footer-title");
-const footerArtist = document.getElementById("footer-artist");
-const footerPlay = document.getElementById("footer-play");
-const playBtn = document.getElementById("play-btn");
-const nextBtn = document.getElementById("next-btn");
-const prevBtn = document.getElementById("prev-btn");
+    // ====== Utils ======
+    const $ = (id) => document.getElementById(id);
+    const fmt = (sec)=> {
+      if (!isFinite(sec)) return '00:00';
+      const m = Math.floor(sec/60);
+      const s = Math.floor(sec%60);
+      return `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+    };
+    const pickLargest = (arr, key='link') =>
+      Array.isArray(arr) && arr.length ? (arr[arr.length-1][key] || arr[arr.length-1]) : '';
 
-let currentQueue = [];
-let currentIndex = 0;
-let isShuffle = false;
-let isRepeat = false;
-
-// ✅ Get Cover Image (robust fix)
-function getCoverImage(song) {
-  if (Array.isArray(song.image) && song.image.length) {
-    if (typeof song.image[0] === "object") {
-      const best = song.image.find(img => img.quality === "500x500") || song.image[song.image.length - 1];
-      return best.url;
-    } else {
-      return song.image[song.image.length - 1];
+    // Try to extract the best playable URL from a Saavn song object
+    function extractPlayableUrl(song) {
+      // Prefer highest quality from downloadUrl
+      const dl = Array.isArray(song?.downloadUrl) ? song.downloadUrl : song?.download_url;
+      let url = Array.isArray(dl) && dl.length ? dl[dl.length-1]?.link || dl[dl.length-1]?.url : null;
+      // Fallbacks seen in some wrappers
+      if (!url && song?.media_url) url = song.media_url;
+      if (!url && song?.url) url = song.url;
+      return url || null;
     }
-  }
-  if (song.image_url) return song.image_url;
-  return "https://via.placeholder.com/500x500?text=No+Cover";
-}
 
-// ✅ Extract Playable URL
-function extractPlayableUrl(song) {
-  if (song.media_url) return song.media_url;
-  if (song.downloadUrl && song.downloadUrl.length) {
-    return song.downloadUrl[song.downloadUrl.length - 1].link;
-  }
-  return null;
-}
+    // ====== UI update ======
+    function updateUI(meta){
+      // footer
+      $('footer-cover').src = meta.cover || 'https://via.placeholder.com/60x60?text=🎵';
+      $('footer-title').textContent = meta.title || 'No Song';
+      $('footer-artist').textContent = meta.artist || '---';
+      // banner
+      $('banner-cover-image').src = meta.cover || 'https://via.placeholder.com/80x80?text=🎵';
+      $('banner-song-title').textContent = meta.title || 'Title';
+      $('banner-artist-name').textContent = meta.artist || 'Artist';
+      // buttons
+      $('playPauseIcon').className = isPlaying ? 'fa-solid fa-pause' : 'fa-solid fa-play';
+      $('banner-play-pause').innerHTML = `<i class="fa-solid ${isPlaying?'fa-pause':'fa-play'}"></i>`;
+    }
 
-// ✅ Play Song
-async function playSong(song) {
-  const coverImage = getCoverImage(song);
-  const audioUrl = extractPlayableUrl(song);
+    function updateProgress(){
+      $('current-time').textContent = fmt(audio.currentTime || 0);
+      $('duration').textContent = fmt(audio.duration || 0);
+      const pct = (audio.currentTime && audio.duration) ? (audio.currentTime / audio.duration) * 100 : 0;
+      $('progress').style.width = `${pct}%`;
+    }
 
-  if (!audioUrl) {
-    alert("No playable URL found for this song.");
-    return;
-  }
+    // ====== Media Session for background controls ======
+    function setMediaSession(meta){
+      if (!('mediaSession' in navigator)) return;
+      navigator.mediaSession.metadata = new MediaMetadata({
+        title: meta.title,
+        artist: meta.artist,
+        artwork: meta.cover ? [{src: meta.cover, sizes:'512x512', type:'image/png'}] : []
+      });
+      navigator.mediaSession.setActionHandler('play',  () => togglePlay(true));
+      navigator.mediaSession.setActionHandler('pause', () => togglePlay(false));
+      navigator.mediaSession.setActionHandler('previoustrack', prevSong);
+      navigator.mediaSession.setActionHandler('nexttrack', nextSong);
+      navigator.mediaSession.setActionHandler('seekto', (details) => {
+        if (details.fastSeek && 'fastSeek' in audio) audio.fastSeek(details.seekTime);
+        else audio.currentTime = details.seekTime;
+      });
+    }
 
-  // Update Banner
-  songImg.src = coverImage;
-  songTitle.innerText = song.song || "Unknown Song";
-  songArtist.innerText = song.primary_artists || "Unknown Artist";
+    // ====== Search (JioSaavn) ======
+    async function searchSongs(){
+      const q = $('search-query').value.trim();
+      if (!q) return alert('Enter song!');
+      $('song-list').innerHTML = 'Searching...';
 
-  // Update Footer
-  footerImg.src = coverImage;
-  footerTitle.innerText = song.song || "Unknown Song";
-  footerArtist.innerText = song.primary_artists || "Unknown Artist";
+      try{
+        const res = await fetch(`https://saavn.dev/api/search/songs?query=${encodeURIComponent(q)}`);
+        const data = await res.json();
+        const results = data?.data?.results || [];
+        if (!results.length){
+          $('song-list').innerHTML = '<div style="opacity:.8">No results</div>';
+          return;
+        }
 
-  // Update Player
-  audioPlayer.src = audioUrl;
-  footerPlayer.style.display = "flex";
-  musicBanner.style.display = "block";
-  audioPlayer.play();
+        // Build queue (URLs loaded lazily on play)
+        songQueue = results.map(s => ({
+          id: s.id,
+          title: s.name,
+          artist: s.primaryArtists,
+          cover: pickLargest(s?.image, 'link'),
+          url: null
+        }));
 
-  playBtn.innerHTML = `<i class="fas fa-pause"></i>`;
-  footerPlay.innerHTML = `<i class="fas fa-pause"></i>`;
+        renderResults(songQueue);
+      } catch(err){
+        console.error(err);
+        $('song-list').innerHTML = '<div style="opacity:.8">Error fetching results</div>';
+      }
+    }
 
-  // Lock Screen Controls (MediaSession API)
-  if ("mediaSession" in navigator) {
-    navigator.mediaSession.metadata = new MediaMetadata({
-      title: song.song || "Unknown Song",
-      artist: song.primary_artists || "Unknown Artist",
-      artwork: [{ src: coverImage, sizes: "500x500", type: "image/png" }]
+    function renderResults(items){
+      const container = $('song-list');
+      container.innerHTML = '';
+      items.forEach((s, i) => {
+        const div = document.createElement('div');
+        div.className = 'song-item';
+        div.innerHTML = `
+          <img src="${s.cover || 'https://via.placeholder.com/72x72?text=🎵'}" alt="cover">
+          <div class="meta">
+            <div class="title">${s.title}</div>
+            <div class="artist">${s.artist || ''}</div>
+          </div>
+        `;
+        div.onclick = () => playIndex(i);
+        container.appendChild(div);
+      });
+    }
+
+    // ====== Playback ======
+    async function ensureUrlLoaded(index){
+      const s = songQueue[index];
+      if (s.url) return s.url;
+      try{
+        const res = await fetch(`https://saavn.dev/api/songs?ids=${encodeURIComponent(s.id)}`);
+        const data = await res.json();
+        const full = data?.data?.[0];
+        const url = extractPlayableUrl(full);
+        if (url){
+          s.url = url;
+          // update cover/title/artist if better fields exist
+          s.cover = s.cover || pickLargest(full?.image, 'link');
+          s.title = s.title || full?.name || '';
+          s.artist = s.artist || full?.primaryArtists || '';
+        }
+        return s.url || null;
+      }catch(err){
+        console.error('Failed to load song url', err);
+        return null;
+      }
+    }
+
+    async function playIndex(index){
+      if (index < 0 || index >= songQueue.length) return;
+      currentSongIndex = index;
+      const s = songQueue[index];
+
+      const url = await ensureUrlLoaded(index);
+      if (!url){
+        alert('No playable URL found for this song.');
+        return;
+      }
+
+      audio.src = url;
+      audio.play().catch(()=>{ /* autoplay block */ });
+      isPlaying = true;
+      updateUI(s);
+      setMediaSession(s);
+    }
+
+    function togglePlay(shouldPlay){
+      if (typeof shouldPlay === 'boolean'){
+        if (shouldPlay) audio.play(); else audio.pause();
+      }else{
+        if (audio.paused) audio.play(); else audio.pause();
+      }
+    }
+
+    function nextSong(){
+      if (!songQueue.length) return;
+      if (shuffleMode){
+        let n = Math.floor(Math.random()*songQueue.length);
+        if (songQueue.length > 1 && n === currentSongIndex){
+          n = (n+1) % songQueue.length;
+        }
+        playIndex(n);
+      }else{
+        const n = (currentSongIndex + 1) % songQueue.length;
+        playIndex(n);
+      }
+    }
+    function prevSong(){
+      if (!songQueue.length) return;
+      const n = (currentSongIndex - 1 + songQueue.length) % songQueue.length;
+      playIndex(n);
+    }
+
+    // ====== Events / Wiring ======
+    $('search-btn').addEventListener('click', searchSongs);
+    $('search-query').addEventListener('keydown', (e)=>{ if(e.key==='Enter') searchSongs(); });
+
+    // Footer buttons
+    $('prev').addEventListener('click', prevSong);
+    $('next').addEventListener('click', nextSong);
+    $('playPause').addEventListener('click', ()=> togglePlay());
+
+    // Banner buttons mirror footer
+    $('banner-prev').addEventListener('click', prevSong);
+    $('banner-next').addEventListener('click', nextSong);
+    $('banner-play-pause').addEventListener('click', ()=> togglePlay());
+
+    // Expand/Collapse banner
+    $('footerToggleBtn').addEventListener('click', ()=>{
+      const b = $('musicbanner');
+      b.style.display = (b.style.display === 'block') ? 'none' : 'block';
+    });
+    $('close-banner-btn').addEventListener('click', ()=> $('musicbanner').style.display='none');
+
+    // Audio events
+    audio.addEventListener('play', ()=>{
+      isPlaying = true;
+      $('playPauseIcon').className = 'fa-solid fa-pause';
+      $('banner-play-pause').innerHTML = '<i class="fa-solid fa-pause"></i>';
+    });
+    audio.addEventListener('pause', ()=>{
+      isPlaying = false;
+      $('playPauseIcon').className = 'fa-solid fa-play';
+      $('banner-play-pause').innerHTML = '<i class="fa-solid fa-play"></i>';
+    });
+    audio.addEventListener('timeupdate', updateProgress);
+    audio.addEventListener('loadedmetadata', updateProgress);
+    audio.addEventListener('ended', ()=>{
+      if (repeatMode){
+        audio.currentTime = 0; audio.play();
+      } else {
+        nextSong();
+      }
     });
 
-    navigator.mediaSession.setActionHandler("play", () => audioPlayer.play());
-    navigator.mediaSession.setActionHandler("pause", () => audioPlayer.pause());
-    navigator.mediaSession.setActionHandler("previoustrack", () => prevSong());
-    navigator.mediaSession.setActionHandler("nexttrack", () => nextSong());
-  }
-}
+    // Seek via progress bar
+    $('progress-bar').addEventListener('click', (e)=>{
+      const rect = e.currentTarget.getBoundingClientRect();
+      const pct = (e.clientX - rect.left) / rect.width;
+      if (isFinite(audio.duration)) audio.currentTime = audio.duration * pct;
+    });
 
-// ✅ Search Songs
-async function searchSongs(query) {
-  resultsDiv.innerHTML = "Loading...";
-  try {
-    const res = await fetch(`https://saavn.dev/api/search/songs?query=${encodeURIComponent(query)}`);
-    const data = await res.json();
-    const songs = data.data.results;
+    // Shuffle / Repeat toggles
+    $('shuffle-btn').addEventListener('click', ()=>{
+      shuffleMode = !shuffleMode;
+      alert('Shuffle is ' + (shuffleMode ? 'ON' : 'OFF'));
+    });
+    $('repeat-btn').addEventListener('click', ()=>{
+      repeatMode = !repeatMode;
+      alert('Repeat is ' + (repeatMode ? 'ON' : 'OFF'));
+    });
 
-    currentQueue = songs;
-    currentIndex = 0;
-
-    resultsDiv.innerHTML = songs.map((song, i) => `
-      <div class="song" onclick='playFromQueue(${i})'>
-        <img src="${getCoverImage(song)}" alt="cover">
-        <p>${song.song} - ${song.primary_artists}</p>
-      </div>
-    `).join("");
-  } catch (err) {
-    console.error(err);
-    resultsDiv.innerHTML = "Error fetching songs.";
-  }
-}
-
-// ✅ Play from Queue
-function playFromQueue(index) {
-  currentIndex = index;
-  playSong(currentQueue[currentIndex]);
-}
-
-// ✅ Next Song
-function nextSong() {
-  if (!currentQueue.length) return;
-
-  if (isShuffle) {
-    currentIndex = Math.floor(Math.random() * currentQueue.length);
-  } else {
-    currentIndex = (currentIndex + 1) % currentQueue.length;
-  }
-
-  playSong(currentQueue[currentIndex]);
-}
-
-// ✅ Previous Song
-function prevSong() {
-  if (!currentQueue.length) return;
-
-  if (isShuffle) {
-    currentIndex = Math.floor(Math.random() * currentQueue.length);
-  } else {
-    currentIndex = (currentIndex - 1 + currentQueue.length) % currentQueue.length;
-  }
-
-  playSong(currentQueue[currentIndex]);
-}
-
-// ✅ Controls
-playBtn.addEventListener("click", () => {
-  if (audioPlayer.paused) {
-    audioPlayer.play();
-    playBtn.innerHTML = `<i class="fas fa-pause"></i>`;
-    footerPlay.innerHTML = `<i class="fas fa-pause"></i>`;
-  } else {
-    audioPlayer.pause();
-    playBtn.innerHTML = `<i class="fas fa-play"></i>`;
-    footerPlay.innerHTML = `<i class="fas fa-play"></i>`;
-  }
-});
-
-footerPlay.addEventListener("click", () => {
-  playBtn.click();
-});
-
-nextBtn.addEventListener("click", nextSong);
-prevBtn.addEventListener("click", prevSong);
-
-// ✅ Auto Next on Song End
-audioPlayer.addEventListener("ended", () => {
-  if (isRepeat) {
-    playSong(currentQueue[currentIndex]);
-  } else {
-    nextSong();
-  }
-});
-
-// ✅ Search Trigger
-searchInput.addEventListener("keyup", e => {
-  if (e.key === "Enter" && searchInput.value.trim()) {
-    searchSongs(searchInput.value.trim());
-  }
-});
+    // Optional: preload a demo search
+    // searchSongs();
