@@ -337,6 +337,19 @@ footerToggleBtn.addEventListener("click", () => {
   }
 });
 
+window.addEventListener("popstate", () => {
+  // Check if the music banner is open
+  if (musicBanner.style.display === "block") {
+    musicBanner.style.display = "none"; // Close the music banner
+  }
+});
+
+// Close the Music Banner when the close button is clicked
+closeBannerBtn.addEventListener("click", () => {
+  // Hide the music banner
+  musicBanner.style.display = "none";
+});
+
 // helper to format seconds
 function formatTime(t){
   if (!isFinite(t) || isNaN(t)) return '00:00';
