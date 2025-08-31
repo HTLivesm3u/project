@@ -2,97 +2,288 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Music45 - JioSaavn API</title>
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet" />
+  <title>Music45 - JioSaavn Player</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- FontAwesome for icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
   <style>
-    body { font-family: Arial, sans-serif; background:#111; color:#fff; margin:0; padding:20px; }
-    #search-box { padding:10px; width:60%; border-radius:8px; border:none; }
-    #search-btn { padding:10px 15px; background:#1db954; border:none; border-radius:8px; color:#fff; cursor:pointer; }
-    #results { margin-top:20px; display:grid; gap:15px; }
-    .song { display:flex; align-items:center; gap:15px; background:#222; padding:10px; border-radius:10px; cursor:pointer; }
-    .song img { width:60px; height:60px; border-radius:8px; }
-    audio { width:100%; margin-top:20px; }
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #111;
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 10px;
+    }
+    header {
+      font-size: 24px;
+      font-weight: bold;
+      margin: 10px;
+      color: #1db954;
+    }
+    #search-box {
+      width: 90%;
+      padding: 10px;
+      border: none;
+      border-radius: 20px;
+      outline: none;
+      margin-bottom: 15px;
+      font-size: 16px;
+    }
+    #results {
+      width: 100%;
+      max-width: 600px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .song {
+      display: flex;
+      align-items: center;
+      background: #222;
+      padding: 10px;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+    .song:hover { background: #333; }
+    .song img {
+      width: 60px;
+      height: 60px;
+      border-radius: 8px;
+      margin-right: 10px;
+    }
+    .song-info {
+      display: flex;
+      flex-direction: column;
+    }
+    #player {
+      position: fixed;
+      bottom: 0;
+      width: 100%;
+      background: #000;
+      padding: 15px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      border-top: 2px solid #1db954;
+    }
+    #player img {
+      width: 100px;
+      height: 100px;
+      border-radius: 10px;
+      margin-bottom: 10px;
+    }
+    #controls {
+      display: flex;
+      gap: 20px;
+      margin-top: 10px;
+    }
+    #controls i {
+      font-size: 24px;
+      cursor: pointer;
+    }
+    audio { display: none; }
   </style>
 </head>
 <body>
-  <h1>🎵 Music45 (JioSaavn API)</h1>
+  <header>🎵 Music45 - JioSaavn</header>
 
-  <input id="search-box" type="text" placeholder="Search songs...">
-  <button id="search-btn">Search</button>
-
-  <div id="results"></div>
-
-  <div id="player" style="display:none; margin-top:20px;">
-    <h3 id="song-title"></h3>
-    <p id="song-artist"></p>
-    <img id="song-img" width="200" style="border-radius:10px;"><br>
-    <audio id="audio-player" controls autoplay></audio>
+   <div class="search-container">
+    <input id="search-query" placeholder="Search song..." />
+    <button onclick="searchSongs()">Search</button>
   </div>
 
+  <div id="song-list"></div>
+
+  <div id="music-player" style="display:none;">
+    <img id="cover" src="">
+    <div id="song-title"></div>
+    <div id="song-artist" style="color:gray; font-size:14px;"></div>
+    <div id="controls">
+      <i id="prev" class="fa-solid fa-backward"></i>
+      <i id="play" class="fa-solid fa-play"></i>
+      <i id="next" class="fa-solid fa-forward"></i>
+    </div>
+    <audio id="audio" controls></audio>
+  </div>
+
+  <script src="https://www.youtube.com/iframe_api"></script>
   <script>
-    document.getElementById("search-btn").addEventListener("click", searchSongs);
+const SPOTIFY_CLIENT_ID = '7afe6b39346f4bcc8654c141fe2a6136';
+    const SPOTIFY_CLIENT_SECRET = '119278484c2f4c28ac893ea3324bfe84';
+    const YOUTUBE_API_KEY = 'AIzaSyCwFRzcS_3E_ADULIdtesolIbbD5YD8Sgs';
+
+    let spotifyToken = '', player, isPlayerReady=false, isPlaying=false;
+    let songQueue = [], currentSongIndex=0, shuffleMode=false, repeatMode=false;
+
+    function onYouTubeIframeAPIReady() {
+      player = new YT.Player('music-player', {
+        height:'0', width:'0', videoId:'', playerVars:{ autoplay:0, controls:0, rel:0, modestbranding:1 },
+        events:{ onReady:()=>isPlayerReady=true, onStateChange:onPlayerStateChange }
+      });
+    }
+
+    async function getSpotifyToken() {
+      const res = await fetch('https://accounts.spotify.com/api/token', {
+        method:'POST',
+        headers:{ 'Content-Type':'application/x-www-form-urlencoded' },
+        body:`grant_type=client_credentials&client_id=${SPOTIFY_CLIENT_ID}&client_secret=${SPOTIFY_CLIENT_SECRET}`
+      });
+      spotifyToken = (await res.json()).access_token;
+    }
 
     async function searchSongs() {
-      const query = document.getElementById("search-box").value.trim();
-      if (!query) return alert("Enter song name!");
+      const q = document.getElementById('search-query').value.trim();
+      if (!q) return alert('Enter song!');
+      document.getElementById('song-list').innerHTML = '';
+      await getSpotifyToken();
+      const res = await fetch(`https://api.spotify.com/v1/search?q=${encodeURIComponent(q)}&type=track&limit=10`, {
+        headers:{ Authorization:`Bearer ${spotifyToken}` }
+      });
+      const data=await res.json();
+      if (data.tracks.items.length) displaySongs(data.tracks.items);
+      else alert('No results');
+    }
 
-      const url = `https://saavn.dev/api/search/songs?query=${encodeURIComponent(query)}`;
-      try {
-        const res = await fetch(url);
-        const data = await res.json();
+    async function getYouTubeVideo(q) {
+      const res = await fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(q)}&type=video&maxResults=1&videoEmbeddable=true&key=${YOUTUBE_API_KEY}`);
+      const d=await res.json();
+      return d.items.length ? d.items[0].id.videoId : null;
+    }
 
-        const resultsDiv = document.getElementById("results");
-        resultsDiv.innerHTML = "";
+    async function displaySongs(songs) {
+      songQueue = [];
+      const container = document.getElementById('song-list');
+      for (let i=0;i<songs.length;i++){
+        const s=songs[i];
+        const title=s.name, artist=s.artists[0].name, cover=s.album.images[1].url;
+        const vid=await getYouTubeVideo(`${title} ${artist} official audio`);
+        songQueue.push({videoId:vid,title,artist,cover});
+        const div=document.createElement('div');
+        div.className='song-item';
+        div.innerHTML=`<img src="${cover}"/><p>${title} - ${artist}</p>`;
+        div.onclick=()=>{ currentSongIndex=i; playYouTubeAudio(vid,title,artist,cover); };
+        container.appendChild(div);
+      }
+    }
 
-        if (!data?.data?.results?.length) {
-          resultsDiv.innerText = "No results found!";
-          return;
+    function playYouTubeAudio(videoId, title, artist, cover) {
+      if (!isPlayerReady || !videoId) return;
+      player.loadVideoById(videoId);
+      isPlaying = true;
+      updateUI(title,artist,cover);
+    }
+
+    function updateUI(title,artist,cover){
+      document.getElementById('footer-cover').src=cover;
+      document.getElementById('footer-title').textContent=title;
+      document.getElementById('footer-artist').textContent=artist;
+      document.getElementById('banner-cover-image').src=cover;
+      document.getElementById('banner-song-title').textContent=title;
+      document.getElementById('banner-artist-name').textContent=artist;
+      document.getElementById('playPauseIcon').className = 'fas fa-pause';
+      document.getElementById('banner-play-pause').innerHTML=`<i class="fas fa-pause"></i>`;
+    }
+
+    function playPause() {
+      if (!player) return;
+      const state = player.getPlayerState();
+      if (state===YT.PlayerState.PLAYING){
+        player.pauseVideo(); isPlaying=false;
+        document.getElementById('playPauseIcon').className='fas fa-play';
+        document.getElementById('banner-play-pause').innerHTML=`<i class="fas fa-play"></i>`;
+      } else {
+        player.playVideo(); isPlaying=true;
+        document.getElementById('playPauseIcon').className='fas fa-pause';
+        document.getElementById('banner-play-pause').innerHTML=`<i class="fas fa-pause"></i>`;
+      }
+    }
+
+    function nextSong() {
+      if (!songQueue.length) return;
+      currentSongIndex = shuffleMode ?
+        Math.floor(Math.random()*songQueue.length) :
+        (currentSongIndex+1)%songQueue.length;
+      const s=songQueue[currentSongIndex];
+      playYouTubeAudio(s.videoId, s.title, s.artist, s.cover);
+    }
+
+    function prevSong() {
+      if (!songQueue.length) return;
+      currentSongIndex = (currentSongIndex -1 + songQueue.length)%songQueue.length;
+      const s=songQueue[currentSongIndex];
+      playYouTubeAudio(s.videoId, s.title, s.artist, s.cover);
+    }
+
+    function onPlayerStateChange(e){
+      if (e.data===YT.PlayerState.ENDED){
+        if (repeatMode) player.seekTo(0), player.playVideo();
+        else nextSong();
+      }
+    }
+
+    // Progress Updater
+    setInterval(()=>{
+      if (player && isPlaying){
+        const cur=player.getCurrentTime(), dur=player.getDuration();
+        if (!isNaN(cur) && !isNaN(dur)){
+          document.getElementById('current-time').textContent=fmt(cur);
+          document.getElementById('duration').textContent=fmt(dur);
+          document.getElementById('progress').style.width=((cur/dur)*100)+'%';
         }
-
-        data.data.results.forEach(song => {
-          const div = document.createElement("div");
-          div.className = "song";
-          div.innerHTML = `
-            <img src="${song.image[1].link}">
-            <div>
-              <b>${song.name}</b><br>
-              <small>${song.primaryArtists}</small>
-            </div>
-          `;
-          div.onclick = () => playSong(song.id);
-          resultsDiv.appendChild(div);
-        });
-      } catch (err) {
-        console.error(err);
-        alert("Error fetching songs");
       }
+    },500);
+
+    function fmt(sec){
+      const m=Math.floor(sec/60), s=Math.floor(sec%60);
+      return `${m.toString().padStart(2,0)}:${s.toString().padStart(2,0)}`;
     }
 
-   async function playSong(songId) {
-    try {
-      const res = await fetch(`https://your-jiosaavn.vercel.app/song?id=${songId}`);
-      const data = await res.json();
-      const song = data[0]; // Single-song array response
+    document.getElementById('progress-bar').addEventListener('click',e=>{
+      if (!player) return;
+      const rect=e.target.getBoundingClientRect();
+      const pct=(e.clientX-rect.left)/rect.width;
+      const sec=pct*player.getDuration();
+      player.seekTo(sec,true);
+    });
 
-      const audioUrl = song.url; // Or appropriate field containing playable MP3
+    document.getElementById('shuffle-btn').addEventListener('click', ()=>{
+      shuffleMode = !shuffleMode;
+      alert('Shuffle is ' + (shuffleMode? 'ON':'OFF'));
+    });
 
-      if (!audioUrl) {
-        alert("No playable URL found.");
-        return;
-      }
+    document.getElementById('repeat-btn').addEventListener('click', ()=>{
+      repeatMode = !repeatMode;
+      alert('Repeat is ' + (repeatMode? 'ON':'OFF'));
+    });
 
-      // Your UI updates here...
-      document.getElementById("song-title").innerText = song.song;
-      document.getElementById("song-artist").innerText = song.primary_artists;
-      document.getElementById("song-img").src = song.image_url;
-      document.getElementById("audio-player").src = audioUrl;
-      document.getElementById("player").style.display = "block";
+    document.getElementById('next').addEventListener('click', nextSong);
+    document.getElementById('prev').addEventListener('click', prevSong);
+    document.getElementById('banner-play-pause').addEventListener('click', playPause);
+    document.getElementById('footerToggleBtn').addEventListener('click', ()=>{
+      const b=document.getElementById('musicbanner');
+      b.style.display = b.style.display === 'block' ? 'none' : 'block';
+    });
+    document.getElementById('close-banner-btn').addEventListener('click', ()=>{
+      document.getElementById('musicbanner').style.display = 'none';
+    });
 
-    } catch (err) {
-      console.error(err);
-      alert("Failed to load song.");
-    }
-  }
+    // Auto-load trending on page load
+    window.onload = async ()=>{
+      await getSpotifyToken();
+      const res = await fetch(`https://api.spotify.com/v1/browse/new-releases?limit=8`, {
+        headers:{ Authorization:`Bearer ${spotifyToken}` }
+      });
+      const d=await res.json();
+      displaySongs(d.albums.items.map(a=>{
+        return {name:a.name,artists:[{name:a.artists[0].name}],album:{images:a.images}};
+      }));
+    };
   </script>
 </body>
 </html>
