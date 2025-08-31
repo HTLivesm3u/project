@@ -74,8 +74,13 @@
     const data = await res.json();
     const song = data.data[0];
 
-    // pick highest quality download URL
-    const audioUrl = song.downloadUrl?.slice(-1)[0]?.link; 
+    // Prefer highest quality from downloadUrl
+    let audioUrl = song.downloadUrl?.slice(-1)[0]?.link;
+
+    // If no downloadUrl, try media_url (some songs only have this)
+    if (!audioUrl && song.media_url) {
+      audioUrl = song.media_url;
+    }
 
     if (!audioUrl) {
       alert("No playable URL found for this song");
@@ -93,7 +98,6 @@
     alert("Failed to load song");
   }
 }
-
   </script>
 </body>
 </html>
