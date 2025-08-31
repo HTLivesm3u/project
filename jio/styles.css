@@ -61,7 +61,7 @@
       bottom:0px; /* sits above footer */
       width:min(900px, 94vw);
       background:#2f3542; color:#fff; border-top-left-radius:20px; border-top-right-radius:20px;
-      padding:18px 18px 16px; z-index:999; display:none; box-shadow:0 10px 30px rgba(0,0,0,.35);
+      padding:180px 180px 160px; z-index:999; display:none; box-shadow:0 10px 30px rgba(0,0,0,.35);
     }
     .banner-header{ display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; }
     .banner-header .title-stack{ display:flex; gap:12px; align-items:center; min-width:0; }
@@ -92,4 +92,5 @@
       .footer-player{ height:90px; }
       #footer-cover{ width:52px; height:52px; }
     }
+
 
