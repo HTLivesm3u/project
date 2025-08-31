@@ -327,10 +327,6 @@ if (repeatBtn) repeatBtn.addEventListener('click', ()=>{
   alert('Repeat ' + (repeatMode ? 'ON' : 'OFF'));
 });
 
-if (footerToggleBtn) footerToggleBtn.addEventListener('click', ()=>{
-  musicBanner.style.display = (musicBanner.style.display === 'block') ? 'none' : 'block';
-});
-if (closeBannerBtn) closeBannerBtn.addEventListener('click', ()=> musicBanner.style.display = 'none');
 
 // helper to format seconds
 function formatTime(t){
