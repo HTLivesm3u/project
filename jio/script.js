@@ -213,7 +213,7 @@ function updateNowPlayingUI(item, playing){
   bannerTitle.textContent = title;
   bannerArtist.textContent = artist;
   // show banner and footer
-  if (musicBanner) musicBanner.style.display = 'block';
+  if (musicBanner) musicBanner.style.display = 'none';
   if ($('footer-cover')) $('footer-cover').src = cover;
   // icons
   isPlaying = !!playing;
