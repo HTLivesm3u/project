@@ -68,36 +68,31 @@
       }
     }
 
-    async function playSong(songId) {
-  try {
-    const res = await fetch(`https://saavn.dev/api/songs?ids=${songId}`);
-    const data = await res.json();
-    const song = data.data[0];
+   async function playSong(songId) {
+    try {
+      const res = await fetch(`https://your-jiosaavn.vercel.app/song?id=${songId}`);
+      const data = await res.json();
+      const song = data[0]; // Single-song array response
 
-    // Prefer highest quality from downloadUrl
-    let audioUrl = song.downloadUrl?.slice(-1)[0]?.link;
+      const audioUrl = song.url; // Or appropriate field containing playable MP3
 
-    // If no downloadUrl, try media_url (some songs only have this)
-    if (!audioUrl && song.media_url) {
-      audioUrl = song.media_url;
+      if (!audioUrl) {
+        alert("No playable URL found.");
+        return;
+      }
+
+      // Your UI updates here...
+      document.getElementById("song-title").innerText = song.song;
+      document.getElementById("song-artist").innerText = song.primary_artists;
+      document.getElementById("song-img").src = song.image_url;
+      document.getElementById("audio-player").src = audioUrl;
+      document.getElementById("player").style.display = "block";
+
+    } catch (err) {
+      console.error(err);
+      alert("Failed to load song.");
     }
-
-    if (!audioUrl) {
-      alert("No playable URL found for this song");
-      return;
-    }
-
-    document.getElementById("song-title").innerText = song.name;
-    document.getElementById("song-artist").innerText = song.primaryArtists;
-    document.getElementById("song-img").src = song.image?.slice(-1)[0]?.link;
-    document.getElementById("audio-player").src = audioUrl;
-
-    document.getElementById("player").style.display = "block";
-  } catch (err) {
-    console.error(err);
-    alert("Failed to load song");
   }
-}
   </script>
 </body>
 </html>
