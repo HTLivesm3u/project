@@ -1,65 +1,183 @@
-        const SPOTIFY_CLIENT_ID = '7afe6b39346f4bcc8654c141fe2a6136';
-        const SPOTIFY_CLIENT_SECRET = '119278484c2f4c28ac893ea3324bfe84';
-        
-        let spotifyToken = '';
+// =============================
+// 🎵 Music45 Full JS
+// With JioSaavn API + Cover Fix + Queue Controls
+// =============================
 
-        // Fetch Spotify Token (Needed for API Calls)
-        async function getSpotifyToken() {
-            const response = await fetch('https://accounts.spotify.com/api/token', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded'
-                },
-                body: `grant_type=client_credentials&client_id=${SPOTIFY_CLIENT_ID}&client_secret=${SPOTIFY_CLIENT_SECRET}`
-            });
-            const data = await response.json();
-            spotifyToken = data.access_token;
-        }
+const searchInput = document.getElementById("search-input");
+const resultsDiv = document.getElementById("results");
+const audioPlayer = document.getElementById("audio-player");
+const musicBanner = document.getElementById("music-banner");
+const songImg = document.getElementById("song-img");
+const songTitle = document.getElementById("song-title");
+const songArtist = document.getElementById("song-artist");
+const footerPlayer = document.getElementById("player");
+const footerImg = document.getElementById("footer-img");
+const footerTitle = document.getElementById("footer-title");
+const footerArtist = document.getElementById("footer-artist");
+const footerPlay = document.getElementById("footer-play");
+const playBtn = document.getElementById("play-btn");
+const nextBtn = document.getElementById("next-btn");
+const prevBtn = document.getElementById("prev-btn");
 
-        async function searchSongs() {
-            const query = document.getElementById('search-query').value.trim();
-            if (!query) return alert("Please enter a song name!");
+let currentQueue = [];
+let currentIndex = 0;
+let isShuffle = false;
+let isRepeat = false;
 
-            await getSpotifyToken(); // Ensure we have a valid Spotify token
+// ✅ Get Cover Image (robust fix)
+function getCoverImage(song) {
+  if (Array.isArray(song.image) && song.image.length) {
+    if (typeof song.image[0] === "object") {
+      const best = song.image.find(img => img.quality === "500x500") || song.image[song.image.length - 1];
+      return best.url;
+    } else {
+      return song.image[song.image.length - 1];
+    }
+  }
+  if (song.image_url) return song.image_url;
+  return "https://via.placeholder.com/500x500?text=No+Cover";
+}
 
-            const spotifyUrl = `https://api.spotify.com/v1/search?q=${encodeURIComponent(query)}&type=track&limit=5`;
-            const spotifyResponse = await fetch(spotifyUrl, {
-                headers: { 'Authorization': `Bearer ${spotifyToken}` }
-            });
-            const spotifyData = await spotifyResponse.json();
+// ✅ Extract Playable URL
+function extractPlayableUrl(song) {
+  if (song.media_url) return song.media_url;
+  if (song.downloadUrl && song.downloadUrl.length) {
+    return song.downloadUrl[song.downloadUrl.length - 1].link;
+  }
+  return null;
+}
 
-            if (spotifyData.tracks.items.length > 0) {
-                displaySongs(spotifyData.tracks.items);
-            } else {
-                alert("No results found on Spotify!");
-            }
-        }
+// ✅ Play Song
+async function playSong(song) {
+  const coverImage = getCoverImage(song);
+  const audioUrl = extractPlayableUrl(song);
 
-        function displaySongs(songs) {
-            const songList = document.getElementById('song-list');
-            songList.innerHTML = '';
+  if (!audioUrl) {
+    alert("No playable URL found for this song.");
+    return;
+  }
 
-            songs.forEach(song => {
-                const title = song.name;
-                const artist = song.artists[0].name;
-                const albumCover = song.album.images[1].url;
-                const searchQuery = `${title} ${artist}`;
+  // Update Banner
+  songImg.src = coverImage;
+  songTitle.innerText = song.song || "Unknown Song";
+  songArtist.innerText = song.primary_artists || "Unknown Artist";
 
-                const songItem = document.createElement('div');
-                songItem.classList.add('song-item');
-                songItem.onclick = () => playYouTube(searchQuery);
+  // Update Footer
+  footerImg.src = coverImage;
+  footerTitle.innerText = song.song || "Unknown Song";
+  footerArtist.innerText = song.primary_artists || "Unknown Artist";
 
-                songItem.innerHTML = `
-                    <img src="${albumCover}" alt="${title}">
-                    <p>${title} - ${artist}</p>
-                `;
+  // Update Player
+  audioPlayer.src = audioUrl;
+  footerPlayer.style.display = "flex";
+  musicBanner.style.display = "block";
+  audioPlayer.play();
 
-                songList.appendChild(songItem);
-            });
-        }
+  playBtn.innerHTML = `<i class="fas fa-pause"></i>`;
+  footerPlay.innerHTML = `<i class="fas fa-pause"></i>`;
 
-        function playYouTube(searchQuery) {
-            const iframe = document.getElementById("music-player");
-            iframe.src = `https://www.youtube.com/results?search_query=${encodeURIComponent(searchQuery)}`;
-            iframe.style.display = "block"; // Show the player
-        }
+  // Lock Screen Controls (MediaSession API)
+  if ("mediaSession" in navigator) {
+    navigator.mediaSession.metadata = new MediaMetadata({
+      title: song.song || "Unknown Song",
+      artist: song.primary_artists || "Unknown Artist",
+      artwork: [{ src: coverImage, sizes: "500x500", type: "image/png" }]
+    });
+
+    navigator.mediaSession.setActionHandler("play", () => audioPlayer.play());
+    navigator.mediaSession.setActionHandler("pause", () => audioPlayer.pause());
+    navigator.mediaSession.setActionHandler("previoustrack", () => prevSong());
+    navigator.mediaSession.setActionHandler("nexttrack", () => nextSong());
+  }
+}
+
+// ✅ Search Songs
+async function searchSongs(query) {
+  resultsDiv.innerHTML = "Loading...";
+  try {
+    const res = await fetch(`https://saavn.dev/api/search/songs?query=${encodeURIComponent(query)}`);
+    const data = await res.json();
+    const songs = data.data.results;
+
+    currentQueue = songs;
+    currentIndex = 0;
+
+    resultsDiv.innerHTML = songs.map((song, i) => `
+      <div class="song" onclick='playFromQueue(${i})'>
+        <img src="${getCoverImage(song)}" alt="cover">
+        <p>${song.song} - ${song.primary_artists}</p>
+      </div>
+    `).join("");
+  } catch (err) {
+    console.error(err);
+    resultsDiv.innerHTML = "Error fetching songs.";
+  }
+}
+
+// ✅ Play from Queue
+function playFromQueue(index) {
+  currentIndex = index;
+  playSong(currentQueue[currentIndex]);
+}
+
+// ✅ Next Song
+function nextSong() {
+  if (!currentQueue.length) return;
+
+  if (isShuffle) {
+    currentIndex = Math.floor(Math.random() * currentQueue.length);
+  } else {
+    currentIndex = (currentIndex + 1) % currentQueue.length;
+  }
+
+  playSong(currentQueue[currentIndex]);
+}
+
+// ✅ Previous Song
+function prevSong() {
+  if (!currentQueue.length) return;
+
+  if (isShuffle) {
+    currentIndex = Math.floor(Math.random() * currentQueue.length);
+  } else {
+    currentIndex = (currentIndex - 1 + currentQueue.length) % currentQueue.length;
+  }
+
+  playSong(currentQueue[currentIndex]);
+}
+
+// ✅ Controls
+playBtn.addEventListener("click", () => {
+  if (audioPlayer.paused) {
+    audioPlayer.play();
+    playBtn.innerHTML = `<i class="fas fa-pause"></i>`;
+    footerPlay.innerHTML = `<i class="fas fa-pause"></i>`;
+  } else {
+    audioPlayer.pause();
+    playBtn.innerHTML = `<i class="fas fa-play"></i>`;
+    footerPlay.innerHTML = `<i class="fas fa-play"></i>`;
+  }
+});
+
+footerPlay.addEventListener("click", () => {
+  playBtn.click();
+});
+
+nextBtn.addEventListener("click", nextSong);
+prevBtn.addEventListener("click", prevSong);
+
+// ✅ Auto Next on Song End
+audioPlayer.addEventListener("ended", () => {
+  if (isRepeat) {
+    playSong(currentQueue[currentIndex]);
+  } else {
+    nextSong();
+  }
+});
+
+// ✅ Search Trigger
+searchInput.addEventListener("keyup", e => {
+  if (e.key === "Enter" && searchInput.value.trim()) {
+    searchSongs(searchInput.value.trim());
+  }
+});
