@@ -17,7 +17,7 @@ const playPauseBtn = $('playPause');            // footer button
 const playPauseIcon = $('playPauseIcon');       // footer icon inside button
 const prevBtn = $('prev');
 const nextBtn = $('next');
-const footerToggleBtn = $('footerToggleBtn');
+const footerToggleBtn = $('footer-song-info');
 
 const musicBanner = $('musicbanner');
 const bannerCover = $('banner-cover-image');
@@ -327,6 +327,15 @@ if (repeatBtn) repeatBtn.addEventListener('click', ()=>{
   alert('Repeat ' + (repeatMode ? 'ON' : 'OFF'));
 });
 
+footerToggleBtn.addEventListener("click", () => {
+  if (musicBanner.style.display === "block") {
+    musicBanner.style.display = "none"; // Close the music banner
+    history.pushState(null, null, window.location.href); // Update browser history
+  } else {
+    musicBanner.style.display = "block"; // Open the music banner
+    history.pushState({ musicBannerOpen: true }, null, window.location.href); // Update browser history
+  }
+});
 
 // helper to format seconds
 function formatTime(t){
