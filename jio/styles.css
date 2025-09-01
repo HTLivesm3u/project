@@ -64,42 +64,227 @@
 
 /* Updated Expanded banner player */
 .musicplayer{
-      position:fixed; left:50%; transform:translateX(-50%);
-      bottom:100px; /* sits above footer */
-      width:min(900px, 94vw);
-      background:#2f3542; color:#fff; border-top-left-radius:20px; border-top-right-radius:20px;
-      padding:18px 18px 16px; z-index:999; display:none; box-shadow:0 10px 30px rgba(0,0,0,.35);
+       display: flex;
+  position: fixed;
+  top: -3%;
+  left: 50%;
+  transform: translateX(-50%);
+  color: white;
+  z-index: 9999;
+  padding: 20px;
+  flex-direction: column;
+  align-items : center;
+  justify-content:center;
+  text-align: center;
     }
-    .banner-header{ display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; }
-    .banner-header .title-stack{ display:flex; gap:12px; align-items:center; min-width:0; }
-    #banner-cover-image{ width:80px; height:80px; border-radius:10px; object-fit:cover; }
-    .song-info{ display:flex; flex-direction:column; gap:6px; min-width:0; }
-    #banner-song-title{ margin:0; font-size:18px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-    #banner-artist-name{ margin:0; color:#c9c9c9; font-size:14px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-
-    .control-btn{
-      background:none; border:none; color:#fff; font-size:20px; cursor:pointer; padding:8px; border-radius:10px;
+      .player-container {
+    background: #2f3542;
+    backdrop-filter: blur(10px);
+    padding: 1.5rem;
+    border-radius: 1rem;
+    width: 100vw;
+    height: 100vh;
     }
-    .control-btn:hover{ background:#3a4050; }
+     #banner-content {
+  max-width: 500px;
+  margin: 0 auto;
+  }
+   #banner-cover {
+    width: 100%;
+    aspect-ratio: 1;
+    border-radius: 0.75rem;
+    overflow: hidden;
+    margin-bottom: 1.5rem;
+  }
+    #banner-cover-image{
+    width: 80%;
+    height: 80%;
+    object-fit: cover;
+    border-radius: 10px;
+  }
+ #banner-song-title{
+    font-size: 1.25rem;
+  color: #111827;
+  margin-bottom: 0.25rem;
+  margin-top: 1.5rem;
+  }
+  #banner-artist-name {
+    font-size: 0.875rem;
+    color: #4B5563;
+  }
+  #banner-close {
+  font-size: 30px;
+  cursor: pointer;
+  }
+  
+  .main-controls {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+  
+  /* Shuffle Popup */
+.popup {
+  position: fixed;
+  bottom: 80px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 10px 20px;
+  border-radius: 10px;
+  font-size: 14px;
+  opacity: 0;
+  transition: opacity 0.5s ease-in-out;
+  pointer-events: none;
+}
 
-    .progress-wrap{ padding:8px 0; }
-    .progress-bar{
-      width:100%; height:8px; background:#505663; border-radius:6px; position:relative; cursor:pointer;
-    }
-    .progress{ position:absolute; left:0; top:0; bottom:0; width:0%; background:var(--accent); border-radius:6px; }
-    .time-stamps{ display:flex; justify-content:space-between; font-size:12px; color:#d8d8d8; margin-top:6px; }
+.popup.active {
+  opacity: 1;
+}
+ .progress-container {
+    margin-top: 30px; /* Adjust this value as needed */
+    margin-bottom: 1rem;
+  }
+  
+  .progress-bar {
+    width: 100%;
+    height: 4px;
+    background: #E5E7EB;
+    border-radius: 2px;
+    margin-bottom: 0.5rem;
+    cursor: pointer;
+  }
+  
+  .progress {
+    width: 0%;
+    height: 100%;
+    background: #10B981;
+    border-radius: 2px;
+  }
+  .time-stamps {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.75rem;
+    color: #6B7280;
+  }
 
-    .main-controls{ display:flex; justify-content:center; gap:14px; margin:10px 0 4px; }
-    .main-controls .pill{ background:#3a4050; border:none; color:#fff; padding:10px 12px; border-radius:12px; cursor:pointer; }
-    .main-controls .pill:hover{ background:#4a5266; }
+ .play-btn {
+    width: 60px;
+    height: 60px;
+    font-size: 25px;
+    background: #10B981;
+    border: none;
+    border-radius: 50%;
+    color: white;
+  }
+  
+  .play-btn:hover {
+    background-color: #1ed760;
+  } 
+
+  .close-btn {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    background: #2f3542;
+    border: none;
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  
+  .close-btn i {
+    color: #E5E7EB;
+    font-size: 16px;
+  }
+  
+  .close-btn:hover {
+    background: rgba(255, 255, 255, 0.9);
+  }
+  
+  .close-btn:hover i {
+    color: #111827;
+  }
+
 
     audio{ display:none; }
-    @media (max-width:520px){
-      .song-item img{ width:60px; height:60px; }
-      .footer-player{ height:90px; }
-      #footer-cover{ width:52px; height:52px; }
+
+    
+    
+@media (max-width: 768px) {
+    body {
+      padding: 0;
     }
-
-
+  
+    .music-banner {
+      max-width: 100%;
+      padding: 15px;
+    }
+  
+    .cover img {
+      max-width: 100%; /* Full width on mobile */
+      height: auto;  /* Maintain aspect ratio */
+      margin-bottom: 10px;
+    }
+  
+    .song-details h2 {
+      font-size: 18px;
+    }
+  
+    .song-details p {
+      font-size: 14px;
+    }
+  
+    .control-btn {
+      background: none;
+      border: none;
+      color: #4B5563;
+      cursor: pointer;
+      padding: 0.5rem;
+    }
+  
+  
+    .secondary-controls {
+      display: flex;
+      justify-content: center;
+      gap: 3rem;
+      margin-bottom: 1.5rem;
+    }
+  
+    .footer-controls {
+      padding: 5px;
+    }
+  
+    .footer-cover {
+      width: 30px;
+      height: 30px;
+    }
+    .full-screen-banner {
+      width: 100vw;
+      height: 100vh;
+    }
+  
+    .full-screen-banner img {
+      max-width: 100%;
+      max-height: 80%;
+    }
+  
+    .full-screen-banner .song-info {
+      font-size: 16px; /* Adjust song info font size for mobile */
+    }
+  }
+  
+  /* Hide other elements when banner is active */
+  .hide-on-banner {
+    display: none !important;
+  }
 
 
