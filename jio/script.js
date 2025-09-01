@@ -338,38 +338,6 @@ footerToggleBtn.addEventListener("click", () => {
 });
 
 
-// ====== Toggle Full-Screen Banner ======
-function toggleFullScreenBanner() {
-  const banner = $('musicbanner');
-  banner.classList.toggle('active');
-  if (banner.classList.contains('active')) {
-    // Update banner content when opened
-    const currentSong = songQueue[currentSongIndex] || { title: 'No Song', artist: '---', cover: 'https://via.placeholder.com/80x80?text=🎵' };
-    updateUI(currentSong);
-  }
-}
-
-// ====== Existing functions (searchSongs, playIndex, etc.) remain the same ======
-
-// ====== Events / Wiring ======
-document.addEventListener('DOMContentLoaded', () => {
-  $('musicbanner').style.display = 'none'; // Ensure banner is hidden initially
-});
-
-$('search-btn').addEventListener('click', searchSongs);
-$('search-query').addEventListener('keydown', (e) => { if (e.key === 'Enter') searchSongs(); });
-$('prev').addEventListener('click', prevSong);
-$('next').addEventListener('click', nextSong);
-$('playPause').addEventListener('click', () => togglePlay());
-$('banner-prev').addEventListener('click', prevSong);
-$('banner-next').addEventListener('click', nextSong);
-$('banner-play-pause').addEventListener('click', () => togglePlay());
-
-// Update footerToggleBtn to trigger full-screen banner
-$('footerToggleBtn').addEventListener('click', toggleFullScreenBanner);
-$('close-banner-btn').addEventListener('click', () => {
-  $('musicbanner').classList.remove('active');
-});
 
 
 
