@@ -52,7 +52,7 @@ function getStringField(obj, ...names){
 
 // Robust cover selection: supports multiple API shapes
 function getCoverImageFromSong(song){
-  if (!song) return 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQdfKl6xv6CJQEnE6ZNBJjWuU6SKY7y63ZqSg&s';
+  if (!song) return 'https://music45.vercel.app/music/music45.webp';
   // case: image is array of objects like [{quality:'', link:''} or {quality,url}]
   if (Array.isArray(song.image) && song.image.length){
     const first = song.image[0];
@@ -69,7 +69,7 @@ function getCoverImageFromSong(song){
   if (song.image_url) return song.image_url;
   if (song.cover) return song.cover;
   // fallback
-  return 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQdfKl6xv6CJQEnE6ZNBJjWuU6SKY7y63ZqSg&s';
+  return 'https://music45.vercel.app/music/music45.webp';
 }
 
 // Extract playable url from details
@@ -203,7 +203,7 @@ async function playIndex(index){
 
 // Update footer + banner UI
 function updateNowPlayingUI(item, playing){
-  const cover = item?.cover || 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQdfKl6xv6CJQEnE6ZNBJjWuU6SKY7y63ZqSg&s';
+  const cover = item?.cover || 'https://music45.vercel.app/music/music45.webp';
   const title = item?.title || 'Unknown Song';
   const artist = item?.artist || 'Unknown Artist';
   footerCover.src = cover;
@@ -368,4 +368,4 @@ window.Music45 = {
 };
 
 // initial UI state
-updateNowPlayingUI({title:'No Song', artist:'', cover:'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQdfKl6xv6CJQEnE6ZNBJjWuU6SKY7y63ZqSg&s'}, false);
+updateNowPlayingUI({title:'No Song', artist:'', cover:'https://music45.vercel.app/music/music45.webp'}, false);
