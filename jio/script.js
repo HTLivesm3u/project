@@ -214,31 +214,32 @@ async function playIndex(index){
   setMediaSessionForItem(item);
 }
 
-// Update footer + banner UI
 function updateNowPlayingUI(item, playing){
   const cover = item?.cover || 'https://music45.vercel.app/music/music45.webp';
   const title = item?.title || 'Unknown Song';
   const artist = item?.artist || 'Unknown Artist';
+
+  // existing updates
   footerCover.src = cover;
   footerTitle.textContent = title;
   footerArtist.textContent = artist;
+
   bannerCover.src = cover;
   bannerTitle.textContent = title;
   bannerArtist.textContent = artist;
 
-    // 🔥 update blurred background with cover
+  // 🔥 update blurred background with cover
   const pc = document.querySelector('.player-container');
   if (pc) pc.style.setProperty('--banner-cover-url', `url("${cover}")`);
 
-  
-  // show banner and footer
-  if (musicBanner);
-  if ($('footer-cover')) $('footer-cover').src = cover;
   // icons
   isPlaying = !!playing;
   playPauseIcon.className = isPlaying ? 'fa-solid fa-pause' : 'fa-solid fa-play';
-  if (bannerPlayPauseBtn) bannerPlayPauseBtn.innerHTML = `<i class="fa-solid ${isPlaying ? 'fa-pause' : 'fa-play'}"></i>`;
+  if (bannerPlayPauseBtn) {
+    bannerPlayPauseBtn.innerHTML = `<i class="fa-solid ${isPlaying ? 'fa-pause' : 'fa-play'}"></i>`;
+  }
 }
+
 
 
 

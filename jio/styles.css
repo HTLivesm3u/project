@@ -79,44 +79,15 @@
   justify-content:center;
   text-align: center;
     }
-.player-container{
+      .player-container {
   position: relative;
-  padding: 1.5rem;
-  border-radius: 1rem;
-  width: 100vw;
-  height: 100vh;
-  overflow: hidden;
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  justify-content:center;
-  background: transparent; /* let the ::before show */
-}
-
-/* keep all real content above the background layers */
-.player-container > * { position: relative; z-index: 1; }
-
-.player-container::before{
-  content:"";
-  position:absolute; inset:0;
-  background-image: var(--banner-cover-url, none);
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-  filter: blur(28px) brightness(0.6);
-  transform: scale(1.08);            /* hide blur edges */
-  z-index: 0;
-  pointer-events: none;
-}
-
-.player-container::after{
-  content:"";
-  position:absolute; inset:0;
-  background: linear-gradient(to top, rgba(0,0,0,0.55), rgba(0,0,0,0.25));
-  z-index: 0;
-  pointer-events: none;
-}
-
+  overflow: hidden; /* so background doesn’t leak out */
+  background: transparent; /* let ::before show */
+    padding: 1.5rem;
+    border-radius: 1rem;
+    width: 100vw;
+    height: 100vh;
+    }
      #banner-content {
   max-width: 500px;
   margin: 0 auto;
@@ -157,6 +128,34 @@
     margin-bottom: 1.5rem;
   }
   
+  .player-container::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: var(--banner-cover-url, none);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  filter: blur(28px) brightness(0.6);
+  transform: scale(1.1);  /* fixes blur edges */
+  z-index: 0;
+}
+
+/* dark gradient overlay so text stays visible */
+.player-container::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(0,0,0,0.55), rgba(0,0,0,0.25));
+  z-index: 0;
+}
+
+/* make sure your real content is above background */
+.player-container > * {
+  position: relative;
+  z-index: 1;
+}
+
   /* Shuffle Popup */
 .popup {
   position: fixed;
