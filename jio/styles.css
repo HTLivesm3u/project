@@ -136,7 +136,7 @@
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
-  filter: blur(28px) brightness(0.6);
+  filter: blur(20px) brightness(0.6);
   transform: scale(1.1);  /* fixes blur edges */
   z-index: 0;
 }
@@ -317,5 +317,6 @@
   .hide-on-banner {
     display: none !important;
   }
+
 
 
