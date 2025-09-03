@@ -94,9 +94,20 @@ function getTitle(song){
   return getStringField(song, 'name', 'song', 'title') || 'Unknown Title';
 }
 function getArtist(song){
-  return getStringField(song, 'primaryArtists', 'primary_artists', 'singers', 'artist') || 'Unknown Artist';
-}
+  // First check old fields
+  let a = getStringField(song, 'primaryArtists', 'primary_artists', 'singers', 'artist');
+  if (a) return a;
 
+  // Check new API shape
+  if (song.artists && Array.isArray(song.artists.primary) && song.artists.primary.length) {
+    return song.artists.primary.map(x => x.name).join(', ');
+  }
+  if (song.artists && Array.isArray(song.artists.featured) && song.artists.featured.length) {
+    return song.artists.featured.map(x => x.name).join(', ');
+  }
+
+  return 'Unknown Artist';
+}
 // Render queue search results into DOM
 function renderResults(list){
   resultsContainer.innerHTML = '';
