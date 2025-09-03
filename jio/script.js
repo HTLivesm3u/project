@@ -131,6 +131,8 @@ function renderResults(list){
   }
 }
 
+  
+
 // Escape HTML to avoid injection if API returns weird text
 function escapeHtml(s){
   return String(s || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -223,6 +225,12 @@ function updateNowPlayingUI(item, playing){
   bannerCover.src = cover;
   bannerTitle.textContent = title;
   bannerArtist.textContent = artist;
+
+    // 🔥 update blurred background with cover
+  const pc = document.querySelector('.player-container');
+  if (pc) pc.style.setProperty('--banner-cover-url', `url("${cover}")`);
+
+  
   // show banner and footer
   if (musicBanner);
   if ($('footer-cover')) $('footer-cover').src = cover;
@@ -231,6 +239,8 @@ function updateNowPlayingUI(item, playing){
   playPauseIcon.className = isPlaying ? 'fa-solid fa-pause' : 'fa-solid fa-play';
   if (bannerPlayPauseBtn) bannerPlayPauseBtn.innerHTML = `<i class="fa-solid ${isPlaying ? 'fa-pause' : 'fa-play'}"></i>`;
 }
+
+
 
 // ---------- Controls ----------
 async function togglePlay(){
@@ -380,3 +390,5 @@ window.Music45 = {
 
 // initial UI state
 updateNowPlayingUI({title:'No Song', artist:'', cover:'https://music45.vercel.app/music/music45.webp'}, false);
+
+
