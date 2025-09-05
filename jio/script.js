@@ -1,9 +1,9 @@
-// ===== Music45 — full JS (paste this into your page, replacing older script) =====
+// ===== Music45 — full fixed JS =====
 
 // Helper to get element by id
 const $ = id => document.getElementById(id);
 
-// DOM elements (match your HTML ids)
+// DOM elements
 const searchInput = $('search-query');
 const searchBtn = $('search-btn');
 const resultsContainer = $('song-list');
@@ -13,8 +13,8 @@ const audio = $('audio');
 const footerCover = $('footer-cover');
 const footerTitle = $('footer-title');
 const footerArtist = $('footer-artist');
-const playPauseBtn = $('playPause');            // footer button
-const playPauseIcon = $('playPauseIcon');       // footer icon inside button
+const playPauseBtn = $('playPause');
+const playPauseIcon = $('playPauseIcon');
 const prevBtn = $('prev');
 const nextBtn = $('next');
 const footerToggleBtn = $('footer-song-info');
@@ -23,7 +23,7 @@ const musicBanner = $('musicbanner');
 const bannerCover = $('banner-cover-image');
 const bannerTitle = $('banner-song-title');
 const bannerArtist = $('banner-artist-name');
-const bannerPlayPauseBtn = $('banner-play-pause'); // banner control
+const bannerPlayPauseBtn = $('banner-play-pause');
 const bannerPrev = $('banner-prev');
 const bannerNext = $('banner-next');
 const shuffleBtn = $('shuffle-btn');
@@ -36,11 +36,13 @@ const currentTimeEl = $('current-time');
 const durationEl = $('duration');
 
 // state
-let queue = []; // items: { id, title, artist, cover, url (nullable), raw }
+let queue = [];
 let currentIndex = -1;
+let currentSong = null;   // 🔥 keep track of the last played song
 let shuffleMode = false;
 let repeatMode = false;
 let isPlaying = false;
+
 
 // ---------- Utilities ----------
 function safeLog(...args){ console.log('[Music45]', ...args); }
@@ -50,37 +52,27 @@ function getStringField(obj, ...names){
   return '';
 }
 
-// Robust cover selection: supports multiple API shapes
 function getCoverImageFromSong(song){
   if (!song) return 'https://music45.vercel.app/music/music45.webp';
-  // case: image is array of objects like [{quality:'', link:''} or {quality,url}]
   if (Array.isArray(song.image) && song.image.length){
     const first = song.image[0];
     if (typeof first === 'object'){
-      // look for obvious big quality or return last
       const best = song.image.find(i => i.quality && /500|b|large|high/i.test(i.quality)) || song.image[song.image.length-1];
       return best.link || best.url || best[Object.keys(best)[0]] || String(best);
     } else {
-      // array of URLs
       return song.image[song.image.length - 1];
     }
   }
-  // legacy single-field
   if (song.image_url) return song.image_url;
   if (song.cover) return song.cover;
-  // fallback
   return 'https://music45.vercel.app/music/music45.webp';
 }
 
-// Extract playable url from details
 function extractPlayableUrlFromDetails(details){
   if (!details) return null;
-  // often 'media_url' contains playable mp3/stream
   if (details.media_url) return details.media_url;
-  // jiosaavn wrappers sometimes have downloadUrl array with .link
   const dl = details.downloadUrl || details.download_url;
   if (Array.isArray(dl) && dl.length){
-    // choose last (highest quality) then 'link' or 'url'
     const last = dl[dl.length - 1];
     return last.link || last.url || null;
   }
@@ -89,26 +81,25 @@ function extractPlayableUrlFromDetails(details){
   return null;
 }
 
-// Get title / artist safely for different API shapes
 function getTitle(song){
   return getStringField(song, 'name', 'song', 'title') || 'Unknown Title';
 }
 function getArtist(song){
-  // First check old fields
   let a = getStringField(song, 'primaryArtists', 'primary_artists', 'singers', 'artist');
   if (a) return a;
-
-  // Check new API shape
   if (song.artists && Array.isArray(song.artists.primary) && song.artists.primary.length) {
     return song.artists.primary.map(x => x.name).join(', ');
   }
   if (song.artists && Array.isArray(song.artists.featured) && song.artists.featured.length) {
     return song.artists.featured.map(x => x.name).join(', ');
   }
-
   return 'Unknown Artist';
 }
-// Render queue search results into DOM
+
+function escapeHtml(s){
+  return String(s || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
 function renderResults(list){
   resultsContainer.innerHTML = '';
   if (!list || !list.length){
@@ -131,12 +122,6 @@ function renderResults(list){
   }
 }
 
-  
-
-// Escape HTML to avoid injection if API returns weird text
-function escapeHtml(s){
-  return String(s || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-}
 
 // ---------- Search ----------
 async function searchSongs(){
@@ -148,7 +133,7 @@ async function searchSongs(){
     const res = await fetch(`https://saavn.dev/api/search/songs?query=${encodeURIComponent(q)}`);
     const data = await res.json();
     const results = data?.data?.results || [];
-    // Map to normalized queue items (url loaded lazily)
+
     queue = results.map(r => ({
       id: r.id,
       title: getTitle(r),
@@ -157,7 +142,10 @@ async function searchSongs(){
       url: null,
       raw: r
     }));
-    currentIndex = -1;
+
+    // keep current song if already playing
+    if (!currentSong) currentIndex = -1;
+
     renderResults(queue);
   } catch (err){
     console.error('search error', err);
@@ -165,12 +153,12 @@ async function searchSongs(){
   }
 }
 
-// ---------- Loading details and playing ----------
+
+// ---------- Loading + Playing ----------
 async function ensureItemUrl(index){
   const item = queue[index];
   if (!item) return null;
-  if (item.url) return item.url; // already resolved
-  // fetch details endpoint
+  if (item.url) return item.url;
   try {
     const res = await fetch(`https://saavn.dev/api/songs?ids=${encodeURIComponent(item.id)}`);
     const d = await res.json();
@@ -179,10 +167,8 @@ async function ensureItemUrl(index){
       safeLog('no details for', item.id, d);
       return null;
     }
-    // get playable url
     const url = extractPlayableUrlFromDetails(full);
     if (url) item.url = url;
-    // update title/artist/cover if available
     item.title = getTitle(full) || item.title;
     item.artist = getArtist(full) || item.artist;
     item.cover = getCoverImageFromSong(full) || item.cover;
@@ -196,30 +182,31 @@ async function ensureItemUrl(index){
 async function playIndex(index){
   if (index < 0 || index >= queue.length) return;
   currentIndex = index;
-  const item = queue[index];
-  // show placeholder UI even before url resolved
-  updateNowPlayingUI(item, false);
+  currentSong = queue[index]; // 🔥 remember current song
+
+  updateNowPlayingUI(currentSong, false);
   const url = await ensureItemUrl(index);
   if (!url){
     alert('No playable URL found for this song.');
-    // try next
     nextSong();
     return;
   }
+
   audio.src = url;
   try { await audio.play(); }
   catch(e){ safeLog('play blocked', e); }
   isPlaying = true;
-  updateNowPlayingUI(item, true);
-  setMediaSessionForItem(item);
+  updateNowPlayingUI(currentSong, true);
+  setMediaSessionForItem(currentSong);
 }
 
 function updateNowPlayingUI(item, playing){
+  if (!item) item = currentSong; // fallback
+
   const cover = item?.cover || 'https://music45.vercel.app/music/music45.webp';
   const title = item?.title || 'Unknown Song';
   const artist = item?.artist || 'Unknown Artist';
 
-  // existing updates
   footerCover.src = cover;
   footerTitle.textContent = title;
   footerArtist.textContent = artist;
@@ -228,11 +215,9 @@ function updateNowPlayingUI(item, playing){
   bannerTitle.textContent = title;
   bannerArtist.textContent = artist;
 
-  // 🔥 update blurred background with cover
   const pc = document.querySelector('.player-container');
   if (pc) pc.style.setProperty('--banner-cover-url', `url("${cover}")`);
 
-  // icons
   isPlaying = !!playing;
   playPauseIcon.className = isPlaying ? 'fa-solid fa-pause' : 'fa-solid fa-play';
   if (bannerPlayPauseBtn) {
@@ -241,13 +226,10 @@ function updateNowPlayingUI(item, playing){
 }
 
 
-
-
 // ---------- Controls ----------
 async function togglePlay(){
-  if (!audio.src){
-    // if nothing loaded, play first in queue if present
-    if (queue.length) { await playIndex(0); return; }
+  if (!audio.src && queue.length) {
+    await playIndex(0);
     return;
   }
   if (audio.paused) {
@@ -257,14 +239,13 @@ async function togglePlay(){
     audio.pause();
     isPlaying = false;
   }
-  updateNowPlayingUI(queue[currentIndex] || {}, isPlaying);
+  updateNowPlayingUI(currentSong, isPlaying);
 }
 
 function nextSong(){
   if (!queue.length) return;
   if (shuffleMode){
     let n = Math.floor(Math.random() * queue.length);
-    // avoid same index if possible
     if (queue.length > 1 && n === currentIndex) n = (n + 1) % queue.length;
     playIndex(n);
   } else {
@@ -282,7 +263,8 @@ function prevSong(){
   }
 }
 
-// ---------- Progress and audio events ----------
+
+// ---------- Progress ----------
 audio.addEventListener('timeupdate', ()=>{
   const cur = audio.currentTime || 0;
   const dur = audio.duration || 0;
@@ -294,11 +276,10 @@ audio.addEventListener('timeupdate', ()=>{
 audio.addEventListener('loadedmetadata', ()=>{
   durationEl.textContent = formatTime(audio.duration || 0);
 });
-audio.addEventListener('play', ()=> { isPlaying = true; updateNowPlayingUI(queue[currentIndex] || {}, true); });
-audio.addEventListener('pause', ()=> { isPlaying = false; updateNowPlayingUI(queue[currentIndex] || {}, false); });
+audio.addEventListener('play', ()=> { isPlaying = true; updateNowPlayingUI(currentSong, true); });
+audio.addEventListener('pause', ()=> { isPlaying = false; updateNowPlayingUI(currentSong, false); });
 audio.addEventListener('ended', ()=>{
   if (repeatMode) {
-    // replay same
     audio.currentTime = 0;
     audio.play();
   } else nextSong();
@@ -309,6 +290,7 @@ progressBar.addEventListener('click', (e)=>{
   const pct = (e.clientX - rect.left) / rect.width;
   if (isFinite(audio.duration) && !isNaN(pct)) audio.currentTime = pct * audio.duration;
 });
+
 
 // ---------- Media Session ----------
 function setMediaSessionForItem(item){
@@ -323,8 +305,9 @@ function setMediaSessionForItem(item){
     navigator.mediaSession.setActionHandler('pause', ()=> audio.pause());
     navigator.mediaSession.setActionHandler('previoustrack', prevSong);
     navigator.mediaSession.setActionHandler('nexttrack', nextSong);
-  } catch(e){ /* some browsers throw if metadata malformed */ }
+  } catch(e){}
 }
+
 
 // ---------- UI wiring ----------
 if (searchBtn) searchBtn.addEventListener('click', searchSongs);
@@ -351,45 +334,34 @@ if (repeatBtn) repeatBtn.addEventListener('click', ()=>{
 
 footerToggleBtn.addEventListener("click", () => {
   if (musicBanner.style.display === "block") {
-    musicBanner.style.display = "none"; // Close the music banner
-    history.pushState(null, null, window.location.href); // Update browser history
+    musicBanner.style.display = "none";
+    history.pushState(null, null, window.location.href);
   } else {
-    musicBanner.style.display = "block"; // Open the music banner
-    history.pushState({ musicBannerOpen: true }, null, window.location.href); // Update browser history
+    musicBanner.style.display = "block";
+    history.pushState({ musicBannerOpen: true }, null, window.location.href);
   }
 });
-
-
-
-
 
 window.addEventListener("popstate", () => {
-  // Check if the music banner is open
   if (musicBanner.style.display === "block") {
-    musicBanner.style.display = "none"; // Close the music banner
+    musicBanner.style.display = "none";
   }
 });
 
-// Close the Music Banner when the close button is clicked
 closeBannerBtn.addEventListener("click", () => {
-  // Hide the music banner
   musicBanner.style.display = "none";
 });
 
 
-// helper to format seconds
+// ---------- Helpers ----------
 function formatTime(t){
   if (!isFinite(t) || isNaN(t)) return '00:00';
   const m = Math.floor(t / 60), s = Math.floor(t % 60);
   return String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
 }
 
-// expose small debug helpers
-window.Music45 = {
-  queue, playIndex, nextSong, prevSong, searchSongs
-};
 
-// initial UI state
+// ---------- Expose for debug ----------
+window.Music45 = { queue, playIndex, nextSong, prevSong, searchSongs };
+
 updateNowPlayingUI({title:'No Song', artist:'', cover:'https://music45.vercel.app/music/music45.webp'}, false);
-
-
