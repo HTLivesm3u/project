@@ -53,7 +53,7 @@ function getStringField(obj, ...names){
 }
 
 function getCoverImageFromSong(song){
-  if (!song) return 'https://music45.vercel.app/music/music45.webp';
+  if (!song) return 'https://music45beta.vercel.app/music/music45.webp';
   if (Array.isArray(song.image) && song.image.length){
     const first = song.image[0];
     if (typeof first === 'object'){
@@ -65,7 +65,7 @@ function getCoverImageFromSong(song){
   }
   if (song.image_url) return song.image_url;
   if (song.cover) return song.cover;
-  return 'https://music45.vercel.app/music/music45.webp';
+  return 'https://music45beta.vercel.app/music/music45.webp';
 }
 
 function extractPlayableUrlFromDetails(details){
@@ -203,7 +203,7 @@ async function playIndex(index){
 function updateNowPlayingUI(item, playing){
   if (!item) item = currentSong; // fallback
 
-  const cover = item?.cover || 'https://music45.vercel.app/music/music45.webp';
+  const cover = item?.cover || 'https://music45beta.vercel.app/music/music45.webp';
   const title = item?.title || 'Unknown Song';
   const artist = item?.artist || 'Unknown Artist';
 
@@ -364,4 +364,4 @@ function formatTime(t){
 // ---------- Expose for debug ----------
 window.Music45 = { queue, playIndex, nextSong, prevSong, searchSongs };
 
-updateNowPlayingUI({title:'No Song', artist:'', cover:'https://music45.vercel.app/music/music45.webp'}, false);
+updateNowPlayingUI({title:'No Song', artist:'', cover:'https://music45beta.vercel.app/music/music45.webp'}, false);
