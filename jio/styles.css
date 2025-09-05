@@ -36,6 +36,7 @@
     .song-item .title{ font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
     .song-item .artist{ color:var(--muted); font-size:14px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 
+    
     /* Footer player (mini) */
     .footer-player{
       position:fixed; left:0; right:0; bottom:0; height:100px; background:#2f3542;
