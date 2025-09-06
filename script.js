@@ -1,274 +1,315 @@
+// ===== Music45 (JioSaavn integration) wired to your new UI =====
 
+    // Initialize Lucide icons
+    function refreshIcons(){ try { lucide.createIcons(); } catch(e) {} }
+    refreshIcons();
 
-        
-        
-        // Initialize Lucide icons
-        lucide.createIcons();
+    // Greeting
+    (function setGreeting(){
+      const hour = new Date().getHours();
+      document.getElementById('greeting').textContent =
+        hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
+    })();
 
-          // =============================
-  // Globals
-  // =============================
-  let queue = [];
-  let currentSong = null;
-  let currentIndex = -1;
-  const audio = new Audio();
+    // DOM refs
+    const audio = document.getElementById('audio');
+    const imgEl = document.getElementById('current-track-image');
+    const titleEl = document.getElementById('current-track-title');
+    const artistEl = document.getElementById('current-track-artist');
+    const playBtn = document.getElementById('btn-play');
+    const playIcon = document.getElementById('play-icon');
+    const prevBtn = document.getElementById('btn-prev');
+    const nextBtn = document.getElementById('btn-next');
+    const progressTrack = document.getElementById('progress-track');
+    const progressFill = document.getElementById('progress-fill');
+    const quickGrid = document.getElementById('quick-grid');
+    const recentlyWrap = document.getElementById('recently');
+    const newReleasesWrap = document.getElementById('new-releases');
 
-  const searchInput = document.getElementById('search-query');
-  const resultsContainer = document.getElementById('search-results');
+    // State
+    let queue = [];
+    let currentIndex = -1;
+    let isPlaying = false;
+    let recentlyPlayed = [];
 
-  // Player UI refs
-  const footerCover = document.getElementById('current-track-image');
-  const footerTitle = document.getElementById('current-track-title');
-  const footerArtist = document.getElementById('current-track-artist');
+    // Helpers
+    const FALLBACK_COVER = 'https://music45beta.vercel.app/music/music45.webp';
+    const escapeHtml = s => String(s||'').replace(/[&<>"']/g,c=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+    const getTitle = s => (s?.name || s?.song || s?.title || 'Unknown Title');
+    const getArtist = s => {
+      if (s?.primaryArtists || s?.primary_artists) return (s.primaryArtists||s.primary_artists);
+      if (s?.artists?.primary?.length) return s.artists.primary.map(a=>a.name).join(', ');
+      if (s?.artists?.featured?.length) return s.artists.featured.map(a=>a.name).join(', ');
+      return s?.singers || s?.artist || 'Unknown Artist';
+    };
+    const getCover = s => {
+      if (!s) return FALLBACK_COVER;
+      if (Array.isArray(s.image) && s.image.length){
+        const best = s.image.find(i => i.quality && /500|b|large|high/i.test(i.quality)) || s.image[s.image.length-1];
+        return best.link || best.url || FALLBACK_COVER;
+      }
+      return s.image_url || s.cover || FALLBACK_COVER;
+    };
+    const extractPlayableUrl = details => {
+      if (!details) return null;
+      if (details.media_url) return details.media_url;
+      const dl = details.downloadUrl || details.download_url;
+      if (Array.isArray(dl) && dl.length){
+        const last = dl[dl.length - 1];
+        return last.link || last.url || null;
+      }
+      return details.url || details.audio || null;
+    };
+    const formatTime = t => {
+      if (!isFinite(t) || isNaN(t)) return '00:00';
+      const m = Math.floor(t/60), s = Math.floor(t%60);
+      return String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
+    };
 
-  // =============================
-  // Helpers
-  // =============================
-  function getTitle(song) {
-    return song?.title || song?.name || "Unknown Title";
-  }
+    function updateUI(item, playing){
+      const cover = item?.cover || FALLBACK_COVER;
+      imgEl.src = cover;
+      titleEl.textContent = item?.title || 'Unknown Song';
+      artistEl.textContent = item?.artist || 'Unknown Artist';
+      // icon
+      playIcon.setAttribute('data-lucide', playing ? 'pause' : 'play');
+      refreshIcons();
+    }
 
-  function getArtist(song) {
-    return song?.primaryArtists || song?.artists?.primary?.map(a => a.name).join(", ") || "Unknown Artist";
-  }
+    function addToRecently(item){
+      if (!item) return;
+      // keep unique by id+title
+      const key = item.id ? 'id:'+item.id : 't:'+item.title;
+      recentlyPlayed = recentlyPlayed.filter(x => x._k !== key);
+      recentlyPlayed.unshift({...item, _k:key});
+      recentlyPlayed = recentlyPlayed.slice(0,12);
+      renderRecently();
+    }
 
-  function getCoverImageFromSong(song) {
-    return song?.image?.[2]?.link || song?.image?.[0]?.link || "https://music45beta.vercel.app/music/music45.webp";
-  }
+    function renderRecently(){
+      recentlyWrap.innerHTML = '';
+      recentlyPlayed.forEach(item=>{
+        const card = document.createElement('div');
+        card.className = 'music-card';
+        card.innerHTML = `
+          <img src="${escapeHtml(item.cover||FALLBACK_COVER)}" alt="${escapeHtml(item.title)}">
+          <span>${escapeHtml(item.title)}</span>
+        `;
+        card.addEventListener('click', ()=> {
+          queue = [item];
+          currentIndex = 0;
+          playIndex(0);
+        });
+        recentlyWrap.appendChild(card);
+      });
+    }
 
-  function extractPlayableUrlFromDetails(full) {
-    return full?.downloadUrl?.[2]?.link || full?.downloadUrl?.[0]?.link || null;
-  }
+    // Search and queue via saavn.dev
+    async function searchAndQueue(query, autoplay=true){
+      if (!query) return;
+      try{
+        const res = await fetch(`https://saavn.dev/api/search/songs?query=${encodeURIComponent(query)}`);
+        const data = await res.json();
+        const results = data?.data?.results || [];
+        queue = results.map(r => ({
+          id: r.id,
+          title: getTitle(r),
+          artist: getArtist(r),
+          cover: getCover(r),
+          url: null,
+          raw: r
+        }));
+        currentIndex = queue.length ? 0 : -1;
+        if (autoplay && currentIndex >= 0) await playIndex(currentIndex);
+      }catch(e){
+        console.error('Search failed', e);
+        alert('Search failed. Try another query.');
+      }
+    }
 
-  // =============================
-  // Search
-  // =============================
-  async function searchSongs(){
-    const q = (searchInput?.value || '').trim();
-    if (!q) return alert('Enter song!');
-    resultsContainer.innerHTML = 'Searching...';
+    async function ensureUrlFor(index){
+      const item = queue[index];
+      if (!item) return null;
+      if (item.url) return item.url;
+      try{
+        const res = await fetch(`https://saavn.dev/api/songs?ids=${encodeURIComponent(item.id)}`);
+        const d = await res.json();
+        const full = d?.data?.[0] || d?.data || null;
+        if (!full) return null;
+        item.url = extractPlayableUrl(full);
+        item.title = getTitle(full) || item.title;
+        item.artist = getArtist(full) || item.artist;
+        item.cover = getCover(full) || item.cover;
+        return item.url || null;
+      }catch(e){
+        console.error('Details failed', e);
+        return null;
+      }
+    }
 
-    try {
-      const res = await fetch(`https://saavn.dev/api/search/songs?query=${encodeURIComponent(q)}`);
-      const data = await res.json();
-      const results = data?.data?.results || [];
+    async function playIndex(index){
+      if (index < 0 || index >= queue.length) return;
+      const item = queue[index];
+      updateUI(item, false);
+      const url = await ensureUrlFor(index);
+      if (!url){
+        alert('No playable URL found for this track.');
+        return;
+      }
+      audio.src = url;
+      try { await audio.play(); isPlaying = true; } catch(e){ isPlaying = false; }
+      currentIndex = index;
+      updateUI(item, isPlaying);
+      addToRecently(item);
+      setMediaSession(item);
+    }
 
-      queue = results.map(r => ({
+    function nextSong(){
+      if (!queue.length) return;
+      const n = (currentIndex + 1) % queue.length;
+      playIndex(n);
+    }
+    function prevSong(){
+      if (!queue.length) return;
+      const p = (currentIndex - 1 + queue.length) % queue.length;
+      playIndex(p);
+    }
+
+    async function togglePlay(){
+      if (!audio.src){
+        // no song yet: play something default
+        await searchAndQueue('lofi beats', true);
+        return;
+      }
+      if (audio.paused){
+        try{ await audio.play(); isPlaying = true; }catch(e){ /* ignore */ }
+      }else{
+        audio.pause(); isPlaying = false;
+      }
+      updateUI(queue[currentIndex], isPlaying);
+    }
+
+    // Progress
+    audio.addEventListener('timeupdate', ()=>{
+      const cur = audio.currentTime || 0;
+      const dur = audio.duration || 0;
+      const pct = dur > 0 ? (cur/dur)*100 : 0;
+      progressFill.style.width = pct + '%';
+    });
+    progressTrack.addEventListener('click', (e)=>{
+      const rect = progressTrack.getBoundingClientRect();
+      const pct = (e.clientX - rect.left)/rect.width;
+      if (isFinite(audio.duration)) audio.currentTime = Math.max(0, Math.min(1, pct)) * audio.duration;
+    });
+    audio.addEventListener('play', ()=>{ isPlaying = true; updateUI(queue[currentIndex], true); });
+    audio.addEventListener('pause', ()=>{ isPlaying = false; updateUI(queue[currentIndex], false); });
+    audio.addEventListener('ended', ()=> nextSong());
+
+    // Media Session
+    function setMediaSession(item){
+      if (!('mediaSession' in navigator) || !item) return;
+      try{
+        navigator.mediaSession.metadata = new MediaMetadata({
+          title: item.title,
+          artist: item.artist,
+          artwork: [{ src: item.cover || FALLBACK_COVER, sizes:'512x512', type:'image/png' }]
+        });
+        navigator.mediaSession.setActionHandler('play', ()=> audio.play());
+        navigator.mediaSession.setActionHandler('pause', ()=> audio.pause());
+        navigator.mediaSession.setActionHandler('previoustrack', prevSong);
+        navigator.mediaSession.setActionHandler('nexttrack', nextSong);
+        navigator.mediaSession.setActionHandler('seekto', e => { if (e.seekTime!=null) audio.currentTime = e.seekTime; });
+      }catch(e){}
+    }
+
+    // Wire buttons
+    playBtn.addEventListener('click', togglePlay);
+    prevBtn.addEventListener('click', prevSong);
+    nextBtn.addEventListener('click', nextSong);
+
+    // Make all cards playable by search
+    function makePlayableByQuery(container){
+      container.querySelectorAll('[data-q]').forEach(el=>{
+        el.addEventListener('click', ()=> {
+          const q = el.getAttribute('data-q');
+          searchAndQueue(q, true);
+        });
+      });
+    }
+    makePlayableByQuery(quickGrid);
+    makePlayableByQuery(newReleasesWrap);
+
+    // Bottom nav (visual)
+    document.querySelectorAll('.nav-item').forEach(btn=>{
+      btn.addEventListener('click', (e)=>{
+        document.querySelectorAll('.nav-item').forEach(b=>b.classList.remove('active'));
+        e.currentTarget.classList.add('active');
+        // (Optional) show/hide sections by tab if you add tabbed views later
+      });
+    });
+
+    // First icon paint
+    refreshIcons();
+
+    // --- Search handling ---
+const searchInput = document.getElementById("search-input");
+const searchBtn = document.getElementById("search-btn");
+const searchResultsWrap = document.getElementById("search-results");
+
+// Perform search
+async function handleSearch() {
+  const query = searchInput.value.trim();
+  if (!query) return;
+
+  try {
+    const res = await fetch(`https://saavn.dev/api/search/songs?query=${encodeURIComponent(query)}`);
+    const data = await res.json();
+    const results = data?.data?.results || [];
+
+    // Render results
+    searchResultsWrap.innerHTML = "";
+    if (!results.length) {
+      searchResultsWrap.innerHTML = `<p style="color:var(--foreground-muted)">No results found.</p>`;
+      return;
+    }
+
+    results.forEach(r => {
+      const item = {
         id: r.id,
         title: getTitle(r),
         artist: getArtist(r),
-        cover: getCoverImageFromSong(r),
-        url: null,
+        cover: getCover(r),
         raw: r
-      }));
+      };
 
-      if (!currentSong) currentIndex = -1;
-      renderResults(queue);
-    } catch (err){
-      console.error('search error', err);
-      resultsContainer.innerHTML = '<div style="opacity:.7;padding:18px;text-align:center">Search failed</div>';
-    }
-  }
-
-  // =============================
-  // Render results
-  // =============================
-  function renderResults(list) {
-    resultsContainer.innerHTML = "";
-    if (!list.length) {
-      resultsContainer.innerHTML = "<p style='color:var(--foreground-muted);padding:1rem'>No songs found</p>";
-      return;
-    }
-    list.forEach((song, i) => {
       const div = document.createElement("div");
       div.className = "search-result-item";
-      div.onclick = () => playIndex(i);
       div.innerHTML = `
-        <img src="${song.cover}" alt="${song.title}">
+        <img src="${item.cover}" alt="${item.title}">
         <div class="search-result-info">
-          <h4>${song.title}</h4>
-          <p>${song.artist}</p>
+          <h4>${item.title}</h4>
+          <p>${item.artist}</p>
         </div>
       `;
-      resultsContainer.appendChild(div);
+      div.addEventListener("click", () => {
+        queue = [item];
+        currentIndex = 0;
+        playIndex(0);
+      });
+      searchResultsWrap.appendChild(div);
     });
-  }
-
-  // =============================
-  // Playing logic
-  // =============================
-async function ensureItemUrl(index){
-  const item = queue[index];
-  if (!item) return null;
-  if (item.url) return item.url;
-  try {
-    const res = await fetch(`https://saavn.dev/api/songs?ids=${encodeURIComponent(item.id)}`);
-    const d = await res.json();
-    const full = d?.data?.[0] || d?.data || null;
-    if (!full){
-      safeLog('no details for', item.id, d);
-      return null;
-    }
-    const url = extractPlayableUrlFromDetails(full);
-    if (url) item.url = url;
-    item.title = getTitle(full) || item.title;
-    item.artist = getArtist(full) || item.artist;
-    item.cover = getCoverImageFromSong(full) || item.cover;
-    return item.url || null;
-  } catch (err){
-    console.error('detail fetch', err);
-    return null;
+  } catch (e) {
+    console.error("Search failed", e);
+    searchResultsWrap.innerHTML = `<p style="color:red">Error fetching results</p>`;
   }
 }
 
-async function playIndex(index){
-  if (index < 0 || index >= queue.length) return;
-  currentIndex = index;
-  currentSong = queue[index]; // 🔥 remember current song
-
-  updateNowPlayingUI(currentSong, false);
-  const url = await ensureItemUrl(index);
-  if (!url){
-    alert('No playable URL found for this song.');
-    nextSong();
-    return;
-  }
-
-  audio.src = url;
-  try { await audio.play(); }
-  catch(e){ safeLog('play blocked', e); }
-  isPlaying = true;
-  updateNowPlayingUI(currentSong, true);
-  setMediaSessionForItem(currentSong);
-}
-
-function updateNowPlayingUI(item, playing){
-  if (!item) item = currentSong; // fallback
-
-  const cover = item?.cover || 'https://music45beta.vercel.app/music/music45.webp';
-  const title = item?.title || 'Unknown Song';
-  const artist = item?.artist || 'Unknown Artist';
-
-  footerCover.src = cover;
-  footerTitle.textContent = title;
-  footerArtist.textContent = artist;
-
-  bannerCover.src = cover;
-  bannerTitle.textContent = title;
-  bannerArtist.textContent = artist;
-
-  const pc = document.querySelector('.player-container');
-  if (pc) pc.style.setProperty('--banner-cover-url', `url("${cover}")`);
-
-  isPlaying = !!playing;
-  playPauseIcon.className = isPlaying ? 'fa-solid fa-pause' : 'fa-solid fa-play';
-  if (bannerPlayPauseBtn) {
-    bannerPlayPauseBtn.innerHTML = `<i class="fa-solid ${isPlaying ? 'fa-pause' : 'fa-play'}"></i>`;
-  }
-}
-  // =============================
-  // Greeting init
-  // =============================
-  function setGreeting() {
-    const hour = new Date().getHours();
-    let greeting;
-    if (hour < 12) greeting = "Good morning";
-    else if (hour < 18) greeting = "Good afternoon";
-    else greeting = "Good evening";
-    document.getElementById('greeting').textContent = greeting;
-  }
-  setGreeting();
+// Bind search actions
+searchBtn.addEventListener("click", handleSearch);
+searchInput.addEventListener("keydown", e => {
+  if (e.key === "Enter") handleSearch();
+});
 
 
-        // Set greeting based on time
-        function setGreeting() {
-            const hour = new Date().getHours();
-            let greeting;
-            if (hour < 12) greeting = "Good morning";
-            else if (hour < 18) greeting = "Good afternoon";
-            else greeting = "Good evening";
-            document.getElementById('greeting').textContent = greeting;
-        }
-
-        // Play/pause functionality
-        let isPlaying = false;
-        function togglePlay() {
-            isPlaying = !isPlaying;
-            const playIcon = document.getElementById('play-icon');
-            playIcon.setAttribute('data-lucide', isPlaying ? 'pause' : 'play');
-            lucide.createIcons();
-        }
-
-        // Tab switching
-        // Tab switching
-function setActiveTab(tab) {
-    // Hide all tab sections
-    document.querySelectorAll('.tab-section').forEach(section => {
-        section.style.display = 'none';
-    });
-
-    // Show selected tab
-    document.getElementById(`${tab}-tab`).style.display = 'block';
-
-    // Update nav active state
-    document.querySelectorAll('.nav-item').forEach(item => {
-        item.classList.remove('active');
-    });
-    event.target.closest('.nav-item').classList.add('active');
-}
-
-
-        // Play track
-        function playTrack(title) {
-            console.log(`Playing ${title}`);
-            document.getElementById('current-track-title').textContent = title;
-            isPlaying = true;
-            const playIcon = document.getElementById('play-icon');
-            playIcon.setAttribute('data-lucide', 'pause');
-            lucide.createIcons();
-        }
-
-        // Initialize
-        setGreeting();
-
-        function getTitle(song) {
-  return song?.title || song?.name || "Unknown Title";
-}
-
-function getArtist(song) {
-  return song?.primaryArtists || song?.artists?.primary?.map(a => a.name).join(", ") || "Unknown Artist";
-}
-
-function getCoverImageFromSong(song) {
-  return song?.image?.[2]?.link || song?.image?.[0]?.link || "https://music45beta.vercel.app/music/music45.webp";
-}
-
-function extractPlayableUrlFromDetails(full) {
-  // Pick highest quality audio URL
-  return full?.downloadUrl?.[2]?.link || full?.downloadUrl?.[0]?.link || null;
-}
-
-
-function renderResults(list) {
-  resultsContainer.innerHTML = "";
-
-  if (!list.length) {
-    resultsContainer.innerHTML = "<p style='color:var(--foreground-muted);padding:1rem'>No songs found</p>";
-    return;
-  }
-
-  list.forEach((song, i) => {
-    const div = document.createElement("div");
-    div.className = "search-result-item";
-    div.onclick = () => playIndex(i);
-
-    div.innerHTML = `
-      <img src="${song.cover}" alt="${song.title}">
-      <div class="search-result-info">
-        <h4>${song.title}</h4>
-        <p>${song.artist}</p>
-      </div>
-    `;
-    resultsContainer.appendChild(div);
-  });
-}
+    // Optional: preload a nice default
+    // searchAndQueue('Trending Bollywood', false);

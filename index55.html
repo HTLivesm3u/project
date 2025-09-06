@@ -11,126 +11,7 @@
   <link rel="icon" type="image/webp" href="https://music45beta.vercel.app/music/music45.webp">
   <!-- Lucide icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/lucide/0.462.0/lucide.min.css">
-  <style>
-    /* === Your CSS (unchanged), with tiny IDs added where useful === */
-
-    /* Reset and base styles */
-    *{margin:0;padding:0;box-sizing:border-box}
-
-    /* Design System Variables */
-    :root{
-      --background:hsl(220,15%,8%);
-      --background-secondary:hsl(220,15%,12%);
-      --background-tertiary:hsl(220,15%,16%);
-      --foreground:hsl(0,0%,98%);
-      --foreground-secondary:hsl(0,0%,85%);
-      --foreground-muted:hsl(0,0%,60%);
-      --primary:hsl(210,85%,60%);
-      --primary-foreground:#fff;
-      --accent:hsl(280,85%,65%);
-      --accent-foreground:#fff;
-      --card:hsl(220,15%,12%);
-      --card-hover:hsl(220,15%,18%);
-      --card-foreground:#fff;
-      --gradient-primary:linear-gradient(135deg,hsl(210,85%,60%),hsl(280,85%,65%));
-      --gradient-card:linear-gradient(135deg,hsl(220,15%,12%),hsl(220,15%,16%));
-      --gradient-overlay:linear-gradient(180deg,transparent,hsla(220,15%,8%,0.8));
-      --hover:hsl(220,15%,20%);
-      --active:hsl(220,15%,24%);
-      --shadow-card:0 4px 12px hsla(220,15%,4%,0.3);
-      --shadow-player:0 -4px 20px hsla(220,15%,4%,0.5);
-      --radius:.75rem; --radius-sm:.5rem; --radius-lg:1rem;
-      --transition-smooth:all .3s cubic-bezier(.4,0,.2,1);
-      --transition-bounce:all .4s cubic-bezier(.68,-.55,.265,1.55);
-    }
-
-    body{
-      font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
-      background:var(--background);color:var(--foreground);
-      min-height:100dvh;overflow-x:hidden; -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale;
-      overscroll-behavior-y:contain;font-size:14px;
-    }
-    .app{min-height:100dvh;background:var(--background)}
-
-    /* Header */
-    .header{display:flex;align-items:center;justify-content:space-between;padding:3rem 1rem 1rem}
-    .greeting{font-size:1.5rem;font-weight:700;color:var(--foreground)}
-    .header-icons{display:flex;align-items:center;gap:1rem}
-    .icon-button{background:none;border:none;padding:.5rem;color:var(--foreground-secondary);cursor:pointer;transition:var(--transition-smooth)}
-    .icon-button:hover{color:var(--foreground);transform:scale(1.1)}
-    .icon-button i{width:1.5rem;height:1.5rem}
-
-    /* Main Content */
-    .main-content{padding:0 1rem 8rem;display:flex;flex-direction:column;gap:1.5rem}
-
-    /* Quick Access Grid */
-    .quick-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:.5rem}
-    .playlist-card{display:flex;align-items:center;background:var(--card);border-radius:var(--radius-sm);padding:.75rem;cursor:pointer;transition:var(--transition-smooth);box-shadow:var(--shadow-card)}
-    .playlist-card:hover{background:var(--card-hover);transform:scale(1.02)}
-    .playlist-card img{width:3rem;height:3rem;border-radius:var(--radius-sm);object-fit:cover;margin-right:.75rem}
-    .playlist-card span{color:var(--foreground);font-weight:600;font-size:.875rem;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-
-    /* Sections */
-    .section{display:flex;flex-direction:column;gap:1rem}
-    .section-title{font-size:1.25rem;font-weight:700;color:var(--foreground)}
-    .horizontal-scroll{display:flex;gap:1rem;overflow-x:auto;padding-bottom:.5rem;scrollbar-width:none;-ms-overflow-style:none}
-    .horizontal-scroll::-webkit-scrollbar{display:none}
-    .music-card{display:flex;flex-direction:column;align-items:center;min-width:9rem;cursor:pointer;transition:var(--transition-smooth)}
-    .music-card:hover{transform:scale(1.05)}
-    .music-card img{width:9rem;height:9rem;border-radius:var(--radius);object-fit:cover;box-shadow:var(--shadow-card);margin-bottom:.75rem}
-    .music-card span{color:var(--foreground);font-weight:600;text-align:center;line-height:1.2;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
-
-    /* Music Player (floating) */
-    .music-player{position:fixed;bottom:4rem;left:0;right:0;background:var(--gradient-card);backdrop-filter:blur(20px);border-top:1px solid var(--background-tertiary);box-shadow:var(--shadow-player);z-index:40;padding:.75rem 1rem}
-    .player-content{display:flex;align-items:center;justify-content:space-between;margin-bottom:.75rem}
-    .track-info{display:flex;align-items:center;gap:.75rem;flex:1}
-    .track-image{width:3rem;height:3rem;border-radius:var(--radius);overflow:hidden;background:var(--background-tertiary)}
-    .track-image img{width:100%;height:100%;object-fit:cover}
-    .track-details{flex:1;overflow:hidden}
-    .track-details h4{color:var(--foreground);font-weight:600;font-size:.875rem;margin-bottom:.25rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-    .track-details p{color:var(--foreground-muted);font-size:.75rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-    .menu-button{background:none;border:none;padding:.5rem;color:var(--foreground-muted);cursor:pointer}
-    .menu-button i{width:1.25rem;height:1.25rem}
-    .player-controls{display:flex;align-items:center;justify-content:center;gap:1.5rem;margin-bottom:.75rem}
-    .control-button{background:none;border:none;padding:.5rem;color:var(--foreground-secondary);cursor:pointer}
-    .control-button i{width:1.25rem;height:1.25rem}
-    .play-button{width:3rem;height:3rem;background:var(--gradient-primary);border:none;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:var(--transition-smooth);box-shadow:0 4px 12px hsla(210,85%,60%,.3)}
-    .play-button:hover{transform:scale(1.05)}
-    .play-button i{width:1.25rem;height:1.25rem;color:#fff}
-    .progress-bar{width:100%}
-    .progress-track{width:100%;height:.25rem;background:var(--background-tertiary);border-radius:.125rem;overflow:hidden;cursor:pointer}
-    .progress-fill{width:0%;height:100%;background:var(--gradient-primary);border-radius:.125rem;transition:width .1s linear}
-
-    /* Bottom Navigation */
-    .bottom-nav{position:fixed;bottom:0;left:0;right:0;background:var(--background-secondary);border-top:1px solid var(--background-tertiary);display:flex;justify-content:space-around;padding:.5rem 0;z-index:50}
-    .nav-item{display:flex;flex-direction:column;align-items:center;gap:.25rem;background:none;border:none;color:var(--foreground-muted);cursor:pointer;padding:.5rem 1rem;transition:var(--transition-smooth);font-size:.75rem}
-    .nav-item.active{color:var(--primary)}
-    .nav-item:hover{color:var(--foreground-secondary)}
-    .nav-item.active:hover{color:var(--primary)}
-    .nav-item i{width:1.5rem;height:1.5rem}
-
-    /* Custom scrollbar */
-    ::-webkit-scrollbar{width:4px}
-    ::-webkit-scrollbar-track{background:var(--background-secondary)}
-    ::-webkit-scrollbar-thumb{background:var(--background-tertiary);border-radius:2px}
-    ::-webkit-scrollbar-thumb:hover{background:var(--hover)}
-
-    /* Responsive optimizations */
-    @media (max-width:320px){
-      .quick-grid{gap:.25rem}
-      .playlist-card{padding:.5rem}
-      .playlist-card img{width:2.5rem;height:2.5rem}
-      .music-card{min-width:8rem}
-      .music-card img{width:8rem;height:8rem}
-    }
-
-    /* Touch optimizations */
-    @media (hover:none) and (pointer:coarse){
-      .playlist-card:active{background:var(--card-hover);transform:scale(.98)}
-      .music-card:active{transform:scale(1.02)}
-      .play-button:active{transform:scale(.95)}
-    }
-  </style>
+<link rel="stylesheet" href="styles.css">
 </head>
 <body>
   <div class="app">
@@ -144,59 +25,87 @@
       </div>
     </div>
 
-    <!-- Main Content -->
-    <div class="main-content" id="main">
-      <!-- Quick Access Grid -->
-      <div class="quick-grid" id="quick-grid">
-        <div class="playlist-card" data-q="lofi beats">
-          <img src="https://picsum.photos/seed/lofi/200/200" alt="lofi beats">
-          <span>lofi beats</span>
-        </div>
-        <div class="playlist-card" data-q="Shaky">
-          <img src="https://picsum.photos/seed/shaky/200/200" alt="Shaky">
-          <span>Shaky</span>
-        </div>
-        <div class="playlist-card" data-q="if I could make it go quiet">
-          <img src="https://picsum.photos/seed/quiet/200/200" alt="if I could make it go quiet">
-          <span>if I could make it go quiet</span>
-        </div>
-        <div class="playlist-card" data-q="Hype">
-          <img src="https://picsum.photos/seed/hype/200/200" alt="Hype">
-          <span>Hype</span>
-        </div>
-        <div class="playlist-card" data-q="Is Anybody Anybody?">
-          <img src="https://picsum.photos/seed/anybody/200/200" alt="Is Anybody Anybody?">
-          <span>Is Anybody Anybody?</span>
-        </div>
-        <div class="playlist-card" data-q="Radiolab">
-          <img src="https://picsum.photos/seed/radiolab/200/200" alt="Radiolab">
-          <span>Radiolab</span>
-        </div>
-      </div>
 
-      <!-- Recently Played -->
-      <div class="section">
-        <h2 class="section-title">Recently played</h2>
-        <div class="horizontal-scroll" id="recently">
-          <!-- Filled dynamically as you play -->
-        </div>
-      </div>
+<!-- Main Content -->
+<div class="main-content" id="main">
 
-      <!-- New Releases (demo cards, also playable by search) -->
-      <div class="section">
-        <h2 class="section-title">New releases for you</h2>
-        <div class="horizontal-scroll" id="new-releases">
-          <div class="music-card" data-q="EastSide Story Saba Abraha">
-            <img src="https://picsum.photos/seed/eastside/300/300" alt="EastSide Story">
-            <span>EastSide Story</span>
-          </div>
-          <div class="music-card" data-q="Good Vibes">
-            <img src="https://picsum.photos/seed/goodvibes/300/300" alt="Good Vibes">
-            <span>Good Vibes</span>
-          </div>
+  <!-- 🏠 HOME TAB -->
+  <div class="tab-view" id="tab-home">
+    <!-- Quick Access Grid -->
+    <div class="quick-grid" id="quick-grid">
+      <div class="playlist-card" data-q="lofi beats">
+        <img src="https://c.saavncdn.com/353/Valentines-Day-Love-Beats-Hindi-2021-20210209160652-500x500.jpg" alt="lofi beats">
+        <span>lofi beats</span>
+      </div>
+      <div class="playlist-card" data-q="Shaky">
+        <img src="https://c.saavncdn.com/634/Shaky-Marathi-2025-20250422143320-500x500.jpg" alt="Shaky">
+        <span>Shaky</span>
+      </div>
+      <div class="playlist-card" data-q="if I could make it go quiet">
+        <img src="https://c.saavncdn.com/123/IF-I-COULD-Instrumental-2025-20250314105341-500x500.jpg" alt="if I could make it go quiet">
+        <span>if I could make it go quiet</span>
+      </div>
+      <div class="playlist-card" data-q="Hype">
+        <img src="https://c.saavncdn.com/437/ESNTLS-11-Punjabi-2023-20231110151620-500x500.jpg" alt="Hype">
+        <span>Hype</span>
+      </div>
+      <div class="playlist-card" data-q="Is Anybody Anybody?">
+        <img src="https://picsum.photos/seed/anybody/200/200" alt="Is Anybody Anybody?">
+        <span>Is Anybody Anybody?</span>
+      </div>
+      <div class="playlist-card" data-q="Radiolab">
+        <img src="https://picsum.photos/seed/radiolab/200/200" alt="Radiolab">
+        <span>Radiolab</span>
+      </div>
+    </div>
+
+    <!-- Recently Played -->
+    <div class="section">
+      <h2 class="section-title">Recently played</h2>
+      <div class="horizontal-scroll" id="recently"></div>
+    </div>
+
+    <!-- New Releases -->
+    <div class="section">
+      <h2 class="section-title">New releases for you</h2>
+      <div class="horizontal-scroll" id="new-releases">
+        <div class="music-card" data-q="EastSide Story Saba Abraha">
+          <img src="https://picsum.photos/seed/eastside/300/300" alt="EastSide Story">
+          <span>EastSide Story</span>
+        </div>
+        <div class="music-card" data-q="Good Vibes">
+          <img src="https://picsum.photos/seed/goodvibes/300/300" alt="Good Vibes">
+          <span>Good Vibes</span>
         </div>
       </div>
     </div>
+  </div>
+
+  <!-- 🔎 SEARCH TAB (hidden by default) -->
+  <div class="tab-view" id="tab-search" style="display:none;">
+    <div class="search-container">
+      <input type="text" id="search-input" placeholder="Search songs, artists, albums..." />
+      <button id="search-btn"><i data-lucide="search"></i></button>
+    </div>
+    <div class="search-results" id="search-results"></div>
+  </div>
+
+  <!-- 📚 LIBRARY TAB -->
+  <div class="tab-view" id="tab-library" style="display:none;">
+    <h2 class="section-title">Your Library</h2>
+    <p style="color:var(--foreground-muted);padding:12px;">No saved songs yet.</p>
+  </div>
+
+</div>
+
+<!-- Bottom Nav -->
+<div class="bottom-nav">
+  <div class="nav-item active" data-tab="home"><i data-lucide="home"></i><span>Home</span></div>
+  <div class="nav-item" data-tab="search"><i data-lucide="search"></i><span>Search</span></div>
+  <div class="nav-item" data-tab="library"><i data-lucide="library"></i><span>Library</span></div>
+</div>
+
+
 
     <!-- Music Player (floating) -->
     <div class="music-player">
@@ -246,265 +155,26 @@
   <!-- Hidden audio element -->
   <audio id="audio"></audio>
 
+  <script>
+  // Bottom nav tab switching
+  document.querySelectorAll('.nav-item').forEach(btn => {
+    btn.addEventListener('click', e => {
+      // remove active from all
+      document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+      e.currentTarget.classList.add('active');
+
+      // hide all tabs
+      document.querySelectorAll('.tab-view').forEach(tab => tab.style.display = 'none');
+
+      // show selected
+      const tabId = "tab-" + e.currentTarget.getAttribute("data-tab");
+      document.getElementById(tabId).style.display = "block";
+    });
+  });
+</script>
   <!-- Lucide (icons) -->
   <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
 
-  <script>
-    // ===== Music45 (JioSaavn integration) wired to your new UI =====
-
-    // Initialize Lucide icons
-    function refreshIcons(){ try { lucide.createIcons(); } catch(e) {} }
-    refreshIcons();
-
-    // Greeting
-    (function setGreeting(){
-      const hour = new Date().getHours();
-      document.getElementById('greeting').textContent =
-        hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
-    })();
-
-    // DOM refs
-    const audio = document.getElementById('audio');
-    const imgEl = document.getElementById('current-track-image');
-    const titleEl = document.getElementById('current-track-title');
-    const artistEl = document.getElementById('current-track-artist');
-    const playBtn = document.getElementById('btn-play');
-    const playIcon = document.getElementById('play-icon');
-    const prevBtn = document.getElementById('btn-prev');
-    const nextBtn = document.getElementById('btn-next');
-    const progressTrack = document.getElementById('progress-track');
-    const progressFill = document.getElementById('progress-fill');
-    const quickGrid = document.getElementById('quick-grid');
-    const recentlyWrap = document.getElementById('recently');
-    const newReleasesWrap = document.getElementById('new-releases');
-
-    // State
-    let queue = [];
-    let currentIndex = -1;
-    let isPlaying = false;
-    let recentlyPlayed = [];
-
-    // Helpers
-    const FALLBACK_COVER = 'https://music45beta.vercel.app/music/music45.webp';
-    const escapeHtml = s => String(s||'').replace(/[&<>"']/g,c=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
-    const getTitle = s => (s?.name || s?.song || s?.title || 'Unknown Title');
-    const getArtist = s => {
-      if (s?.primaryArtists || s?.primary_artists) return (s.primaryArtists||s.primary_artists);
-      if (s?.artists?.primary?.length) return s.artists.primary.map(a=>a.name).join(', ');
-      if (s?.artists?.featured?.length) return s.artists.featured.map(a=>a.name).join(', ');
-      return s?.singers || s?.artist || 'Unknown Artist';
-    };
-    const getCover = s => {
-      if (!s) return FALLBACK_COVER;
-      if (Array.isArray(s.image) && s.image.length){
-        const best = s.image.find(i => i.quality && /500|b|large|high/i.test(i.quality)) || s.image[s.image.length-1];
-        return best.link || best.url || FALLBACK_COVER;
-      }
-      return s.image_url || s.cover || FALLBACK_COVER;
-    };
-    const extractPlayableUrl = details => {
-      if (!details) return null;
-      if (details.media_url) return details.media_url;
-      const dl = details.downloadUrl || details.download_url;
-      if (Array.isArray(dl) && dl.length){
-        const last = dl[dl.length - 1];
-        return last.link || last.url || null;
-      }
-      return details.url || details.audio || null;
-    };
-    const formatTime = t => {
-      if (!isFinite(t) || isNaN(t)) return '00:00';
-      const m = Math.floor(t/60), s = Math.floor(t%60);
-      return String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
-    };
-
-    function updateUI(item, playing){
-      const cover = item?.cover || FALLBACK_COVER;
-      imgEl.src = cover;
-      titleEl.textContent = item?.title || 'Unknown Song';
-      artistEl.textContent = item?.artist || 'Unknown Artist';
-      // icon
-      playIcon.setAttribute('data-lucide', playing ? 'pause' : 'play');
-      refreshIcons();
-    }
-
-    function addToRecently(item){
-      if (!item) return;
-      // keep unique by id+title
-      const key = item.id ? 'id:'+item.id : 't:'+item.title;
-      recentlyPlayed = recentlyPlayed.filter(x => x._k !== key);
-      recentlyPlayed.unshift({...item, _k:key});
-      recentlyPlayed = recentlyPlayed.slice(0,12);
-      renderRecently();
-    }
-
-    function renderRecently(){
-      recentlyWrap.innerHTML = '';
-      recentlyPlayed.forEach(item=>{
-        const card = document.createElement('div');
-        card.className = 'music-card';
-        card.innerHTML = `
-          <img src="${escapeHtml(item.cover||FALLBACK_COVER)}" alt="${escapeHtml(item.title)}">
-          <span>${escapeHtml(item.title)}</span>
-        `;
-        card.addEventListener('click', ()=> {
-          queue = [item];
-          currentIndex = 0;
-          playIndex(0);
-        });
-        recentlyWrap.appendChild(card);
-      });
-    }
-
-    // Search and queue via saavn.dev
-    async function searchAndQueue(query, autoplay=true){
-      if (!query) return;
-      try{
-        const res = await fetch(`https://saavn.dev/api/search/songs?query=${encodeURIComponent(query)}`);
-        const data = await res.json();
-        const results = data?.data?.results || [];
-        queue = results.map(r => ({
-          id: r.id,
-          title: getTitle(r),
-          artist: getArtist(r),
-          cover: getCover(r),
-          url: null,
-          raw: r
-        }));
-        currentIndex = queue.length ? 0 : -1;
-        if (autoplay && currentIndex >= 0) await playIndex(currentIndex);
-      }catch(e){
-        console.error('Search failed', e);
-        alert('Search failed. Try another query.');
-      }
-    }
-
-    async function ensureUrlFor(index){
-      const item = queue[index];
-      if (!item) return null;
-      if (item.url) return item.url;
-      try{
-        const res = await fetch(`https://saavn.dev/api/songs?ids=${encodeURIComponent(item.id)}`);
-        const d = await res.json();
-        const full = d?.data?.[0] || d?.data || null;
-        if (!full) return null;
-        item.url = extractPlayableUrl(full);
-        item.title = getTitle(full) || item.title;
-        item.artist = getArtist(full) || item.artist;
-        item.cover = getCover(full) || item.cover;
-        return item.url || null;
-      }catch(e){
-        console.error('Details failed', e);
-        return null;
-      }
-    }
-
-    async function playIndex(index){
-      if (index < 0 || index >= queue.length) return;
-      const item = queue[index];
-      updateUI(item, false);
-      const url = await ensureUrlFor(index);
-      if (!url){
-        alert('No playable URL found for this track.');
-        return;
-      }
-      audio.src = url;
-      try { await audio.play(); isPlaying = true; } catch(e){ isPlaying = false; }
-      currentIndex = index;
-      updateUI(item, isPlaying);
-      addToRecently(item);
-      setMediaSession(item);
-    }
-
-    function nextSong(){
-      if (!queue.length) return;
-      const n = (currentIndex + 1) % queue.length;
-      playIndex(n);
-    }
-    function prevSong(){
-      if (!queue.length) return;
-      const p = (currentIndex - 1 + queue.length) % queue.length;
-      playIndex(p);
-    }
-
-    async function togglePlay(){
-      if (!audio.src){
-        // no song yet: play something default
-        await searchAndQueue('lofi beats', true);
-        return;
-      }
-      if (audio.paused){
-        try{ await audio.play(); isPlaying = true; }catch(e){ /* ignore */ }
-      }else{
-        audio.pause(); isPlaying = false;
-      }
-      updateUI(queue[currentIndex], isPlaying);
-    }
-
-    // Progress
-    audio.addEventListener('timeupdate', ()=>{
-      const cur = audio.currentTime || 0;
-      const dur = audio.duration || 0;
-      const pct = dur > 0 ? (cur/dur)*100 : 0;
-      progressFill.style.width = pct + '%';
-    });
-    progressTrack.addEventListener('click', (e)=>{
-      const rect = progressTrack.getBoundingClientRect();
-      const pct = (e.clientX - rect.left)/rect.width;
-      if (isFinite(audio.duration)) audio.currentTime = Math.max(0, Math.min(1, pct)) * audio.duration;
-    });
-    audio.addEventListener('play', ()=>{ isPlaying = true; updateUI(queue[currentIndex], true); });
-    audio.addEventListener('pause', ()=>{ isPlaying = false; updateUI(queue[currentIndex], false); });
-    audio.addEventListener('ended', ()=> nextSong());
-
-    // Media Session
-    function setMediaSession(item){
-      if (!('mediaSession' in navigator) || !item) return;
-      try{
-        navigator.mediaSession.metadata = new MediaMetadata({
-          title: item.title,
-          artist: item.artist,
-          artwork: [{ src: item.cover || FALLBACK_COVER, sizes:'512x512', type:'image/png' }]
-        });
-        navigator.mediaSession.setActionHandler('play', ()=> audio.play());
-        navigator.mediaSession.setActionHandler('pause', ()=> audio.pause());
-        navigator.mediaSession.setActionHandler('previoustrack', prevSong);
-        navigator.mediaSession.setActionHandler('nexttrack', nextSong);
-        navigator.mediaSession.setActionHandler('seekto', e => { if (e.seekTime!=null) audio.currentTime = e.seekTime; });
-      }catch(e){}
-    }
-
-    // Wire buttons
-    playBtn.addEventListener('click', togglePlay);
-    prevBtn.addEventListener('click', prevSong);
-    nextBtn.addEventListener('click', nextSong);
-
-    // Make all cards playable by search
-    function makePlayableByQuery(container){
-      container.querySelectorAll('[data-q]').forEach(el=>{
-        el.addEventListener('click', ()=> {
-          const q = el.getAttribute('data-q');
-          searchAndQueue(q, true);
-        });
-      });
-    }
-    makePlayableByQuery(quickGrid);
-    makePlayableByQuery(newReleasesWrap);
-
-    // Bottom nav (visual)
-    document.querySelectorAll('.nav-item').forEach(btn=>{
-      btn.addEventListener('click', (e)=>{
-        document.querySelectorAll('.nav-item').forEach(b=>b.classList.remove('active'));
-        e.currentTarget.classList.add('active');
-        // (Optional) show/hide sections by tab if you add tabbed views later
-      });
-    });
-
-    // First icon paint
-    refreshIcons();
-
-    // Optional: preload a nice default
-    // searchAndQueue('Trending Bollywood', false);
-  </script>
+<script src="script.js" defer></script>
 </body>
 </html>
