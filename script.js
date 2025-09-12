@@ -32,16 +32,26 @@
     let isPlaying = false;
     let recentlyPlayed = [];
 
+  // --- Add this helper at the top ---
+function decodeHtmlEntities(str) {
+  if (!str) return "";
+  const txt = document.createElement("textarea");
+  txt.innerHTML = str;
+  return txt.value;
+}
+
     // Helpers
     const FALLBACK_COVER = 'https://music45beta.vercel.app/music/music45.webp';
     const escapeHtml = s => String(s||'').replace(/[&<>"']/g,c=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
-    const getTitle = s => (s?.name || s?.song || s?.title || 'Unknown Title');
+    const getTitle = s => decodeHtmlEntities(s?.name || s?.song || s?.title || "Unknown Title");
     const getArtist = s => {
-      if (s?.primaryArtists || s?.primary_artists) return (s.primaryArtists||s.primary_artists);
-      if (s?.artists?.primary?.length) return s.artists.primary.map(a=>a.name).join(', ');
-      if (s?.artists?.featured?.length) return s.artists.featured.map(a=>a.name).join(', ');
-      return s?.singers || s?.artist || 'Unknown Artist';
-    };
+  let a =
+    s?.primaryArtists || s?.primary_artists ||
+    (s?.artists?.primary?.length ? s.artists.primary.map(a => a.name).join(", ") : null) ||
+    (s?.artists?.featured?.length ? s.artists.featured.map(a => a.name).join(", ") : null) ||
+    s?.singers || s?.artist || "Unknown Artist";
+  return decodeHtmlEntities(a);
+};
     const getCover = s => {
       if (!s) return FALLBACK_COVER;
       if (Array.isArray(s.image) && s.image.length){
