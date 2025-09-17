@@ -183,7 +183,7 @@ async function playIndex(index){
 function nextSong(){ if (queue.length) playIndex((currentIndex + 1) % queue.length); }
 function prevSong(){ if (queue.length) playIndex((currentIndex - 1 + queue.length) % queue.length); }
 async function togglePlay(){
-  if (!audio.src){ await searchAndQueue('lofi beats', true); return; }
+  if (!audio.src){ await searchAndQueue('90s hindi', true); return; }
   if (audio.paused){ try{ await audio.play(); isPlaying = true; }catch{} }
   else{ audio.pause(); isPlaying = false; }
   updateUI(queue[currentIndex], isPlaying);
