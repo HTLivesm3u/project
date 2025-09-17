@@ -31,33 +31,12 @@
 
   <!-- 🏠 HOME TAB -->
   <div class="tab-view" id="tab-home">
-    <!-- Quick Access Grid -->
-    <div class="quick-grid" id="quick-grid">
-      <div class="playlist-card" data-q="DeVa - PREET BANDRE">
-        <img src="https://c.saavncdn.com/730/Deva-Marathi-2025-20250822152224-500x500.jpg" alt="DeVa">
-        <span>DeVa</span>
-      </div>
-      <div class="playlist-card" data-q="Shaky">
-        <img src="https://c.saavncdn.com/634/Shaky-Marathi-2025-20250422143320-500x500.jpg" alt="Shaky">
-        <span>Shaky</span>
-      </div>
-      <div class="playlist-card" data-q="if I could make it go quiet">
-        <img src="https://c.saavncdn.com/123/IF-I-COULD-Instrumental-2025-20250314105341-500x500.jpg" alt="if I could make it go quiet">
-        <span>if I could make it go quiet</span>
-      </div>
-      <div class="playlist-card" data-q="Hype">
-        <img src="https://c.saavncdn.com/437/ESNTLS-11-Punjabi-2023-20231110151620-500x500.jpg" alt="Hype">
-        <span>Hype</span>
-      </div>
-      <div class="playlist-card" data-q="Is Anybody Anybody?">
-        <img src="https://picsum.photos/seed/anybody/200/200" alt="Is Anybody Anybody?">
-        <span>Is Anybody Anybody?</span>
-      </div>
-      <div class="playlist-card" data-q="Radiolab">
-        <img src="https://picsum.photos/seed/radiolab/200/200" alt="Radiolab">
-        <span>Radiolab</span>
-      </div>
+    <!-- album Grid -->
+     <div class="section">
+    <h2 class="section-title"></h2>
+     <div class="horizontal-scroll" id="albums"></div>
     </div>
+
 
     <!-- Recently Played -->
     <div class="section">
@@ -119,7 +98,6 @@
             <p id="current-track-artist">—</p>
           </div>
         </div>
-        <button class="menu-button"><i data-lucide="more-horizontal"></i></button>
       </div>
 
       <div class="player-controls">
@@ -179,4 +157,3 @@
 </body>
 
 </html>
-

@@ -25,6 +25,7 @@ const progressFill = document.getElementById('progress-fill');
 const quickGrid = document.getElementById('quick-grid');
 const recentlyWrap = document.getElementById('recently');
 const newReleasesWrap = document.getElementById('new-releases');
+const albumsWrap = document.getElementById('albums'); // Add this line
 
 // State
 let queue = [];
@@ -233,17 +234,70 @@ playBtn.addEventListener('click', togglePlay);
 prevBtn.addEventListener('click', prevSong);
 nextBtn.addEventListener('click', nextSong);
 
-// Make cards playable
-function makePlayableByQuery(container){
-  container.querySelectorAll('[data-q]').forEach(el=>{
-    el.addEventListener('click', ()=> {
-      const q = el.getAttribute('data-q');
-      searchAndQueue(q, true);
+
+
+// --- New functions for albums ---
+async function loadAlbums() {
+  try {
+    // Get a few popular Indian artists/queries to fetch albums for
+    const albumQueries = ["Arijit Singh", "Pritam", "Shreya Ghoshal", "Anirudh Ravichander"];
+    const allAlbums = [];
+    for (const query of albumQueries) {
+      const res = await fetch(`https://saavn.dev/api/search/albums?query=${encodeURIComponent(query)}`);
+      const data = await res.json();
+      if (data?.data?.results) {
+        allAlbums.push(...data.data.results.slice(0, 5)); // Get top 5 albums per query
+      }
+    }
+    renderAlbums(allAlbums);
+  } catch (e) {
+    console.error('Failed to load albums', e);
+  }
+}
+
+async function renderAlbums(albums) {
+  albumsWrap.innerHTML = '';
+  albums.forEach(album => {
+    const card = document.createElement('div');
+    card.className = 'music-card';
+    card.innerHTML = `
+      <img src="${getCover(album)}" alt="${getTitle(album)}">
+      <span>${getTitle(album)}</span>
+    `;
+    card.addEventListener('click', () => {
+      playAlbum(album.id);
     });
+    albumsWrap.appendChild(card);
   });
 }
-makePlayableByQuery(quickGrid);
-makePlayableByQuery(newReleasesWrap);
+
+async function playAlbum(albumId) {
+  try {
+    const res = await fetch(`https://saavn.dev/api/albums?id=${encodeURIComponent(albumId)}`);
+    const data = await res.json();
+    const songs = data?.data?.[0]?.songs || data?.data?.songs || [];
+
+    if (!songs.length) {
+      alert("No songs found in this album.");
+      return;
+    }
+
+    // Map songs to our queue format
+    queue = songs.map(s => ({
+      id: s.id,
+      title: getTitle(s),
+      artist: getArtist(s),
+      cover: getCover(s),
+      url: null,
+      raw: s
+    }));
+    currentIndex = 0;
+    playIndex(0);
+  } catch (e) {
+    console.error('Failed to fetch album songs', e);
+    alert('Failed to load album songs.');
+  }
+}
 
 // Bottom nav (visual only)
 document.querySelectorAll('.nav-item').forEach(btn=>{
@@ -307,3 +361,4 @@ searchInput.addEventListener("keydown", e => { if (e.key === "Enter") handleSear
 
 // --- Load saved recently played when app starts ---
 loadRecentlyFromStorage();
+loadAlbums(); // Call the new function to load albums on startup
