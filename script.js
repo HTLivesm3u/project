@@ -87,7 +87,13 @@ function updateUI(item, playing){
   imgEl.src = cover;
   titleEl.textContent = item?.title || 'Unknown Song';
   artistEl.textContent = item?.artist || 'Unknown Artist';
-  playIcon.setAttribute('data-lucide', playing ? 'pause' : 'play');
+  // update the icon inside play button
+   // Replace the icon completely
+  playBtn.innerHTML = playing
+    ? '<i data-lucide="pause"></i>'
+    : '<i data-lucide="play"></i>';
+
+  // re-render Lucide icons
   refreshIcons();
 }
 
