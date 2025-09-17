@@ -5,6 +5,8 @@
     box-sizing: border-box;
 }
 
+:root { --banner-cover-url: none; } /* default */
+
 /* Design System Variables */
 :root {
     /* Music App Dark Theme */
@@ -116,45 +118,96 @@ body {
 }
 
 /* Quick Access Grid */
-.quick-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 0.5rem;
+/* Album Detail View */
+/* Album View */
+.album-view {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: var(--background);
+  overflow-y: auto;
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
 }
 
-.playlist-card {
-    display: flex;
-    align-items: center;
-    background: var(--card);
-    border-radius: var(--radius-sm);
-    padding: 0.75rem;
-    cursor: pointer;
-    transition: var(--transition-smooth);
-    box-shadow: var(--shadow-card);
+.album-topbar {
+  display: flex;
+  align-items: center;
+  padding: 1rem;
 }
 
-.playlist-card:hover {
-    background: var(--card-hover);
-    transform: scale(1.02);
+.album-back {
+  background: none;
+  border: none;
+  color: var(--foreground);
+  font-size: 1.2rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
 }
 
-.playlist-card img {
-    width: 3rem;
-    height: 3rem;
-    border-radius: var(--radius-sm);
-    object-fit: cover;
-    margin-right: 0.75rem;
+.album-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 1.5rem 1rem;
+  text-align: center;
 }
 
-.playlist-card span {
-    color: var(--foreground);
-    font-weight: 600;
-    font-size: 0.875rem;
-    flex: 1;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+#album-cover {
+  width: 14rem;
+  height: 14rem;
+  border-radius: var(--radius-lg);
+  object-fit: cover;
+  margin-bottom: 1rem;
+  box-shadow: var(--shadow-card);
 }
+
+#album-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--foreground);
+  margin-bottom: 0.25rem; /* fix spacing */
+}
+
+#album-artist {
+  font-size: 1rem;
+  color: var(--foreground-muted);
+  margin: 0; /* remove extra gap */
+}
+
+.album-tracks {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 1rem;
+}
+
+.album-track {
+  display: flex;
+  flex-direction: column;
+  background: var(--card);
+  border-radius: var(--radius);
+  padding: 0.75rem;
+  transition: var(--transition-smooth);
+  cursor: pointer;
+}
+
+.album-track:hover {
+  background: var(--card-hover);
+}
+
+.album-track span {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--foreground);
+}
+
+.album-track small {
+  font-size: 0.8rem;
+  color: var(--foreground-muted);
+}
+
 
 /* Sections */
 .section {
@@ -556,3 +609,4 @@ body {
         transform: scale(0.95);
     }
 }
+/* End of styles.css */

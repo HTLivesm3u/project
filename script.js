@@ -25,13 +25,14 @@ const progressFill = document.getElementById('progress-fill');
 const quickGrid = document.getElementById('quick-grid');
 const recentlyWrap = document.getElementById('recently');
 const newReleasesWrap = document.getElementById('new-releases');
-const albumsWrap = document.getElementById('albums'); // Add this line
+const albumsWrap = document.getElementById('albums');
 
 // State
 let queue = [];
 let currentIndex = -1;
 let isPlaying = false;
 let recentlyPlayed = [];
+let shuffleMode = false; 
 
 // --- Add this helper ---
 function decodeHtmlEntities(str) {
@@ -88,13 +89,9 @@ function updateUI(item, playing){
   imgEl.src = cover;
   titleEl.textContent = item?.title || 'Unknown Song';
   artistEl.textContent = item?.artist || 'Unknown Artist';
-  // update the icon inside play button
-   // Replace the icon completely
   playBtn.innerHTML = playing
     ? '<i data-lucide="pause"></i>'
     : '<i data-lucide="play"></i>';
-
-  // re-render Lucide icons
   refreshIcons();
 }
 
@@ -186,9 +183,31 @@ async function playIndex(index){
   setMediaSession(item);
 }
 
-// Controls
-function nextSong(){ if (queue.length) playIndex((currentIndex + 1) % queue.length); }
-function prevSong(){ if (queue.length) playIndex((currentIndex - 1 + queue.length) % queue.length); }
+// --- FIXED NEXT/PREV ---
+async function nextSong() {
+  if (!queue.length) return;
+  let n;
+  if (shuffleMode) {
+    n = Math.floor(Math.random() * queue.length);
+    if (queue.length > 1 && n === currentIndex) n = (n + 1) % queue.length;
+  } else {
+    n = (currentIndex + 1) % queue.length;
+  }
+  await playIndex(n);
+}
+
+async function prevSong() {
+  if (!queue.length) return;
+  let n;
+  if (shuffleMode) {
+    n = Math.floor(Math.random() * queue.length);
+    if (queue.length > 1 && n === currentIndex) n = (n + 1) % queue.length;
+  } else {
+    n = (currentIndex - 1 + queue.length) % queue.length;
+  }
+  await playIndex(n);
+}
+
 async function togglePlay(){
   if (!audio.src){ await searchAndQueue('90s hindi', true); return; }
   if (audio.paused){ try{ await audio.play(); isPlaying = true; }catch{} }
@@ -231,22 +250,19 @@ function setMediaSession(item){
 
 // Wire buttons
 playBtn.addEventListener('click', togglePlay);
-prevBtn.addEventListener('click', prevSong);
-nextBtn.addEventListener('click', nextSong);
-
-
+prevBtn.addEventListener('click', () => prevSong());
+nextBtn.addEventListener('click', () => nextSong());
 
 // --- New functions for albums ---
 async function loadAlbums() {
   try {
-    // Get a few popular Indian artists/queries to fetch albums for
-    const albumQueries = ["Arijit Singh", "Pritam", "Shreya Ghoshal", "Anirudh Ravichander"];
+    const albumQueries = ["Arijit Singh", "Pritam", "Shreya Ghoshal", "kishor kumar", "A.R. Rahman"];
     const allAlbums = [];
     for (const query of albumQueries) {
       const res = await fetch(`https://saavn.dev/api/search/albums?query=${encodeURIComponent(query)}`);
       const data = await res.json();
       if (data?.data?.results) {
-        allAlbums.push(...data.data.results.slice(0, 5)); // Get top 5 albums per query
+        allAlbums.push(...data.data.results.slice(0, 5));
       }
     }
     renderAlbums(allAlbums);
@@ -275,29 +291,64 @@ async function playAlbum(albumId) {
   try {
     const res = await fetch(`https://saavn.dev/api/albums?id=${encodeURIComponent(albumId)}`);
     const data = await res.json();
-    const songs = data?.data?.[0]?.songs || data?.data?.songs || [];
+    const album = data?.data?.[0] || data?.data;
+    const songs = album?.songs || [];
 
     if (!songs.length) {
       alert("No songs found in this album.");
       return;
     }
 
-    // Map songs to our queue format
-    queue = songs.map(s => ({
-      id: s.id,
-      title: getTitle(s),
-      artist: getArtist(s),
-      cover: getCover(s),
-      url: null,
-      raw: s
-    }));
-    currentIndex = 0;
-    playIndex(0);
+    document.getElementById("album-cover").src = getCover(album);
+    document.getElementById("album-title").textContent = getTitle(album);
+    document.getElementById("album-artist").textContent = getArtist(album);
+
+    const tracksWrap = document.getElementById("album-tracks");
+    tracksWrap.innerHTML = "";
+    songs.forEach((s, i) => {
+      const div = document.createElement("div");
+      div.className = "album-track";
+      div.innerHTML = `<span>${getTitle(s)}</span><small>${getArtist(s)}</small>`;
+      div.addEventListener("click", () => {
+        queue = songs.map(x => ({
+          id: x.id,
+          title: getTitle(x),
+          artist: getArtist(x),
+          cover: getCover(x),
+          url: null,
+          raw: x
+        }));
+        currentIndex = i;
+        playIndex(i);
+      });
+      tracksWrap.appendChild(div);
+    });
+
+    document.getElementById("album-play").onclick = () => {
+      queue = songs.map(x => ({
+        id: x.id,
+        title: getTitle(x),
+        artist: getArtist(x),
+        cover: getCover(x),
+        url: null,
+        raw: x
+      }));
+      currentIndex = 0;
+      playIndex(0);
+    };
+
+    document.getElementById("album-view").style.display = "block";
+
   } catch (e) {
-    console.error('Failed to fetch album songs', e);
-    alert('Failed to load album songs.');
+    console.error("Failed to fetch album songs", e);
+    alert("Failed to load album songs.");
   }
 }
+
+// Back Button
+document.getElementById("album-back").addEventListener("click", () => {
+  document.getElementById("album-view").style.display = "none";
+});
 
 // Bottom nav (visual only)
 document.querySelectorAll('.nav-item').forEach(btn=>{
@@ -327,12 +378,14 @@ async function handleSearch() {
       searchResultsWrap.innerHTML = `<p style="color:var(--foreground-muted)">No results found.</p>`;
       return;
     }
-    results.forEach(r => {
+    // 🔥 Fixed loop: queue all results
+    results.forEach((r, i) => {
       const item = {
         id: r.id,
         title: getTitle(r),
         artist: getArtist(r),
         cover: getCover(r),
+        url: null,
         raw: r
       };
       const div = document.createElement("div");
@@ -345,9 +398,17 @@ async function handleSearch() {
         </div>
       `;
       div.addEventListener("click", () => {
-        queue = [item];
-        currentIndex = 0;
-        playIndex(0);
+        // Queue ALL results
+        queue = results.map(r2 => ({
+          id: r2.id,
+          title: getTitle(r2),
+          artist: getArtist(r2),
+          cover: getCover(r2),
+          url: null,
+          raw: r2
+        }));
+        currentIndex = i;
+        playIndex(currentIndex);
       });
       searchResultsWrap.appendChild(div);
     });
@@ -361,4 +422,4 @@ searchInput.addEventListener("keydown", e => { if (e.key === "Enter") handleSear
 
 // --- Load saved recently played when app starts ---
 loadRecentlyFromStorage();
-loadAlbums(); // Call the new function to load albums on startup
+loadAlbums();
