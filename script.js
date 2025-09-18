@@ -62,16 +62,65 @@ const getCover = s => {
   }
   return s.image_url || s.cover || FALLBACK_COVER;
 };
-const extractPlayableUrl = details => {
+
+// --- UPDATED extractPlayableUrl ---
+function extractPlayableUrl(details) {
   if (!details) return null;
-  if (details.media_url) return details.media_url;
   const dl = details.downloadUrl || details.download_url;
-  if (Array.isArray(dl) && dl.length){
-    const last = dl[dl.length - 1];
-    return last.link || last.url || null;
+  if (Array.isArray(dl) && dl.length) {
+    if (qualitySetting === "auto") {
+      return dl[dl.length - 1].link || dl[dl.length - 1].url || null;
+    }
+    if (qualitySetting === "low") {
+      const low = dl.find(x => /96/i.test(x.quality));
+      if (low) return low.link || low.url;
+    }
+    if (qualitySetting === "medium") {
+      const med = dl.find(x => /160/i.test(x.quality));
+      if (med) return med.link || med.url;
+    }
+    if (qualitySetting === "high") {
+      const high = dl.find(x => /320/i.test(x.quality));
+      if (high) return high.link || high.url;
+    }
+    return dl[dl.length - 1].link || dl[dl.length - 1].url || null; // fallback
   }
-  return details.url || details.audio || null;
-};
+  return details.media_url || details.url || details.audio || null;
+}
+
+
+// --- SETTINGS BOTTOM SHEET ---
+let qualitySetting = localStorage.getItem("qualitySetting") || "auto";
+
+const settingsSheet = document.getElementById("settings-sheet");
+const closeSettings = document.getElementById("close-settings");
+
+// Open settings when gear icon clicked
+document.querySelector('.header-icons button:last-child').addEventListener("click", () => {
+  settingsSheet.classList.add("active");
+  refreshQualityButtons();
+});
+
+// Close settings
+closeSettings.addEventListener("click", () => {
+  settingsSheet.classList.remove("active");
+});
+
+// Update active state of buttons
+function refreshQualityButtons() {
+  document.querySelectorAll(".quality-btn").forEach(btn => {
+    btn.classList.toggle("active", btn.dataset.quality === qualitySetting);
+  });
+}
+
+// Save selected quality
+document.querySelectorAll(".quality-btn").forEach(btn => {
+  btn.addEventListener("click", () => {
+    qualitySetting = btn.dataset.quality;
+    localStorage.setItem("qualitySetting", qualitySetting);
+    refreshQualityButtons();
+  });
+});
 
 // --- LOCALSTORAGE SAVE / LOAD ---
 function saveRecentlyToStorage() {
@@ -349,6 +398,8 @@ async function playAlbum(albumId) {
 document.getElementById("album-back").addEventListener("click", () => {
   document.getElementById("album-view").style.display = "none";
 });
+
+
 
 // Bottom nav (visual only)
 document.querySelectorAll('.nav-item').forEach(btn=>{

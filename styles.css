@@ -499,6 +499,95 @@ body {
     }
 }
 
+/* Settings full screen */
+/* === Bottom Settings Sheet === */
+.settings-sheet {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: -100%;
+  height: 60%;
+  background: var(--background);
+  border-top-left-radius: 20px;
+  border-top-right-radius: 20px;
+  box-shadow: 0 -4px 20px rgba(0,0,0,0.5);
+  transition: bottom 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  z-index: 9999;
+}
+
+.settings-sheet.active {
+  bottom: 0;
+}
+
+.sheet-header {
+  display: flex;
+  align-items: center;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+  position: relative;
+}
+
+.sheet-header h2 {
+  flex: 1;
+  text-align: center;
+  margin: 0;
+}
+
+.sheet-header button {
+  background: none;
+  border: none;
+  color: var(--foreground);
+  font-size: 20px;
+}
+
+.drag-line {
+  width: 40px;
+  height: 4px;
+  background: var(--border);
+  border-radius: 2px;
+  position: absolute;
+  top: 6px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.sheet-body {
+  padding: 20px;
+  overflow-y: auto;
+}
+
+.quality-options {
+  display: grid;
+  gap: 12px;
+  margin-top: 15px;
+}
+
+.quality-btn {
+  width: 100%;
+  padding: 14px;
+  border: none;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 500;
+  background: var(--surface);
+  color: var(--foreground);
+  text-align: left;
+  transition: background 0.2s;
+}
+
+.quality-btn.active {
+  background: var(--primary);
+  color: white;
+}
+
+.quality-btn:hover {
+  background: var(--primary-hover, #444);
+}
+
+
+
 
 /* Search Bar */
 .search-container {
