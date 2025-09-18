@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Music45</title>
+  <link rel="icon" type="image/webp" href="https://music45beta.vercel.app/music/music45.webp">
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <!-- Icons -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="/jio/styles.css">
+</head>
+<body>
+
+  <header>
+    <h1>🎵 Music45 </h1>
+    <div class="search-container">
+      <input id="search-query" placeholder="Search song..." />
+      <button id="search-btn">Search</button>
+    </div>
+  </header>
+
+  <div id="song-list"></div>
+
+
+  
+  <!-- Footer mini-player -->
+  <div class="footer-player">
+    <div class="footer-song-info" id="footer-song-info">
+      <img id="footer-cover" src="https://via.placeholder.com/60x60?text=🎵" alt="cover" />
+      <div class="footer-song-text">
+        <div id="footer-title">No Song</div>
+        <div id="footer-artist">---</div>
+      </div>
+    </div>
+    <div class="footer-controls">
+      <button class="icon-btn" id="prev"><i class="fa-solid fa-backward"></i></button>
+      <button class="icon-btn" id="playPause"><i id="playPauseIcon" class="fa-solid fa-play"></i></button>
+      <button class="icon-btn" id="next"><i class="fa-solid fa-forward"></i></button>
+    </div>
+  </div>
+
+  <!-- Expanded banner player -->
+<div id="musicbanner" class="musicplayer" style="display:none;">
+    <div class="player-container">
+      <button id="close-banner-btn" class="close-btn">
+        <i class="fas fa-chevron-down"></i>
+    </button>
+    <div class="album-cover">
+      <img id="banner-cover-image" class="banner-cover" src="https://via.placeholder.com/80x80?text=🎵" alt="Album Cover">
+    </div>
+    <div class="song-info">
+      <h2 id="banner-song-title">Song Title 1</h2>
+      <p id="banner-artist-name">Artist Name 1</p>
+    </div>
+
+    <div class="progress-container">
+      <div class="progress-bar" id="progress-bar">
+          <div id="progress" class="progress"></div>
+      </div>
+      <div class="time-stamps">
+          <span id="current-time">00:00</span>
+          <span id="duration">00:00</span>
+      </div>
+    </div>
+
+    <div class="main-controls">
+      <button id="shuffle-btn" class="control-btn"><i class="fas fa-shuffle"></i></button>
+      <button id="banner-prev" class="control-btn"><i class="fas fa-backward"></i></button>
+      <button id="banner-play-pause" class="play-btn"><i class="fas fa-play"></i></button>
+      <button id="banner-next" class="control-btn"><i class="fas fa-forward"></i></button>
+      <button id="repeat-btn" class="control-btn"><i class="fas fa-repeat"></i></button>
+      
+      
+      <div id="shuffle-popup" class="popup">Shuffle: <span id="shuffle-status"></span></div>
+      <div id="repeat-popup" class="popup">Repeat: <span id="repeat-status"></span></div>  
+ </div>
+
+  <!-- Hidden audio -->
+  <audio id="audio"></audio>
+
+  <script src="/jio/script.js"></script>
+</body>
+</html>
