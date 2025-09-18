@@ -160,8 +160,32 @@
       document.querySelectorAll('.tab-view').forEach(tab => tab.style.display = 'none');
 
       // show selected
-      const tabId = "tab-" + e.currentTarget.getAttribute("data-tab");
-      document.getElementById(tabId).style.display = "block";
+      const tab = e.currentTarget.getAttribute("data-tab");
+      const tabId = "tab-" + tab;
+      const tabEl = document.getElementById(tabId);
+      if (tabEl) tabEl.style.display = "block";
+
+      // push history state so back/forward works (for search/library/home)
+      if (window.history && window.history.pushState) {
+      window.history.pushState({ tab }, '', '#' + tab);
+      }
+
+      // add popstate handler once to handle back/forward navigation
+      if (!window.__tabPopstateAdded) {
+      window.addEventListener('popstate', (ev) => {
+        const stateTab = (ev.state && ev.state.tab) || location.hash.replace('#', '') || 'home';
+        // update nav active
+        document.querySelectorAll('.nav-item').forEach(b => {
+        b.classList.toggle('active', b.getAttribute('data-tab') === stateTab);
+        });
+        // show/hide views
+        document.querySelectorAll('.tab-view').forEach(t => t.style.display = 'none');
+        const id = "tab-" + stateTab;
+        const el = document.getElementById(id);
+        if (el) el.style.display = 'block';
+      });
+      window.__tabPopstateAdded = true;
+      }
     });
   });
 </script>
