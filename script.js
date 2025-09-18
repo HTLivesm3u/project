@@ -420,7 +420,9 @@ document.getElementById("album-back").addEventListener("click", () => {
 // Push state when album view is opened
 function showAlbumView() {
   document.getElementById("album-view").style.display = "block";
-  history.pushState({ albumView: true }, "Album", "#album");
+  const albumTitle = document.getElementById("album-title").textContent || "album";
+  const hash = "#" + encodeURIComponent(albumTitle.replace(/\s+/g, ""));
+  history.pushState({ albumView: true }, albumTitle, hash);
 }
 
 // Patch playAlbum to use showAlbumView
