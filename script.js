@@ -89,22 +89,11 @@ function extractPlayableUrl(details) {
 }
 
 
-// --- SETTINGS BOTTOM SHEET ---
+// --- SETTINGS WITH BACK / POPSTATE --- //
 let qualitySetting = localStorage.getItem("qualitySetting") || "auto";
 
 const settingsSheet = document.getElementById("settings-sheet");
 const closeSettings = document.getElementById("close-settings");
-
-// Open settings when gear icon clicked
-document.querySelector('.header-icons button:last-child').addEventListener("click", () => {
-  settingsSheet.classList.add("active");
-  refreshQualityButtons();
-});
-
-// Close settings
-closeSettings.addEventListener("click", () => {
-  settingsSheet.classList.remove("active");
-});
 
 // Update active state of buttons
 function refreshQualityButtons() {
@@ -121,6 +110,31 @@ document.querySelectorAll(".quality-btn").forEach(btn => {
     refreshQualityButtons();
   });
 });
+
+// Show settings (when gear icon is clicked)
+document.querySelector('.header-icons button:last-child').addEventListener("click", () => {
+  settingsSheet.classList.add("active");   // 🔹 use .active instead of style.display
+  refreshQualityButtons();
+  history.pushState({ settingsView: true }, "Settings", "#settings");
+});
+
+// Close settings (when ❌ back button is clicked)
+closeSettings.addEventListener("click", () => {
+  settingsSheet.classList.remove("active");
+  if (window.history.state && window.history.state.settingsView) {
+    history.back(); // clean history entry
+  }
+});
+
+// Handle Android hardware back button
+window.addEventListener("popstate", () => {
+  if (window.history.state && window.history.state.settingsView) {
+    settingsSheet.classList.add("active");
+  } else {
+    settingsSheet.classList.remove("active");
+  }
+});
+
 
 // --- LOCALSTORAGE SAVE / LOAD ---
 function saveRecentlyToStorage() {
@@ -397,6 +411,31 @@ async function playAlbum(albumId) {
 // Back Button
 document.getElementById("album-back").addEventListener("click", () => {
   document.getElementById("album-view").style.display = "none";
+  // Remove album view state from history if present
+  if (window.history.state && window.history.state.albumView) {
+    history.back();
+  }
+});
+
+// Push state when album view is opened
+function showAlbumView() {
+  document.getElementById("album-view").style.display = "block";
+  history.pushState({ albumView: true }, "Album", "#album");
+}
+
+// Patch playAlbum to use showAlbumView
+// (Replace: document.getElementById("album-view").style.display = "block";)
+const origPlayAlbum = playAlbum;
+playAlbum = async function(albumId) {
+  await origPlayAlbum.call(this, albumId);
+  showAlbumView();
+};
+
+// Listen for popstate to close album view
+window.addEventListener("popstate", (e) => {
+  if (!window.history.state || !window.history.state.albumView) {
+    document.getElementById("album-view").style.display = "none";
+  }
 });
 
 
@@ -474,3 +513,4 @@ searchInput.addEventListener("keydown", e => { if (e.key === "Enter") handleSear
 // --- Load saved recently played when app starts ---
 loadRecentlyFromStorage();
 loadAlbums();
+refreshQualityButtons();

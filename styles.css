@@ -501,7 +501,7 @@ body {
 
 /* Settings full screen */
 /* === Bottom Settings Sheet === */
-.settings-sheet {
+#settings-sheet {
   position: fixed;
   left: 0;
   right: 0;
@@ -509,6 +509,7 @@ body {
   height: 60%;
   background: var(--background);
   border-top-left-radius: 20px;
+  background: blur(20px);
   border-top-right-radius: 20px;
   box-shadow: 0 -4px 20px rgba(0,0,0,0.5);
   transition: bottom 0.3s ease;
@@ -517,7 +518,7 @@ body {
   z-index: 9999;
 }
 
-.settings-sheet.active {
+#settings-sheet.active {
   bottom: 0;
 }
 
