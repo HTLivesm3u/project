@@ -1,5 +1,7 @@
 // ===== Music45 (JioSaavn integration + localStorage for Recently Played) =====
 
+alert("The Developer Stop The making This app Because Of Studies Issues")
+
 // Initialize Lucide icons
 function refreshIcons(){ try { lucide.createIcons(); } catch(e) {} }
 refreshIcons();
