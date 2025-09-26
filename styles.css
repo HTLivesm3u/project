@@ -625,11 +625,13 @@ position: relative;
 }
 
 .flip-back {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
   height: 130%;
   transform: rotateY(180deg);
   background: none;
   border-radius: 20px;
-  padding: 20px;
+  padding: 20px 30px;
 }
 
 /* Lyrics Styling */
@@ -644,6 +646,7 @@ position: relative;
 .lyrics-content {
   flex: 1;
   width: 120%;
+  max-width: 700px;
   overflow-y: auto;
   text-align: center;
   font-size: 0.9rem;
@@ -661,6 +664,10 @@ position: relative;
   color: var(--primary);
   font-weight: 600;
   transform: scale(1.25);
+}
+
+.lyrics-content::-webkit-scrollbar {
+  display: none;
 }
 
 .flip-btn {
