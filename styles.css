@@ -643,11 +643,11 @@ position: relative;
 
 .lyrics-content {
   flex: 1;
-  width: 100%;
+  width: 120%;
   overflow-y: auto;
   text-align: center;
-  font-size: 1.1rem;
-  line-height: 1.6;
+  font-size: 0.9rem;
+  line-height: 2rem;
 }
 
 .lyrics-line {
