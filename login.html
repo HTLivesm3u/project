@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Music45 - Login</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- Google Identity Services -->
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #0d0d0d;
+      color: #fff;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+    .container {
+      text-align: center;
+      background: #1a1a1a;
+      padding: 30px;
+      border-radius: 15px;
+      box-shadow: 0 0 20px rgba(0,255,150,0.5);
+    }
+    .profile {
+      display: none;
+      margin-top: 20px;
+    }
+    .profile img {
+      border-radius: 50%;
+      width: 80px;
+      height: 80px;
+    }
+    .logout-btn {
+      margin-top: 15px;
+      padding: 8px 15px;
+      border: none;
+      border-radius: 8px;
+      background: #ff4d4d;
+      color: white;
+      cursor: pointer;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Welcome to Music45</h1>
+    <p>Login with Google to continue</p>
+
+    <!-- Google Sign-In button -->
+    <div id="g_id_onload"
+         data-client_id="938151252-tbpdtg8gc62qdgqv9sds4f0vu1sk2jve.apps.googleusercontent.com"
+         data-context="signin"
+         data-ux_mode="popup"
+         data-callback="handleCredentialResponse"
+         data-auto_prompt="false">
+    </div>
+
+    <div class="g_id_signin"
+         data-type="standard"
+         data-shape="rectangular"
+         data-theme="outline"
+         data-text="signin_with"
+         data-size="large"
+         data-logo_alignment="left">
+    </div>
+
+    <!-- Profile Section -->
+    <div class="profile" id="profile">
+      <img id="user-pic" src="" alt="Profile Picture">
+      <h3 id="user-name"></h3>
+      <p id="user-email"></p>
+      <button class="logout-btn" onclick="logout()">Logout</button>
+    </div>
+  </div>
+
+  <script>
+    // ✅ Handle login response
+    function handleCredentialResponse(response) {
+      // Decode JWT token (ID token)
+      const data = parseJwt(response.credential);
+
+      // Save user in localStorage
+      localStorage.setItem("music45_user", JSON.stringify(data));
+
+      // Show profile
+      showProfile(data);
+    }
+
+    // ✅ Decode JWT
+    function parseJwt(token) {
+      const base64Url = token.split('.')[1];
+      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+      const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+      }).join(''));
+      return JSON.parse(jsonPayload);
+    }
+
+    // ✅ Show user profile
+    function showProfile(user) {
+      document.querySelector(".g_id_signin").style.display = "none";
+      document.getElementById("profile").style.display = "block";
+
+      document.getElementById("user-pic").src = user.picture;
+      document.getElementById("user-name").textContent = user.name;
+      document.getElementById("user-email").textContent = user.email;
+    }
+
+    // ✅ Logout
+    function logout() {
+      localStorage.removeItem("music45_user");
+      document.querySelector(".g_id_signin").style.display = "block";
+      document.getElementById("profile").style.display = "none";
+    }
+
+    // ✅ Auto-login if user already logged in
+    window.onload = () => {
+      const user = localStorage.getItem("music45_user");
+      if (user) {
+        showProfile(JSON.parse(user));
+      }
+    };
+  </script>
+</body>
+</html>
