@@ -627,6 +627,7 @@ position: relative;
 .flip-back {
   position: absolute;
   top: 0; left: 0; right: 0; bottom: 0;
+  margin: 0 auto;
   height: 130%;
   transform: rotateY(180deg);
   background: none;
@@ -645,25 +646,30 @@ position: relative;
 
 .lyrics-content {
   flex: 1;
-  width: 120%;
+  width: 130%;
   max-width: 700px;
   overflow-y: auto;
   text-align: center;
-  font-size: 0.9rem;
+  font-size: 1rem;
   line-height: 2rem;
+  padding: 0 1rem;
 }
 
 .lyrics-line {
   margin: 8px 0;
   transition: all 0.3s ease;
   opacity: 0.7;
+  word-break: normal;        /* ✅ no breaking words in middle */
+  white-space: normal;       /* ✅ allow natural wrapping */
+  overflow-wrap: break-word; /* ✅ wrap if a word is extremely long */
+  text-align: center;
 }
 
 .lyrics-line.active-line {
-  opacity: 2;
+  opacity: 1;
   color: var(--primary);
   font-weight: 600;
-  transform: scale(1.25);
+  transform: scale(1.05);
 }
 
 .lyrics-content::-webkit-scrollbar {
