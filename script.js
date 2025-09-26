@@ -16,26 +16,8 @@
       window.location.href = "login.html";
     }
 
-function loadUserProfile() {
-  const userData = localStorage.getItem("music45_user");
-  if (userData) {
-    const user = JSON.parse(userData);
-    document.getElementById("profile-pic").src = user.picture || "https://music45beta.vercel.app/music/music45.webp";
-    document.getElementById("profile-name").textContent = user.name || "User";
-    document.getElementById("profile-email").textContent = user.email || "—";
-  }
-}
 
-// Logout button handler
-document.getElementById("logout-btn").addEventListener("click", () => {
-  localStorage.removeItem("music45_user");
-  window.location.href = "login.html"; // redirect back to login
-});
-
-// Call once on page load
-loadUserProfile();
-
-
+    
 // Initialize Lucide icons
 function refreshIcons() {
   try {
@@ -914,6 +896,26 @@ function renderSyncedLyrics(lrcText) {
   if (searchInput) searchInput.addEventListener('keydown', e => {
     if (e.key === 'Enter') handleSearch();
   });
+
+  function loadUserProfile() {
+  const userData = localStorage.getItem("music45_user");
+  if (userData) {
+    const user = JSON.parse(userData);
+    document.getElementById("profile-pic").src = user.picture || "https://music45beta.vercel.app/music/music45.webp";
+    document.getElementById("profile-name").textContent = user.name || "User";
+    document.getElementById("profile-email").textContent = user.email || "—";
+  }
+}
+
+// Logout button handler
+document.getElementById("logout-btn").addEventListener("click", () => {
+  localStorage.removeItem("music45_user");
+  window.location.href = "login.html"; // redirect back to login
+});
+
+// Call once on page load
+loadUserProfile();
+
 
   // Initial Load
   loadRecentlyFromStorage();
