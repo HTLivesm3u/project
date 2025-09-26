@@ -77,6 +77,23 @@
 
   <!-- Hidden audio -->
   <audio id="audio"></audio>
+  <script>
+    // Check if logged in
+    const user = localStorage.getItem("music45_user");
+    if (!user) {
+      // If no user, redirect to login
+      window.location.href = "login.html";
+    } else {
+      const data = JSON.parse(user);
+      document.getElementById("welcome").textContent = 
+        `Hello, ${data.name} (${data.email})`;
+    }
+
+    function logout() {
+      localStorage.removeItem("music45_user");
+      window.location.href = "login.html";
+    }
+    </script>
 
   <script src="/jio/script.js"></script>
 </body>
