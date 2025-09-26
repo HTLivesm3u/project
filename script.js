@@ -1,5 +1,41 @@
 // ===== Music45 (JioSaavn integration + localStorage for Recently Played + Music Banner + LrcLib lyrics) =====
 
+// Check if logged in
+    const user = localStorage.getItem("music45_user");
+    if (!user) {
+      // If no user, redirect to login
+      window.location.href = "login.html";
+    } else {
+      const data = JSON.parse(user);
+      document.getElementById("welcome").textContent = 
+        `Hello, ${data.name} (${data.email})`;
+    }
+
+    function logout() {
+      localStorage.removeItem("music45_user");
+      window.location.href = "login.html";
+    }
+
+function loadUserProfile() {
+  const userData = localStorage.getItem("music45_user");
+  if (userData) {
+    const user = JSON.parse(userData);
+    document.getElementById("profile-pic").src = user.picture || "https://music45beta.vercel.app/music/music45.webp";
+    document.getElementById("profile-name").textContent = user.name || "User";
+    document.getElementById("profile-email").textContent = user.email || "—";
+  }
+}
+
+// Logout button handler
+document.getElementById("logout-btn").addEventListener("click", () => {
+  localStorage.removeItem("music45_user");
+  window.location.href = "login.html"; // redirect back to login
+});
+
+// Call once on page load
+loadUserProfile();
+
+
 // Initialize Lucide icons
 function refreshIcons() {
   try {

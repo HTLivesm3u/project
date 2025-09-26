@@ -1010,4 +1010,25 @@ position: relative;
         transform: scale(0.95);
     }
 }
+
+.profile-header {
+  text-align: center;
+  padding: 20px;
+}
+.profile-pic {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  margin-bottom: 10px;
+}
+.logout-btn {
+  margin-top: 10px;
+  padding: 8px 15px;
+  border: none;
+  border-radius: 8px;
+  background: #ff4d4d;
+  color: white;
+  cursor: pointer;
+}
+
 /* End of styles.css */

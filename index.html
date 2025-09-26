@@ -183,6 +183,7 @@
       <button class="nav-item active" data-tab="home"><i data-lucide="home"></i><span>Home</span></button>
       <button class="nav-item" data-tab="search"><i data-lucide="search"></i><span>Search</span></button>
       <button class="nav-item" data-tab="library"><i data-lucide="library"></i><span>Your Library</span></button>
+      <button class="nav-item" data-tab="profile"><i data-lucide="user"></i><span>Profile</span></button>
     </div>
   </div>
 
@@ -205,6 +206,31 @@
     </div>
   </div>
 </div>
+
+<!-- 👤 PROFILE TAB -->
+<div class="tab-view" id="tab-profile" style="display:none;">
+  <div class="profile-header">
+    <img id="profile-pic" class="profile-pic" src="https://music45beta.vercel.app/music/music45.webp" alt="Profile Picture">
+    <h2 id="profile-name">Guest</h2>
+    <p id="profile-email">Not logged in</p>
+    <button id="logout-btn" class="logout-btn">Logout</button>
+  </div>
+
+  <div class="section">
+    <h2 class="section-title">Liked Songs</h2>
+    <div class="horizontal-scroll" id="liked-songs">
+      <p style="color:var(--foreground-muted);padding:12px;">No liked songs yet.</p>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2 class="section-title">Playlists</h2>
+    <div class="horizontal-scroll" id="user-playlists">
+      <p style="color:var(--foreground-muted);padding:12px;">No playlists created yet.</p>
+    </div>
+  </div>
+</div>
+
 
 
   <!-- Hidden audio element -->
