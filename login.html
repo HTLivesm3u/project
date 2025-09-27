@@ -2,11 +2,12 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Music45 - Spotify Login</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <title>Login - MusicStream</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/lucide/0.462.0/lucide.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
   <link rel="stylesheet" href="styles.css">
-  <style>
+   <style>
     body {
       margin: 0;
       font-family: 'Poppins', sans-serif;
@@ -41,15 +42,20 @@
   </style>
 </head>
 <body>
-  <div class="login-container">
-    <h1>Welcome to Music45</h1>
-    <p>Login with Spotify to continue</p>
+  <!-- Login Screen -->
+  <div class="login-container" id="login-container">
+    <div class="login-logo">
+      <i class="fas fa-music"></i>
+    </div>
+    <h1 class="login-title">Music45</h1>
+<p>Login with Spotify to continue</p>
     <button id="spotify-login" class="spotify-login-btn">Login with Spotify</button>
+    <p class="login-footer">By continuing, you agree to our Terms of Service</p>
   </div>
 
   <script>
-    const clientId = '7afe6b39346f4bcc8654c141fe2a6136'; // replace with your Client ID
-    const redirectUri = 'https://music45.vercel.app/login.html'; // replace with your redirect URI
+   const clientId = 'YOUR_SPOTIFY_CLIENT_ID'; // replace with your Client ID
+    const redirectUri = 'http://localhost:5500/login.html'; // replace with your redirect URI
     const scopes = [
       'user-read-private',
       'user-read-email',
