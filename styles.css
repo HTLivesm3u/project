@@ -71,224 +71,6 @@
         position: relative;
     }
 
-    /* Login Page Styles */
-    .login-container {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: var(--background);
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        z-index: 10000;
-        padding: 2rem;
-        transition: opacity 0.5s ease, transform 0.5s ease;
-    }
-
-    .login-container.hidden {
-        opacity: 0;
-        transform: translateY(20px);
-        pointer-events: none;
-    }
-
-    .login-logo {
-        width: 120px;
-        height: 120px;
-        border-radius: 24px;
-        background: var(--gradient-primary);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin-bottom: 2rem;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-    }
-
-    .login-logo i {
-        font-size: 3.5rem;
-        color: white;
-    }
-
-    .login-title {
-        font-size: 2rem;
-        font-weight: 700;
-        margin-bottom: 0.5rem;
-        background: var(--gradient-primary);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
-    }
-
-    .login-subtitle {
-        color: var(--foreground-muted);
-        margin-bottom: 2.5rem;
-        text-align: center;
-        max-width: 300px;
-        line-height: 1.5;
-    }
-
-    .login-btn {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 12px;
-        width: 100%;
-        max-width: 280px;
-        padding: 14px 20px;
-        background: white;
-        color: #333;
-        border: none;
-        border-radius: var(--radius);
-        font-weight: 500;
-        font-size: 1rem;
-        cursor: pointer;
-        transition: var(--transition-smooth);
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-        margin-bottom: 1rem;
-    }
-
-    .login-btn:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
-    }
-
-    .login-btn i {
-        font-size: 1.2rem;
-    }
-
-    .login-footer {
-        position: absolute;
-        bottom: 2rem;
-        color: var(--foreground-muted);
-        font-size: 0.8rem;
-    }
-
-    /* Profile Section in Header */
-    .profile-section {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        margin-left: auto;
-    }
-
-    .profile-avatar {
-        width: 36px;
-        height: 36px;
-        border-radius: 50%;
-        overflow: hidden;
-        background: var(--gradient-primary);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        cursor: pointer;
-        transition: var(--transition-smooth);
-        border: 2px solid transparent;
-    }
-
-    .profile-avatar:hover {
-        transform: scale(1.05);
-        border-color: var(--primary);
-    }
-
-    .profile-avatar img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-    }
-
-    .profile-avatar .avatar-placeholder {
-        color: white;
-        font-weight: 600;
-        font-size: 16px;
-    }
-
-    .profile-dropdown {
-        position: absolute;
-        top: 70px;
-        right: 1rem;
-        background: var(--background-secondary);
-        border-radius: var(--radius);
-        padding: 1rem;
-        width: 250px;
-        box-shadow: var(--shadow-card);
-        z-index: 100;
-        opacity: 0;
-        transform: translateY(-10px);
-        visibility: hidden;
-        transition: var(--transition-smooth);
-        border: 1px solid var(--background-tertiary);
-    }
-
-    .profile-dropdown.active {
-        opacity: 1;
-        transform: translateY(0);
-        visibility: visible;
-    }
-
-    .profile-info {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        margin-bottom: 1rem;
-        padding-bottom: 1rem;
-        border-bottom: 1px solid var(--background-tertiary);
-    }
-
-    .profile-info img {
-        width: 50px;
-        height: 50px;
-        border-radius: 50%;
-        object-fit: cover;
-    }
-
-    .profile-details h3 {
-        font-size: 1rem;
-        font-weight: 600;
-        margin-bottom: 4px;
-    }
-
-    .profile-details p {
-        font-size: 0.8rem;
-        color: var(--foreground-muted);
-    }
-
-    .profile-actions {
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
-    }
-
-    .profile-action {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        padding: 10px;
-        border-radius: var(--radius-sm);
-        cursor: pointer;
-        transition: var(--transition-smooth);
-        color: var(--foreground-secondary);
-    }
-
-    .profile-action:hover {
-        background: var(--hover);
-        color: var(--foreground);
-    }
-
-    .profile-action i {
-        width: 18px;
-        height: 18px;
-    }
-
-    .logout-btn {
-        color: #ff6b6b;
-    }
-
-    .logout-btn:hover {
-        background: rgba(255, 107, 107, 0.1);
-    }
-
     /* Header */
     .header {
         display: flex;
@@ -1230,4 +1012,393 @@
         }
     }
 
+
+    /* Spotify Sections Styles */
+.spotify-section {
+    margin-bottom: 2rem;
+}
+
+.spotify-section .section-title {
+    font-size: 1.3rem;
+    margin-bottom: 1rem;
+    color: var(--primary);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.spotify-section .section-title::before {
+    content: '🎵';
+    font-size: 1.1rem;
+}
+
+.spotify-card {
+    background: var(--card);
+    border-radius: var(--radius);
+    padding: 1rem;
+    margin: 0.5rem;
+    transition: var(--transition-smooth);
+    min-width: 150px;
+}
+
+.spotify-card:hover {
+    transform: translateY(-5px);
+    background: var(--card-hover);
+}
+
+.spotify-card img {
+    width: 100%;
+    height: 120px;
+    object-fit: cover;
+    border-radius: var(--radius-sm);
+    margin-bottom: 0.5rem;
+}
+
+.spotify-card h4 {
+    font-size: 0.9rem;
+    margin: 0;
+    color: var(--foreground);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.spotify-card p {
+    font-size: 0.8rem;
+    color: var(--foreground-muted);
+    margin: 0.25rem 0 0 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Responsive adjustments for Spotify sections */
+@media (max-width: 768px) {
+    .spotify-card {
+        min-width: 120px;
+    }
+    
+    .spotify-card img {
+        height: 100px;
+    }
+}
+
+/* Compact Footer */
+.compact-footer {
+    position: fixed;
+    bottom: 4rem;
+    left: 0;
+    right: 0;
+    background: var(--gradient-card);
+    backdrop-filter: blur(20px);
+    border-top: 1px solid var(--background-tertiary);
+    border-bottom: 1px solid var(--background-tertiary);
+    padding: 0.5rem 1rem;
+    z-index: 45;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 60px;
+    transition: var(--transition-smooth);
+}
+
+.footer-track-info {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex: 1;
+    min-width: 0;
+}
+
+.footer-track-image {
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: var(--radius);
+    overflow: hidden;
+    background: var(--background-tertiary);
+    flex-shrink: 0;
+}
+
+.footer-track-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.footer-track-details {
+    flex: 1;
+    overflow: hidden;
+    min-width: 0;
+}
+
+.footer-track-details h4 {
+    color: var(--foreground);
+    font-weight: 600;
+    font-size: 0.8rem;
+    margin-bottom: 0.1rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.footer-track-details p {
+    color: var(--foreground-muted);
+    font-size: 0.7rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.footer-controls {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-shrink: 0;
+}
+
+.footer-play-button {
+    width: 2.5rem;
+    height: 2.5rem;
+    background: var(--gradient-primary);
+    border: none;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: var(--transition-smooth);
+}
+
+.footer-play-button:hover {
+    transform: scale(1.05);
+}
+
+.footer-play-button i {
+    width: 1rem;
+    height: 1rem;
+    color: white;
+}
+
+.footer-next-button {
+    background: none;
+    border: none;
+    color: var(--foreground-secondary);
+    cursor: pointer;
+    padding: 0.5rem;
+    transition: var(--transition-smooth);
+}
+
+.footer-next-button:hover {
+    color: var(--foreground);
+}
+
+.footer-next-button i {
+    width: 1.2rem;
+    height: 1.2rem;
+}
+
+/* Progress bar for footer */
+.footer-progress {
+    position: absolute;
+    top: -2px;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: transparent;
+}
+
+.footer-progress-fill {
+    height: 100%;
+    background: var(--gradient-primary);
+    width: 0%;
+    transition: width 0.1s linear;
+    border-radius: 1px;
+}
+
+/* Hide original music player when footer is active */
+.compact-footer.active ~ .music-player {
+    display: none;
+}
+
+/* Adjust main content padding when footer is active */
+.compact-footer.active ~ .main-content {
+    padding-bottom: 5rem;
+}
+
+/* Enhanced card animations */
+.music-card {
+    position: relative;
+    overflow: hidden;
+}
+
+.music-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: var(--gradient-primary);
+    opacity: 0;
+    transition: var(--transition-smooth);
+    z-index: 1;
+}
+
+.music-card:hover::before {
+    opacity: 0.1;
+}
+
+.music-card img {
+    transition: var(--transition-smooth);
+    position: relative;
+    z-index: 2;
+}
+
+.music-card:hover img {
+    transform: scale(1.05);
+}
+
+/* Enhanced section titles */
+.section-title {
+    position: relative;
+    padding-left: 1rem;
+}
+
+.section-title::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 3px;
+    height: 1.2em;
+    background: var(--gradient-primary);
+    border-radius: 3px;
+}
+
+/* Improved search results */
+.search-result-item {
+    position: relative;
+    overflow: hidden;
+}
+
+.search-result-item::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: var(--gradient-primary);
+    opacity: 0.1;
+    transition: left 0.3s ease;
+}
+
+.search-result-item:hover::before {
+    left: 0;
+}
+
+/* Enhanced buttons */
+.play-button, .footer-play-button {
+    position: relative;
+    overflow: hidden;
+}
+
+.play-button::before, .footer-play-button::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.1);
+    opacity: 0;
+    transition: var(--transition-smooth);
+}
+
+.play-button:hover::before, .footer-play-button:hover::before {
+    opacity: 1;
+}
+
+/* Smooth scrolling for horizontal sections */
+.horizontal-scroll {
+    scroll-behavior: smooth;
+}
+
+/* Loading animation for cards */
+.music-card, .search-result-item {
+    animation: fadeInUp 0.6s ease-out;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Responsive adjustments for footer */
+@media (max-width: 768px) {
+    .compact-footer {
+        height: 55px;
+        padding: 0.4rem 0.8rem;
+    }
+    
+    .footer-track-image {
+        width: 2.2rem;
+        height: 2.2rem;
+    }
+    
+    .footer-track-details h4 {
+        font-size: 0.75rem;
+    }
+    
+    .footer-track-details p {
+        font-size: 0.65rem;
+    }
+    
+    .footer-play-button {
+        width: 2.2rem;
+        height: 2.2rem;
+    }
+}
+
+/* Visual feedback for active states */
+.nav-item {
+    position: relative;
+}
+
+.nav-item.active::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 4px;
+    height: 4px;
+    background: var(--primary);
+    border-radius: 50%;
+}
+
+/* Enhanced music banner transitions */
+.music-banner {
+    animation: slideUp 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(100%);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* End of enhanced styles */
     /*End of styles.css */

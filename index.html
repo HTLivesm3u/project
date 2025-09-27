@@ -92,29 +92,28 @@
       </div>
     </div>
 
-    <!-- Floating Player -->
-<div class="music-player" id="music-player">
-  <div class="player-content">
-    <div class="track-info" id="open-banner">
-      <div class="track-image">
-        <img id="current-track-image" src="https://music45beta.vercel.app/music/music45.webp" alt="Cover">
-      </div>
-      <div class="track-details">
-        <h4 id="current-track-title">No song</h4>
-        <p id="current-track-artist">—</p>
-      </div>
+    <!-- Compact Footer -->
+<div class="compact-footer" id="compact-footer" style="display: none;">
+    <div class="footer-progress">
+        <div class="footer-progress-fill" id="footer-progress-fill"></div>
     </div>
-  </div>
-  <div class="player-controls">
-    <button class="control-button" id="btn-prev"><i data-lucide="skip-back"></i></button>
-    <button class="play-button" id="btn-play"><i data-lucide="play" id="play-icon"></i></button>
-    <button class="control-button" id="btn-next"><i data-lucide="skip-forward"></i></button>
-  </div>
-  <div class="progress-bar">
-    <div class="progress-track" id="progress-track">
-      <div class="progress-fill" id="progress-fill"></div>
+    <div class="footer-track-info" id="footer-open-banner">
+        <div class="footer-track-image">
+            <img id="footer-track-image" src="https://music45beta.vercel.app/music/music45.webp" alt="Cover">
+        </div>
+        <div class="footer-track-details">
+            <h4 id="footer-track-title">No song</h4>
+            <p id="footer-track-artist">—</p>
+        </div>
     </div>
-  </div>
+    <div class="footer-controls">
+        <button class="footer-play-button" id="footer-btn-play">
+            <i data-lucide="play" id="footer-play-icon"></i>
+        </button>
+        <button class="footer-next-button" id="footer-btn-next">
+            <i data-lucide="skip-forward"></i>
+        </button>
+    </div>
 </div>
 
 <!-- Music Banner (Full-Screen Player) -->
