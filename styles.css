@@ -496,27 +496,29 @@
       z-index: 1;
     }
 
-    .close-btn {
-      position: absolute;
-      top: 1rem;
-      left: 1rem;
-      background: none;
-      border: none;
-      border-radius: 50%;
-      width: 2rem;
-      height: 2rem;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      color: var(--foreground-secondary);
-      transition: var(--transition-smooth);
-    }
+    /* Fix the close button positioning */
+.close-btn {
+    position: absolute;
+    top: 1rem;
+    left: 1rem;
+    background: none;
+    border: none;
+    border-radius: 50%;
+    width: 2.5rem;
+    height: 2.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: var(--foreground);
+    transition: var(--transition-smooth);
+    z-index: 100;
+}
 
-    .close-btn:hover {
-      background: var(--hover);
-      color: var(--foreground);
-    }
+.close-btn:hover {
+    background: rgba(0, 0, 0, 0.7);
+    transform: scale(1.1);
+}
 
     .close-btn i {
       width: 1rem;
