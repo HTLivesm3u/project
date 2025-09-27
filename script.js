@@ -10,6 +10,239 @@ function refreshIcons() {
   }
 }
 
+ // Profile and Authentication Management
+    const userProfile = {
+      // Check if user is already logged in
+      checkLoginStatus: function() {
+        const userData = localStorage.getItem('music45_user');
+        if (userData) {
+          return JSON.parse(userData);
+        }
+        return null;
+      },
+      
+      // Save user data to localStorage
+      saveUserData: function(user) {
+        localStorage.setItem('music45_user', JSON.stringify(user));
+      },
+      
+      // Get user data
+      getUserData: function() {
+        return this.checkLoginStatus();
+      },
+      
+      // Log out user
+      logout: function() {
+        localStorage.removeItem('music45_user');
+        this.showLoginScreen();
+        
+        // Also sign out from Google
+        if (window.google && window.google.accounts) {
+          window.google.accounts.id.disableAutoSelect();
+        }
+      },
+      
+      // Show login screen
+      showLoginScreen: function() {
+        document.getElementById('login-container').classList.remove('hidden');
+        document.getElementById('main-app').style.display = 'none';
+      },
+      
+      // Show main app
+      showMainApp: function() {
+        document.getElementById('login-container').classList.add('hidden');
+        document.getElementById('main-app').style.display = 'block';
+        this.updateProfileUI();
+        
+        // Refresh icons after showing the app
+        setTimeout(refreshIcons, 100);
+      },
+      
+      // Update profile UI with user data
+      updateProfileUI: function() {
+        const userData = this.getUserData();
+        if (!userData) return;
+        
+        // Update profile avatar
+        const profileAvatar = document.getElementById('profile-avatar');
+        if (userData.picture) {
+          profileAvatar.innerHTML = `<img src="${userData.picture}" alt="Profile">`;
+        } else {
+          // Create initials from name
+          const initials = userData.name ? userData.name.split(' ').map(n => n[0]).join('').toUpperCase() : 'U';
+          profileAvatar.innerHTML = `<div class="avatar-placeholder">${initials}</div>`;
+        }
+        
+        // Update dropdown info
+        document.getElementById('dropdown-profile-pic').src = userData.picture || '';
+        document.getElementById('dropdown-name').textContent = userData.name || 'User';
+        document.getElementById('dropdown-email').textContent = userData.email || '';
+      },
+      
+      // Initialize profile functionality
+      init: function() {
+        // Check if user is already logged in
+        const userData = this.checkLoginStatus();
+        if (userData) {
+          this.showMainApp();
+        } else {
+          this.showLoginScreen();
+        }
+        
+        // Set up profile dropdown toggle
+        document.getElementById('profile-avatar').addEventListener('click', (e) => {
+          e.stopPropagation();
+          document.getElementById('profile-dropdown').classList.toggle('active');
+        });
+        
+        // Set up logout button
+        document.getElementById('logout-btn').addEventListener('click', () => {
+          this.logout();
+        });
+        
+        // Close dropdown when clicking outside
+        document.addEventListener('click', () => {
+          document.getElementById('profile-dropdown').classList.remove('active');
+        });
+      }
+    };
+
+    // Google Sign-In Handler
+    function handleGoogleSignIn(response) {
+      console.log("Google Sign-In response:", response);
+      
+      // Decode the JWT token to get user info
+      const userData = parseJwt(response.credential);
+      
+      // Save user data
+      userProfile.saveUserData(userData);
+      
+      // Show main app
+      userProfile.showMainApp();
+      
+      // Show welcome message
+      setTimeout(() => {
+        alert(`Welcome to MusicStream, ${userData.name}!`);
+      }, 500);
+    }
+
+    // JWT Parser
+    function parseJwt(token) {
+      try {
+        const base64Url = token.split('.')[1];
+        const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+        const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+          return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+        }).join(''));
+        return JSON.parse(jsonPayload);
+      } catch (e) {
+        console.error('Error parsing JWT:', e);
+        return {};
+      }
+    }
+
+    // Initialize the app when DOM is loaded
+    document.addEventListener('DOMContentLoaded', () => {
+      console.log('DOM fully loaded');
+      
+      // Initialize profile system
+      userProfile.init();
+      
+      // Initialize the rest of the app
+      refreshIcons();
+      
+      // Greeting
+      (function setGreeting() {
+        const hour = new Date().getHours();
+        const greetingEl = document.getElementById('greeting');
+        if (greetingEl) {
+          greetingEl.textContent =
+            hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
+        } else {
+          console.error('Greeting element not found');
+        }
+      })();
+
+      // Bottom nav tab switching
+      document.querySelectorAll('.nav-item').forEach(btn => {
+        btn.addEventListener('click', e => {
+          // remove active from all
+          document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+          e.currentTarget.classList.add('active');
+
+          // hide all tabs
+          document.querySelectorAll('.tab-view').forEach(tab => tab.style.display = 'none');
+
+          // show selected
+          const tab = e.currentTarget.getAttribute("data-tab");
+          const tabId = "tab-" + tab;
+          const tabEl = document.getElementById(tabId);
+          if (tabEl) tabEl.style.display = "block";
+
+          // push history state so back/forward works (for search/library/home)
+          if (window.history && window.history.pushState) {
+          window.history.pushState({ tab }, '', '#' + tab);
+          }
+
+          // add popstate handler once to handle back/forward navigation
+          if (!window.__tabPopstateAdded) {
+          window.addEventListener('popstate', (ev) => {
+            const stateTab = (ev.state && ev.state.tab) || location.hash.replace('#', '') || 'home';
+            // update nav active
+            document.querySelectorAll('.nav-item').forEach(b => {
+            b.classList.toggle('active', b.getAttribute('data-tab') === stateTab);
+            });
+            // show/hide views
+            document.querySelectorAll('.tab-view').forEach(t => t.style.display = 'none');
+            const id = "tab-" + stateTab;
+            const el = document.getElementById(id);
+            if (el) el.style.display = 'block';
+          });
+          window.__tabPopstateAdded = true;
+          }
+        });
+      });
+      
+      // Settings functionality
+      const settingsSheet = document.getElementById('settings-sheet');
+      const closeSettings = document.getElementById('close-settings');
+      
+      if (document.querySelector('.header-icons button:last-child')) {
+        document.querySelector('.header-icons button:last-child').addEventListener('click', () => {
+          if (settingsSheet) {
+            settingsSheet.classList.add('active');
+            refreshQualityButtons();
+          }
+        });
+      }
+
+      if (closeSettings) {
+        closeSettings.addEventListener('click', () => {
+          if (settingsSheet) settingsSheet.classList.remove('active');
+        });
+      }
+      
+      function refreshQualityButtons() {
+        document.querySelectorAll('.quality-btn').forEach(btn => {
+          btn.classList.toggle('active', btn.dataset.quality === 'auto');
+        });
+      }
+      
+      document.querySelectorAll('.quality-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const quality = btn.dataset.quality;
+          localStorage.setItem('qualitySetting', quality);
+          refreshQualityButtons();
+        });
+      });
+      
+      // Initialize quality buttons
+      refreshQualityButtons();
+    });
+    
+    // Make the Google Sign-In handler globally available
+    window.handleGoogleSignIn = handleGoogleSignIn;
+
 // Ensure DOM is loaded before attaching listeners
 document.addEventListener('DOMContentLoaded', () => {
   console.log('DOM fully loaded');

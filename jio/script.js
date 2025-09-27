@@ -130,7 +130,7 @@ async function searchSongs(){
   resultsContainer.innerHTML = 'Searching...';
 
   try {
-    const res = await fetch(`https://saavn.dev/api/search/songs?query=${encodeURIComponent(q)}`);
+    const res = await fetch(`https://saavn.dev/api/search/songs?query=${encodeURIComponent(q)}&limits=90`);
     const data = await res.json();
     const results = data?.data?.results || [];
 

@@ -9,13 +9,47 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <link rel="icon" type="image/webp" href="https://music45beta.vercel.app/music/music45.webp">
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <!-- Google Identity -->
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
   <!-- Lucide icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/lucide/0.462.0/lucide.min.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <div class="app">
+  <!-- Login Screen -->
+  <div class="login-container" id="login-container">
+    <div class="login-logo">
+      <i class="fas fa-music"></i>
+    </div>
+    <h1 class="login-title">MusicStream</h1>
+    <p class="login-subtitle">Sign in to enjoy personalized music recommendations and save your favorites</p>
+    
+    <!-- Google Sign-In Button -->
+    <div id="g_id_onload"
+         data-client_id="938151252-tbpdtg8gc62qdgqv9sds4f0vu1sk2jve.apps.googleusercontent.com"
+         data-context="signin"
+         data-ux_mode="popup"
+         data-callback="handleGoogleSignIn"
+         data-auto_prompt="false">
+    </div>
+
+    <div class="g_id_signin"
+         data-type="standard"
+         data-shape="rectangular"
+         data-theme="outline"
+         data-text="signin_with"
+         data-size="large"
+         data-logo_alignment="left">
+    </div>
+
+    <p class="login-footer">By continuing, you agree to our Terms of Service</p>
+  </div>
+
+  <!-- Main App (Hidden until login) -->
+  <div class="app" id="main-app" style="display: none;">
     <!-- Header -->
     <div class="header">
       <h1 class="greeting" id="greeting">Good morning</h1>
@@ -23,8 +57,43 @@
         <button class="icon-button"><i data-lucide="bell"></i></button>
         <button class="icon-button"><i data-lucide="clock"></i></button>
         <button class="icon-button"><i data-lucide="settings"></i></button>
+        
+        <!-- Profile Section -->
+        <div class="profile-section">
+          <div class="profile-avatar" id="profile-avatar">
+            <!-- Profile image or initials will be inserted here -->
+          </div>
+          <div class="profile-dropdown" id="profile-dropdown">
+            <div class="profile-info">
+              <img id="dropdown-profile-pic" src="" alt="Profile">
+              <div class="profile-details">
+                <h3 id="dropdown-name">User Name</h3>
+                <p id="dropdown-email">user@example.com</p>
+              </div>
+            </div>
+            <div class="profile-actions">
+              <div class="profile-action">
+                <i data-lucide="user"></i>
+                <span>My Profile</span>
+              </div>
+              <div class="profile-action">
+                <i data-lucide="heart"></i>
+                <span>Liked Songs</span>
+              </div>
+              <div class="profile-action">
+                <i data-lucide="download"></i>
+                <span>Downloads</span>
+              </div>
+              <div class="profile-action logout-btn" id="logout-btn">
+                <i data-lucide="log-out"></i>
+                <span>Log Out</span>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
+
 
     <!-- Main Content -->
     <div class="main-content" id="main">
