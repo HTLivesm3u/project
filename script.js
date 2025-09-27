@@ -243,6 +243,7 @@ function refreshIcons() {
     // Make the Google Sign-In handler globally available
     window.handleGoogleSignIn = handleGoogleSignIn;
 
+
 // Ensure DOM is loaded before attaching listeners
 document.addEventListener('DOMContentLoaded', () => {
   console.log('DOM fully loaded');

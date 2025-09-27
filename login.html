@@ -2,73 +2,83 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Login - MusicStream</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/lucide/0.462.0/lucide.min.css">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
-  <link rel="stylesheet" href="styles.css">
-  <!-- Google Fonts -->
+  <title>Music45 - Spotify Login</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <!-- Google Identity -->
-  <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Poppins', sans-serif;
+      background: #121212;
+      color: #fff;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      flex-direction: column;
+    }
+    .login-container {
+      text-align: center;
+    }
+    .spotify-login-btn {
+      background: #1DB954;
+      border: none;
+      padding: 14px 28px;
+      border-radius: 50px;
+      font-size: 18px;
+      color: white;
+      cursor: pointer;
+      transition: 0.3s;
+      margin-top: 20px;
+    }
+    .spotify-login-btn:hover {
+      background: #1ed760cc;
+    }
+    h1 {
+      margin-bottom: 20px;
+    }
+  </style>
 </head>
 <body>
-  <!-- Login Screen -->
-  <div class="login-container" id="login-container">
-    <div class="login-logo">
-      <i class="fas fa-music"></i>
-    </div>
-    <h1 class="login-title">Music45</h1>
-    <p class="login-subtitle">Sign in to enjoy personalized music recommendations and save your favorites</p>
-    
-    <!-- Google Sign-In Button -->
-    <div id="g_id_onload"
-         data-client_id="938151252-tbpdtg8gc62qdgqv9sds4f0vu1sk2jve.apps.googleusercontent.com"
-         data-context="signin"
-         data-ux_mode="popup"
-         data-callback="handleCredentialResponse"
-         data-auto_prompt="false">
-    </div>
-
-    <div class="g_id_signin"
-         data-type="standard"
-         data-shape="rectangular"
-         data-theme="outline"
-         data-text="signin_with"
-         data-size="large"
-         data-logo_alignment="left">
-    </div>
-    <p class="login-footer">By continuing, you agree to our Terms of Service</p>
+  <div class="login-container">
+    <h1>Welcome to Music45</h1>
+    <p>Login with Spotify to continue</p>
+    <button id="spotify-login" class="spotify-login-btn">Login with Spotify</button>
   </div>
 
   <script>
-    // Parse JWT helper
-    function parseJwt(token) {
-      try {
-        const base64Url = token.split('.')[1];
-        const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-        const jsonPayload = decodeURIComponent(atob(base64).split('').map(c =>
-          '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)
-        ).join(''));
-        return JSON.parse(jsonPayload);
-      } catch (e) {
-        console.error("JWT parse error", e);
-        return {};
+    const clientId = '7afe6b39346f4bcc8654c141fe2a6136'; // replace with your Client ID
+    const redirectUri = 'http://127.0.0.1:5500/login.html'; // replace with your redirect URI
+    const scopes = [
+      'user-read-private',
+      'user-read-email',
+      'user-top-read',       // To get user's favorite artists/songs
+      'user-library-read'
+    ];
+
+    function generateRandomString(length) {
+      let text = '';
+      const possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+      for (let i = 0; i < length; i++) {
+        text += possible.charAt(Math.floor(Math.random() * possible.length));
       }
+      return text;
     }
 
-    // Google Sign-In handler
-    function handleGoogleSignIn(response) {
-      const userData = parseJwt(response.credential);
+    document.getElementById('spotify-login').addEventListener('click', () => {
+      const state = generateRandomString(16);
+      localStorage.setItem('spotify_auth_state', state);
 
-      // Save user data to localStorage
-      localStorage.setItem('music45_user', JSON.stringify(userData));
+      const authUrl = `https://accounts.spotify.com/authorize` +
+                      `?response_type=token` +
+                      `&client_id=${encodeURIComponent(clientId)}` +
+                      `&scope=${encodeURIComponent(scopes.join(' '))}` +
+                      `&redirect_uri=${encodeURIComponent(redirectUri)}` +
+                      `&state=${encodeURIComponent(state)}`;
 
-      // Redirect to main app
-      window.location.href = "index.html";
-    }
-
-    window.handleGoogleSignIn = handleGoogleSignIn;
+      window.location = authUrl;
+    });
   </script>
 </body>
 </html>
