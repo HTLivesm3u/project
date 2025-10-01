@@ -399,16 +399,17 @@
 
     /* Bottom Navigation */
     .bottom-nav {
-        position: fixed;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        background: var(--background-secondary);
-        border-top: 1px solid var(--background-tertiary);
-        display: flex;
-        justify-content: space-around;
-        padding: 0.5rem 0;
-        z-index: 50;
+    position: fixed;
+    bottom: -0.1rem;
+    left: 0;
+    right: 0;
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(20px);
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    display: flex;
+    justify-content: space-around;
+    padding: 0.5rem 0;
+    z-index: 50;
     }
 
     .nav-item {
@@ -1088,13 +1089,13 @@
 /* Compact Footer */
 .compact-footer {
     position: fixed;
-    bottom: 4rem;
+    bottom: 3.7rem;
     left: 0;
     right: 0;
-    background: var(--gradient-card);
+    background: rgba(255, 255, 255, 0.05);
     backdrop-filter: blur(20px);
-    border-top: 1px solid var(--background-tertiary);
-    border-bottom: 1px solid var(--background-tertiary);
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     padding: 0.5rem 1rem;
     z-index: 45;
     display: flex;
@@ -1102,6 +1103,9 @@
     justify-content: space-between;
     height: 60px;
     transition: var(--transition-smooth);
+    margin: 0 1rem 1rem 1rem;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-glow);
 }
 
 .footer-track-info {
