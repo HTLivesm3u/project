@@ -1207,8 +1207,8 @@
 .footer-progress {
     position: absolute;
     top: -2px;
-    left: 0;
-    right: 0;
+    left: 0.4rem;
+    right: 0.4rem;
     height: 2px;
     background: transparent;
 }
