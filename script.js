@@ -130,29 +130,33 @@ const footerOpenBanner = document.getElementById('footer-open-banner');
     return `${min.toString().padStart(2, '0')}:${sec.toString().padStart(2, '0')}`;
   }
 
-  function extractPlayableUrl(details) {
-    if (!details) return null;
-    const dl = details.downloadUrl || details.download_url;
-    if (Array.isArray(dl) && dl.length) {
-      if (qualitySetting === 'auto') {
-        return dl[dl.length - 1].link || dl[dl.length - 1].url || null;
-      }
-      if (qualitySetting === 'low') {
-        const low = dl.find(x => /96/i.test(x.quality));
-        if (low) return low.link || low.url;
-      }
-      if (qualitySetting === 'medium') {
-        const med = dl.find(x => /160/i.test(x.quality));
-        if (med) return med.link || med.url;
-      }
-      if (qualitySetting === 'high') {
-        const high = dl.find(x => /320/i.test(x.quality));
-        if (high) return high.link || high.url;
-      }
+  function extractPlayableUrl(details, quality = qualitySetting) {
+  if (!details) return null;
+  const dl = details.downloadUrl || details.download_url;
+  if (Array.isArray(dl) && dl.length) {
+    if (quality === 'auto') {
       return dl[dl.length - 1].link || dl[dl.length - 1].url || null;
     }
-    return details.media_url || details.url || details.audio || null;
+    if (quality === 'Less_low') {
+      const lessLow = dl.find(x => /48/i.test(x.quality));
+      if (lessLow) return lessLow.link || lessLow.url;
+    }
+    if (quality === 'low') {
+      const low = dl.find(x => /96/i.test(x.quality));
+      if (low) return low.link || low.url;
+    }
+    if (quality === 'medium') {
+      const med = dl.find(x => /160/i.test(x.quality));
+      if (med) return med.link || med.url;
+    }
+    if (quality === 'high') {
+      const high = dl.find(x => /320/i.test(x.quality));
+      if (high) return high.link || high.url;
+    }
+    return dl[dl.length - 1].link || dl[dl.length - 1].url || null;
   }
+  return details.media_url || details.url || details.audio || null;
+}
 
 
 // Add to your existing DOM refs
@@ -362,14 +366,15 @@ function renderSyncedLyrics(lrcText) {
   }
 
   function addToRecently(item) {
-    if (!item) return;
-    const key = item.id ? 'id:' + item.id : 't:' + item.title;
-    recentlyPlayed = recentlyPlayed.filter(x => x._k !== key);
-    recentlyPlayed.unshift({ ...item, _k: key });
-    recentlyPlayed = recentlyPlayed.slice(0, 12);
-    saveRecentlyToStorage();
-    renderRecently();
-  }
+  if (!item) return;
+  const key = item.id ? 'id:' + item.id : 't:' + item.title;
+  // Include the current quality setting in the item
+  recentlyPlayed = recentlyPlayed.filter(x => x._k !== key);
+  recentlyPlayed.unshift({ ...item, _k: key, quality: qualitySetting });
+  recentlyPlayed = recentlyPlayed.slice(0, 12);
+  saveRecentlyToStorage();
+  renderRecently();
+}
 
   function renderRecently() {
     if (!recentlyWrap) return;
@@ -413,34 +418,35 @@ function renderSyncedLyrics(lrcText) {
     }
   }
 
-  async function ensureUrlFor(index) {
-    const item = queue[index];
-    if (!item) return null;
-    if (item.url) return item.url;
-    try {
-      const res = await fetch(`https://saavn.dev/api/songs?ids=${encodeURIComponent(item.id)}`);
-      const d = await res.json();
-      const full = d?.data?.[0] || d?.data || null;
-      if (!full) return null;
-      item.url = extractPlayableUrl(full);
-      item.title = getTitle(full) || item.title;
-      item.artist = getArtist(full) || item.artist;
-      item.cover = getCover(full) || item.cover;
-      return item.url || null;
-    } catch (e) {
-      console.error('Details failed', e);
-      return null;
-    }
+  async function ensureUrlFor(index, quality = qualitySetting) {
+  const item = queue[index];
+  if (!item) return null;
+  if (item.url) return item.url;
+  try {
+    const res = await fetch(`https://saavn.dev/api/songs?ids=${encodeURIComponent(item.id)}`);
+    const d = await res.json();
+    const full = d?.data?.[0] || d?.data || null;
+    if (!full) return null;
+    item.url = extractPlayableUrl(full, quality);  // Pass quality to extractPlayableUrl
+    item.title = getTitle(full) || item.title;
+    item.artist = getArtist(full) || item.artist;
+    item.cover = getCover(full) || item.cover;
+    return item.url || null;
+  } catch (e) {
+    console.error('Details failed', e);
+    return null;
   }
+}
 
   async function playIndex(index) {
     if (index < 0 || index >= queue.length) return;
     const item = queue[index];
+    const quality = item.quality || qualitySetting;  // Use the item's quality if available, else global
 
     // Update UI immediately (cover/title) then load url
     updateUI(item, false);
 
-    const url = await ensureUrlFor(index);
+    const url = await ensureUrlFor(index, quality);
     if (!url) {
       alert('No playable URL found for this track.');
       return;
