@@ -855,6 +855,43 @@ if (footerOpenBanner) {
   }
 
   
+ async function loadSingleNewReleaseAlbum() {
+  const albumId = '56535946';
+  const apiUrl = `https://saavn.dev/api/albums?id=${encodeURIComponent(albumId)}`;
+  try {
+    const resp = await fetch(apiUrl);
+    if (!resp.ok) throw new Error('Failed fetch album');
+    const data = await resp.json();
+    const album = data?.data?.[0] || data?.data;
+    if (!album) {
+      console.warn('No album data for new release');
+      return;
+    }
+    const wrap = document.getElementById('new-releases');
+    if (!wrap) {
+      console.error('new-releases container not found');
+      return;
+    }
+    wrap.innerHTML = ''; // clear old
+    const card = document.createElement('div');
+    card.className = 'music-card';
+    const cover = album.image ? album.image : (album.cover || album.image_url || '');
+    const title = album.name || album.title || 'Unknown Album';
+
+    card.innerHTML = `
+      <img src="${cover}" alt="${escapeHtml(title)}">
+      <span>${escapeHtml(title)}</span>
+    `;
+    card.addEventListener('click', () => {
+      playAlbum(albumId);
+    });
+    wrap.appendChild(card);
+  } catch (err) {
+    console.error('Error loading new release album:', err);
+  }
+}
+
+
   // Search
   const searchInput = document.getElementById('search-input');
   const searchBtn = document.getElementById('search-btn');
@@ -919,4 +956,5 @@ if (footerOpenBanner) {
   loadRecentlyFromStorage();
   loadAlbums();
   refreshQualityButtons();
+  loadSingleNewReleaseAlbum();
 });
