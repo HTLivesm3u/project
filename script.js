@@ -10,6 +10,40 @@ function refreshIcons() {
   }
 }
 
+// Add this function to fetch song suggestions
+async function fetchSongSuggestions(songId) {
+  try {
+    const res = await fetch(`https://music45-api.vercel.app/api/songs/${songId}/suggestions`);
+    const data = await res.json();
+    return data?.data?.results || data?.data || [];
+  } catch (e) {
+    console.error('Failed to fetch suggestions', e);
+    return [];
+  }
+}
+
+// Optional: Add a function to manually get suggestions for the current song
+async function playSuggestions() {
+  const currentSong = queue[currentIndex];
+  if (!currentSong || !currentSong.id) return;
+  
+  const suggestions = await fetchSongSuggestions(currentSong.id);
+  if (suggestions.length > 0) {
+    const suggestedQueue = suggestions.map(s => ({
+      id: s.id,
+      title: getTitle(s),
+      artist: getArtist(s),
+      cover: getCover(s),
+      url: null,
+      raw: s
+    }));
+    
+    queue = suggestedQueue;
+    currentIndex = 0;
+    await playIndex(0);
+  }
+}
+
 // Ensure DOM is loaded before attaching listeners
 document.addEventListener('DOMContentLoaded', () => {
   console.log('DOM fully loaded');
@@ -580,10 +614,40 @@ function renderSyncedLyrics(lrcText) {
     updateUI(queue[currentIndex], false);
   });
 
-  audio.addEventListener('ended', () => {
+  // MODIFIED: Ended event listener with suggestions
+  audio.addEventListener('ended', async () => {
     if (repeatMode) {
       playIndex(currentIndex);
     } else {
+      // Check if we're at the end of the current queue
+      if (currentIndex >= queue.length - 1) {
+        // Get current song ID for suggestions
+        const currentSong = queue[currentIndex];
+        if (currentSong && currentSong.id) {
+          // Fetch suggestions based on current song
+          const suggestions = await fetchSongSuggestions(currentSong.id);
+          
+          if (suggestions.length > 0) {
+            // Convert suggestions to queue format
+            const suggestedQueue = suggestions.map(s => ({
+              id: s.id,
+              title: getTitle(s),
+              artist: getArtist(s),
+              cover: getCover(s),
+              url: null,
+              raw: s
+            }));
+            
+            // Add suggestions to queue and play the first one
+            queue = suggestedQueue;
+            currentIndex = 0;
+            await playIndex(0);
+            return;
+          }
+        }
+      }
+      
+      // If no suggestions or not at end of queue, proceed normally
       nextSong();
     }
   });
