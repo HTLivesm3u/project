@@ -875,7 +875,7 @@ if (footerOpenBanner) {
     wrap.innerHTML = ''; // clear old
     const card = document.createElement('div');
     card.className = 'music-card';
-    const cover = album.image ? album.image : (album.cover || album.image_url || '');
+    const cover = getCover(album);
     const title = album.name || album.title || 'Unknown Album';
 
     card.innerHTML = `
