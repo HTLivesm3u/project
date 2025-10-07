@@ -399,7 +399,7 @@ function renderSyncedLyrics(lrcText) {
   async function searchAndQueue(query, autoplay = true) {
     if (!query) return;
     try {
-      const res = await fetch(`https://saavn.dev/api/search/songs?query=${encodeURIComponent(query)}`);
+      const res = await fetch(`https://music45-api.vercel.app/api/search/songs?query=${encodeURIComponent(query)}`);
       const data = await res.json();
       const results = data?.data?.results || [];
       queue = results.map(r => ({
@@ -423,7 +423,7 @@ function renderSyncedLyrics(lrcText) {
   if (!item) return null;
   if (item.url) return item.url;
   try {
-    const res = await fetch(`https://saavn.dev/api/songs?ids=${encodeURIComponent(item.id)}`);
+    const res = await fetch(`https://music45-api.vercel.app/api/songs?ids=${encodeURIComponent(item.id)}`);
     const d = await res.json();
     const full = d?.data?.[0] || d?.data || null;
     if (!full) return null;
@@ -746,7 +746,7 @@ if (footerOpenBanner) {
       const albumQueries = ['Arijit Singh', 'Pritam', 'Shreya Ghoshal', 'kishor kumar', 'A.R. Rahman'];
       const allAlbums = [];
       for (const query of albumQueries) {
-        const res = await fetch(`https://saavn.dev/api/search/albums?query=${encodeURIComponent(query)}`);
+        const res = await fetch(`https://music45-api.vercel.app/api/search/albums?query=${encodeURIComponent(query)}`);
         const data = await res.json();
         if (data?.data?.results) {
           allAlbums.push(...data.data.results.slice(0, 5));
@@ -777,7 +777,7 @@ if (footerOpenBanner) {
 
   async function playAlbum(albumId) {
     try {
-      const res = await fetch(`https://saavn.dev/api/albums?id=${encodeURIComponent(albumId)}`);
+      const res = await fetch(`https://music45-api.vercel.app/api/albums?id=${encodeURIComponent(albumId)}`);
       const data = await res.json();
       const album = data?.data?.[0] || data?.data;
       const songs = album?.songs || [];
@@ -857,7 +857,7 @@ if (footerOpenBanner) {
   
  async function loadSingleNewReleaseAlbum() {
   const albumId = '56535946';
-  const apiUrl = `https://saavn.dev/api/albums?id=${encodeURIComponent(albumId)}`;
+  const apiUrl = `https://music45-api.vercel.app/api/albums?id=${encodeURIComponent(albumId)}`;
   try {
     const resp = await fetch(apiUrl);
     if (!resp.ok) throw new Error('Failed fetch album');
@@ -901,7 +901,7 @@ if (footerOpenBanner) {
     const query = (searchInput && searchInput.value || '').trim();
     if (!query) return;
     try {
-      const res = await fetch(`https://saavn.dev/api/search/songs?query=${encodeURIComponent(query)}`);
+      const res = await fetch(`https://music45-api.vercel.app/api/search/songs?query=${encodeURIComponent(query)}`);
       const data = await res.json();
       const results = data?.data?.results || [];
       if (searchResultsWrap) searchResultsWrap.innerHTML = '';
